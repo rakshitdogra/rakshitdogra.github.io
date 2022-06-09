@@ -51,22 +51,22 @@ p {
   margin: 25px 0;
   padding: 0;
   font-size: 15px;
-  color: #999999;
+  color: #ffffff;
   line-height: 28px;
 }
 
 ::-moz-selection {
-  background: #b8a07e;
+  background: #ffffff;
   color: rgb(0, 0, 0);
 }
 
 ::selection {
-  background: #b8a07e;
+  background: #ffffff;
   color: rgb(0, 0, 0);
 }
 
 .btn {
-  background: #333;
+  background: rgb(0, 0, 0);
   border: medium none;
   border-radius: 0;
   color: #fff;
@@ -130,7 +130,7 @@ p {
 }
 
 .hvr-shutter-in-horizontal:hover {
-  background: #b8a07e;
+  background: #000000;
 }
 
 .mb-30 {
@@ -151,7 +151,7 @@ p {
   right: 15px;
   bottom: 15px;
   z-index: 996;
-  background: #ffffff;
+  background: #000000;
   width: 40px;
   height: 40px;
   border-radius: 4px;
@@ -527,7 +527,7 @@ p {
 # Services
 --------------------------------------------------------------*/
 #services {
-  background: #f7f7f7;
+  background: #000000;
   position: relative;
   padding-bottom: 80px;
 }
@@ -536,7 +536,7 @@ p {
   margin: 10px 0;
   position: relative;
   font-size: 13px;
-  color: #292929;
+  color: #ffffff;
   letter-spacing: 0.1em;
   font-weight: 500;
   text-transform: uppercase;
@@ -551,7 +551,7 @@ p {
 
 .services-block i {
   font-size: 44px;
-  color: #b8a07e;
+  color: #ffffff;
   line-height: 44px;
 }
 
@@ -562,12 +562,12 @@ p {
 .services-slider .swiper-pagination .swiper-pagination-bullet {
   width: 12px;
   height: 12px;
-  background-color: #fff;
+  background-color: rgb(0, 0, 0);
   opacity: 1;
   border: 1px solid #b8a07e;
 }
 .services-slider .swiper-pagination .swiper-pagination-bullet-active {
-  background-color: #b8a07e;
+  background-color: #000000;
 }
 
 /*--------------------------------------------------------------
@@ -614,7 +614,7 @@ p {
   bottom: 0;
   z-index: 3;
   transition: all ease-in-out 0.3s;
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(0, 0, 0, 0.9);
   padding: 15px;
 }
 #portfolio .portfolio-item .portfolio-info h4 {
