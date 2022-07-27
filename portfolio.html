@@ -2,6 +2,13 @@
 <html lang="en">
 
 <head>
+<style> 
+.prevent-select {
+  -webkit-user-select: none; /* Safari */
+  -ms-user-select: none; /* IE 10 and IE 11 */
+  user-select: none; /* Standard syntax */
+}
+</style>
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
@@ -45,7 +52,7 @@
       <!-- <h1 class="logo"><a href="index.html">Folio</a></h1> -->
 
       <nav id="navbar" class="navbar">
-        <ul>
+        <ul class="prevent-select" >
           <li><a class="nav-link scrollto active" href="index.html">Home</a></li>
           <li><a class="nav-link scrollto" href="index.html">About</a></li>
           <li><a class="nav-link  scrollto" href="index.html">Portfolio</a></li>
@@ -58,7 +65,7 @@
   </header><!-- End Header -->
 
     <!-- ======= Portfolio Section ======= -->
-    <div id="portfolio" class="paddsection">
+    <div id="portfolio" class="paddsection" class="prevent-select">
 
       <div class="container">
         <div class="section-title text-center">
@@ -69,7 +76,7 @@
       <div class="container">
 
         <div class="row">
-          <div class="col-lg-12 d-flex justify-content-center">
+          <div class="col-lg-12 d-flex justify-content-center" class="prevent-select">
             <ul id="portfolio-flters">
               <li data-filter="*" class="filter-active">All</li>
               <li data-filter=".filter-app">App</li>s
@@ -80,7 +87,7 @@
 
         <div class="row portfolio-container">
 
-          <div class="col-lg-4 col-md-6 portfolio-item filter-app">
+          <div class="col-lg-4 col-md-6 portfolio-item filter-app" class="prevent-select">
             <img src="assets/img/portfolio/portfolio-1.jpg" class="img-fluid" alt="">
             <div class="portfolio-info">
               <h4>Web App.</h4>
@@ -90,7 +97,7 @@
             </div>
           </div>
 
-          <div class="col-lg-4 col-md-6 portfolio-item filter-web">
+          <div class="col-lg-4 col-md-6 portfolio-item filter-web" class="prevent-select">
             <img src="assets/img/portfolio/portfolio-2.jpg" class="img-fluid" alt="">
             <div class="portfolio-info">
               <h4>Dictionary Web App.</h4>
@@ -100,7 +107,7 @@
             </div>
           </div>
 
-          <div class="col-lg-4 col-md-6 portfolio-item filter-app">
+          <div class="col-lg-4 col-md-6 portfolio-item filter-app" class="prevent-select">
             <img src="assets/img/portfolio/portfolio-3.jpg" class="img-fluid" alt="">
             <div class="portfolio-info">
               <h4>Mental Heath App</h4>
@@ -110,7 +117,7 @@
             </div>
           </div>
 
-          <div class="col-lg-4 col-md-6 portfolio-item filter-card">
+          <div class="col-lg-4 col-md-6 portfolio-item filter-card" class="prevent-select">
             <img src="assets/img/portfolio/portfolio-4.jpg" class="img-fluid" alt="">
             <div class="portfolio-info">
               <h4>Website Design.</h4>
@@ -120,7 +127,7 @@
             </div>
           </div>
 
-          <div class="col-lg-4 col-md-6 portfolio-item filter-web">
+          <div class="col-lg-4 col-md-6 portfolio-item filter-web" class="prevent-select">
             <img src="assets/img/portfolio/portfolio-5.jpg" class="img-fluid" alt="">
             <div class="portfolio-info">
               <h4>Login Page Design.</h4>
@@ -130,7 +137,7 @@
             </div>
           </div>
 
-          <div class="col-lg-4 col-md-6 portfolio-item filter-app">
+          <div class="col-lg-4 col-md-6 portfolio-item filter-app" class="prevent-select">
             <img src="assets/img/portfolio/portfolio-6.jpg" class="img-fluid" alt="">
             <div class="portfolio-info">
               <h4>Website Design.</h4>
@@ -149,7 +156,7 @@
     
 
     <!-- ======= Contact Section ======= -->
-    <div id="contact" class="paddsection">
+    <div id="contact" class="paddsection" class="prevent-select" class="prevent-select">
       <div class="container">
         <div class="contact-block1">
           <div class="row">
@@ -174,7 +181,7 @@
   </main><!-- End #main -->
 
   <!-- ======= Footer ======= -->
-  <div id="footer" class="text-center">
+  <div id="footer" class="text-center" class="prevent-select" class="prevent-select">
     <div class="container">
       <div class="socials-media text-center">
 
@@ -189,7 +196,7 @@
 
       <p>&copy; Copyrights Rakshit Dogra. All rights reserved.</p>
 
-      <div class="credits">
+      <div class="credits" class="prevent-select">
         <!--
         All the links in the footer should remain intact.
         You can delete the links only if you purchased the pro version.
