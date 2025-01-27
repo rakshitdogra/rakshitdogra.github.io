@@ -1,7 +1,7 @@
 {
-  "name": "Image Classifier",
-  "short_name": "Classifier",
-  "description": "An image classifier using MobileNet.",
+  "name": "Image Identifier",
+  "short_name": "Image Identification",
+  "description": "An Image Identification using Tensorflow.js and MobileNet.",
   "start_url": "/index.html",
   "display": "standalone",
   "background_color": "#f4f4f9",
