@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Image Classifier with MobileNet</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f9;
+    }
+
+    h1 {
+      margin: 20px 0;
+    }
+
+    .gallery {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin: 20px;
+    }
+
+    .gallery img {
+      width: 150px;
+      height: 150px;
+      object-fit: cover;
+      cursor: pointer;
+      border: 2px solid transparent;
+      border-radius: 10px;
+      transition: transform 0.2s, border 0.2s;
+    }
+
+    .gallery img:hover {
+      transform: scale(1.1);
+      border-color: #007bff;
+    }
+
+    #preview {
+      margin-top: 20px;
+      position: relative;
+      display: inline-block;
+    }
+
+    #preview img {
+      width: 150px;
+      height: 150px;
+      object-fit: cover;
+    }
+
+    .scan-line {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background-color: blue;
+      animation: scan 2s infinite;
+      visibility: hidden;
+    }
+
+    @keyframes scan {
+      0% {
+        top: 0;
+      }
+
+      50% {
+        top: 100%;
+      }
+
+      100% {
+        top: 0;
+      }
+    }
+
+    #result {
+      margin-top: 20px;
+      font-size: 18px;
+      color: #333;
+    }
+
+    /* Loading overlay styles */
+    #loadingOverlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 20px;
+      z-index: 1000;
+    }
+
+    #loadingOverlay.hidden {
+      display: none;
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+</head>
+
+<body>
+  <div id="loadingOverlay">Loading ML Model... Please wait.</div>
+
+  <h1>Image Identification</h1>
+  <h3>With Machine learning</h3>
+
+  <p>
+    Made with <span style="color: red;">&hearts;</span> and <span style="color: #007acc;">&lt;/&gt;</span> by <a
+      href="https://rakshitdogra.github.io/">Rakshit Dogra</a>
+  </p>
+  <div class="gallery">
+    <img src="images/cat.jpg" alt="Cat" onclick="classifyImage('images/cat.jpg')">
+    <img src="images/dog.jpg" alt="Dog" onclick="classifyImage('images/dog.jpg')">
+    <img src="images/cycle.jpg" alt="Cycle" onclick="classifyImage('images/cycle.jpg')">
+    <img src="images/burger.jpg" alt="Burger" onclick="classifyImage('images/burger.jpg')">
+  </div>
+  <div id="preview">
+    <div id="result">Click on an image to see the result.</div>
+    <br>
+    <img id="previewImage" src="" alt="Preview Image">
+    <div class="scan-line" id="scanLine"></div>
+  </div>
+
+  <script>
+    let model;
+
+    // Show the loading overlay until the model is loaded
+    const loadingOverlay = document.getElementById('loadingOverlay');
+
+    // Load the MobileNet model
+    async function loadModel() {
+      model = await mobilenet.load();
+      console.log('MobileNet model loaded.');
+      loadingOverlay.classList.add('hidden'); // Hide the loading overlay
+    }
+
+    // Classify the selected image
+    async function classifyImage(imagePath) {
+      const previewImage = document.getElementById('previewImage');
+      const scanLine = document.getElementById('scanLine');
+
+      // Show the preview image
+      previewImage.src = imagePath;
+
+      // Show scanning animation
+      scanLine.style.visibility = 'visible';
+
+      // Load and classify the image
+      const img = new Image();
+      img.src = imagePath;
+      img.crossOrigin = 'anonymous'; // Ensure cross-origin images can be processed
+      img.onload = async () => {
+        const predictions = await model.classify(img);
+        console.log(predictions);
+
+        // Hide scanning animation after classification
+        scanLine.style.visibility = 'hidden';
+
+        // Display the top prediction
+        const topPrediction = predictions[0];
+        document.getElementById('result').innerText =
+          `Prediction: ${topPrediction.className} (Confidence: ${(topPrediction.probability * 100).toFixed(2)}%)`;
+      };
+    }
+
+    // Load the model when the page is loaded
+    window.onload = loadModel;
+  </script>
+</body>
+
+</html>
