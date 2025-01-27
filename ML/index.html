@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Image Classifier with MobileNet</title>
+  <title>Image Identification</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -15,7 +14,7 @@
     }
 
     h1 {
-      margin: 20px 0;
+      margin: 10px 0;
     }
 
     .gallery {
@@ -116,8 +115,7 @@
   <h3>With Machine learning</h3>
 
   <p>
-    Made with <span style="color: red;">&hearts;</span> and <span style="color: #007acc;">&lt;/&gt;</span> by <a
-      href="https://rakshitdogra.github.io/">Rakshit Dogra</a>
+    Made with Tensorflow.js and <span style="color: red;">&hearts;</span> by <a href="https://rakshitdogra.github.io/">Rakshit Dogra</a>
   </p>
   <div class="gallery">
     <img src="images/cat.jpg" alt="Cat" onclick="classifyImage('images/cat.jpg')">
@@ -134,48 +132,38 @@
 
   <script>
     let model;
-
-    // Show the loading overlay until the model is loaded
     const loadingOverlay = document.getElementById('loadingOverlay');
 
-    // Load the MobileNet model
     async function loadModel() {
       model = await mobilenet.load();
       console.log('MobileNet model loaded.');
-      loadingOverlay.classList.add('hidden'); // Hide the loading overlay
+      loadingOverlay.classList.add('hidden'); 
     }
-
-    // Classify the selected image
     async function classifyImage(imagePath) {
       const previewImage = document.getElementById('previewImage');
       const scanLine = document.getElementById('scanLine');
 
-      // Show the preview image
       previewImage.src = imagePath;
 
-      // Show scanning animation
       scanLine.style.visibility = 'visible';
-
-      // Load and classify the image
+      
       const img = new Image();
       img.src = imagePath;
-      img.crossOrigin = 'anonymous'; // Ensure cross-origin images can be processed
+      img.crossOrigin = 'anonymous';
       img.onload = async () => {
         const predictions = await model.classify(img);
         console.log(predictions);
 
-        // Hide scanning animation after classification
         scanLine.style.visibility = 'hidden';
-
-        // Display the top prediction
-        const topPrediction = predictions[0];
+        
+  const topPrediction = predictions[0];
         document.getElementById('result').innerText =
           `Prediction: ${topPrediction.className} (Confidence: ${(topPrediction.probability * 100).toFixed(2)}%)`;
       };
     }
 
-    // Load the model when the page is loaded
     window.onload = loadModel;
+    
   </script>
 </body>
 
