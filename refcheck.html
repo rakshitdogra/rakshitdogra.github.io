@@ -603,8 +603,12 @@
       '10.1126/science.abc5812',
       'Doe, J. (2019). Machine learning in healthcare: A review. Journal of Medical Research, 15(3), 234-256.',
       'Brown, M., & Davis, K. (2018). The future of renewable energy. Energy Policy, 112, 12-24. https://doi.org/10.1016/j.enpol.2017.10.012',
+      'LeCun, Y., Bengio, Y., & Hinton, G. (2015). Deep learning. Nature, 521(7553), 436-444.',
       'This is an invalid reference that will show as not found'
     ];
+    
+    // Cache for API responses to avoid duplicate requests
+    const apiCache = new Map();
     
     // DOM Elements
     const referencesTextarea = document.getElementById('references');
@@ -682,6 +686,96 @@
       }
     }
     
+    // API Functions
+    async function queryCrossRef(query, isDOI = false) {
+      try {
+        const url = isDOI 
+          ? `https://api.crossref.org/works/${encodeURIComponent(query)}`
+          : `https://api.crossref.org/works?query=${encodeURIComponent(query)}&rows=1`;
+        
+        const response = await fetch(url, {
+          headers: {
+            'User-Agent': 'ReferenceChecker/1.0 (mailto:rakshitdogra.work@gmail.com)'
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (isDOI) {
+          return data.message;
+        } else if (data.message.items && data.message.items.length > 0) {
+          return data.message.items[0];
+        }
+        
+        return null;
+      } catch (error) {
+        console.error('Error querying CrossRef:', error);
+        return null;
+      }
+    }
+    
+    async function queryDataCite(doi) {
+      try {
+        const response = await fetch(`https://api.datacite.org/dois/${encodeURIComponent(doi)}`, {
+          headers: {
+            'Accept': 'application/vnd.api+json'
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.data) {
+          const attr = data.data.attributes;
+          return {
+            title: attr.titles?.[0]?.title || 'Untitled',
+            authors: attr.creators?.map(c => c.name || `${c.givenName} ${c.familyName}`.trim()).join(', ') || 'Unknown',
+            journal: attr.publisher || 'Unknown',
+            year: attr.publicationYear || new Date().getFullYear(),
+            doi: attr.doi,
+            url: attr.url || `https://doi.org/${attr.doi}`,
+            type: attr.types?.resourceTypeGeneral || 'Article'
+          };
+        }
+        
+        return null;
+      } catch (error) {
+        console.error('Error querying DataCite:', error);
+        return null;
+      }
+    }
+    
+    function extractDOI(text) {
+      // Match DOI in various formats
+      const doiRegex = /\b(10\.\d{4,}(?:[.\/#;]\S+)?\/\S+)\b/i;
+      const match = text.match(doiRegex);
+      return match ? match[1].trim() : null;
+    }
+    
+    function parseReference(text) {
+      // Try to extract basic information from reference string
+      const titleMatch = text.match(/\(\d{4}\)\.\s*([^\.]+)\./i) || 
+                        text.match(/[\"“]([^\"”]+)[\"”]/);
+      
+      const yearMatch = text.match(/\((\d{4})\)/) || 
+                       text.match(/(?:19|20)\d{2}/);
+      
+      const journalMatch = text.match(/\.\s*([^\.,;]+?)(?:\s*\d+\s*[:\(])?/i);
+      
+      return {
+        title: titleMatch ? titleMatch[1].trim() : null,
+        year: yearMatch ? yearMatch[1] || yearMatch[0] : null,
+        journal: journalMatch ? journalMatch[1].trim() : null
+      };
+    }
+
     // Main Functions
     async function checkReferences() {
       const referencesText = referencesTextarea.value.trim();
@@ -716,21 +810,59 @@
         progressBar.style.width = `${progress}%`;
         
         try {
-          // Simulate API call with timeout
-          await new Promise(resolve => setTimeout(resolve, 500));
+          // Try to extract DOI first
+          const doi = extractDOI(ref);
+          let result = null;
           
-          // Generate a result (in a real app, this would be an API call)
-          const result = {
-            id: Date.now() + i,
-            input: ref,
-            status: Math.random() > 0.3 ? 'found' : 'not-found',
-            title: ref.length > 50 ? ref.substring(0, 50) + '...' : ref,
-            journal: 'Journal of Example Studies',
-            year: 2020 + Math.floor(Math.random() * 4),
-            doi: Math.random() > 0.3 ? `10.1234/example.${Date.now() + i}` : ''
-          };
+          if (doi) {
+            // Try CrossRef first
+            result = await queryCrossRef(doi, true);
+            
+            // If not found in CrossRef, try DataCite
+            if (!result) {
+              result = await queryDataCite(doi);
+            }
+          }
           
-          results.push(result);
+          // If no DOI or not found by DOI, try searching by title
+          if (!result) {
+            const parsedRef = parseReference(ref);
+            if (parsedRef.title) {
+              result = await queryCrossRef(parsedRef.title);
+            }
+          }
+          
+          // Format the result
+          if (result) {
+            const formattedResult = {
+              id: Date.now() + i,
+              input: ref,
+              status: 'found',
+              title: result.title?.[0] || result.title || 'Untitled',
+              journal: result['container-title']?.[0] || result.journal || 'Unknown',
+              year: result.created?.['date-parts']?.[0]?.[0] || result.year || '—',
+              doi: result.DOI || result.doi || '',
+              url: result.URL || result.url || (result.DOI ? `https://doi.org/${result.DOI}` : ''),
+              authors: result.author?.map(a => a.given ? `${a.given} ${a.family}`.trim() : a.name).join(', ') || 'Unknown'
+            };
+            
+            results.push(formattedResult);
+          } else {
+            // If not found, add as not found
+            const parsedRef = parseReference(ref);
+            results.push({
+              id: Date.now() + i,
+              input: ref,
+              status: 'not-found',
+              title: parsedRef.title || ref.substring(0, 100) + (ref.length > 100 ? '...' : ''),
+              journal: parsedRef.journal || '—',
+              year: parsedRef.year || '—',
+              doi: '',
+              url: '',
+              authors: '—'
+            });
+          }
+          
           renderResults();
           
         } catch (error) {
@@ -742,10 +874,15 @@
             title: 'Error processing reference',
             journal: '',
             year: '',
-            doi: ''
+            doi: '',
+            url: '',
+            authors: ''
           });
           renderResults();
         }
+        
+        // Add a small delay between API calls to avoid rate limiting
+        await new Promise(resolve => setTimeout(resolve, 200));
       }
       
       // Complete progress
@@ -760,7 +897,7 @@
       exportBibBtn.disabled = !hasResults;
       exportRisBtn.disabled = !hasResults;
       
-      showToast(`Processed ${references.length} references`, 'success');
+      showToast(`Processed ${references.length} references (${results.filter(r => r.status === 'found').length} found)`, 'success');
     }
     
     function renderResults() {
@@ -802,15 +939,25 @@
             break;
         }
         
+        // Format title with link if available
+        const titleDisplay = result.url 
+          ? `<a href="${result.url}" target="_blank" rel="noopener noreferrer" style="color: #4f46e5; text-decoration: none;">${result.title || 'Untitled'}</a>`
+          : (result.title || '—');
+        
+        // Format authors
+        const authors = result.authors || '—';
+        
         return `
           <tr data-status="${result.status}">
             <td>${index + 1}</td>
-            <td style="max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${result.input.replace(/"/g, '&quot;')}">
-              ${result.input.length > 50 ? result.input.substring(0, 50) + '...' : result.input}
+            <td style="max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${result.input.replace(/"/g, '&quot;')}">
+              ${result.input.length > 40 ? result.input.substring(0, 40) + '...' : result.input}
             </td>
             <td>${statusBadge}</td>
-            <td>${result.title || '—'}</td>
-            <td>${result.journal || '—'}</td>
+            <td style="max-width: 300px;">${titleDisplay}</td>
+            <td style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${(result.journal || '').replace(/"/g, '&quot;')}">
+              ${result.journal || '—'}
+            </td>
             <td>${result.year || '—'}</td>
             <td>${result.doi ? `<a href="https://doi.org/${result.doi}" target="_blank" rel="noopener noreferrer" style="color: #4f46e5; text-decoration: none; word-break: break-all;">${result.doi}</a>` : '—'}</td>
           </tr>
