@@ -1,12 +1,12 @@
 
 
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en" class="scroll-smooth" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Advanced Reference Checker | Validate & Format Academic References</title>
-  <meta name="description" content="Check and validate academic references with our advanced reference checker. Supports DOI, BibTeX, and manual entry. Export results to CSV.">
+  <meta name="description" content="Check and validate academic references with our advanced reference checker. Supports DOI, BibTeX, and manual entry. Export results to multiple formats.">
   <meta name="author" content="Rakshit Dogra">
   
   <!-- Favicon -->
@@ -14,6 +14,21 @@
   <meta name="theme-color" content="#4f46e5">
   <meta name="color-scheme" content="light dark">
   
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- jsPDF for PDF generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+  
+  <!-- SheetJS for XLS export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
   <style>
     /* Theme Variables */
     :root {
@@ -38,6 +53,22 @@
     }
 
     /* Dark Theme */
+    [data-theme="dark"] {
+      --primary-color: #818cf8;
+      --primary-hover: #a5b4fc;
+      --primary-light: #3730a3;
+      --background: #111827;
+      --surface: #1f2937;
+      --text: #f9fafb;
+      --text-light: #d1d5db;
+      --text-lighter: #9ca3af;
+      --border: #374151;
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+      --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
+    }
+
+    /* System preference for dark mode */
     @media (prefers-color-scheme: dark) {
       :root:not([data-theme="light"]) {
         --primary-color: #818cf8;
@@ -53,22 +84,6 @@
         --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
         --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
       }
-    }
-
-    /* Forced Dark Theme */
-    [data-theme="dark"] {
-      --primary-color: #818cf8;
-      --primary-hover: #a5b4fc;
-      --primary-light: #3730a3;
-      --background: #111827;
-      --surface: #1f2937;
-      --text: #f9fafb;
-      --text-light: #d1d5db;
-      --text-lighter: #9ca3af;
-      --border: #374151;
-      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
-      --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
-      --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
     }
 
     /* Forced Light Theme */
@@ -87,65 +102,171 @@
       --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
     }
     /* Base Styles */
-    @media (max-width: 640px) {
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      font-size: 16px;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      line-height: 1.6;
+      color: var(--text);
+      background-color: var(--background);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Typography */
+    h1, h2, h3, h4, h5, h6 {
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 1rem;
+      color: var(--text);
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    h2 {
+      font-size: 2rem;
+      margin: 2rem 0 1.25rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    p {
+      margin-bottom: 1rem;
+      color: var(--text-light);
+    }
+
+    a {
+      color: var(--primary-color);
+      text-decoration: none;
+      transition: var(--transition);
+    }
+
+    a:hover {
+      color: var(--primary-hover);
+      text-decoration: underline;
+    }
+
+    /* Layout */
+    .container {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.5rem 1rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      line-height: 1.5;
+      text-align: center;
+      text-decoration: none;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      user-select: none;
+      border: 1px solid transparent;
+      border-radius: var(--border-radius);
+      background-color: var(--primary-color);
+      color: white;
+      transition: var(--transition);
+    }
+
+    .btn:hover {
+      background-color: var(--primary-hover);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+      box-shadow: none;
+    }
+
+    .btn-outline {
+      background-color: transparent;
+      border: 1px solid var(--primary-color);
+      color: var(--primary-color);
+    }
+
+    .btn-outline:hover {
+      background-color: var(--primary-light);
+      color: var(--primary-color);
+    }
+
+    .btn-sm {
+      padding: 0.25rem 0.75rem;
+      font-size: 0.75rem;
+    }
+
+    .btn-lg {
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+    }
+
+    .btn-block {
+      display: block;
+      width: 100%;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      html {
+        font-size: 15px;
+      }
+      
+      h1 {
+        font-size: 2rem;
+      }
+      
+      h2 {
+        font-size: 1.75rem;
+      }
+      
+      .container {
+        padding: 0 1.25rem;
+      }
+    }
+
+    @media (max-width: 480px) {
       html {
         font-size: 14px;
       }
       
-      .container {
-        padding: 0 1rem;
-      }
-      
       h1 {
-        font-size: 1.75rem !important;
-        line-height: 1.2 !important;
+        font-size: 1.75rem;
       }
       
-      .hero {
-        padding: 3rem 1rem !important;
-      }
-      
-      .reference-checker-body {
-        padding: 1rem !important;
+      h2 {
+        font-size: 1.5rem;
       }
       
       .btn {
-        padding: 0.5rem 1rem !important;
-        font-size: 0.875rem !important;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.8125rem;
       }
       
       .btn-lg {
-        padding: 0.75rem 1.25rem !important;
-      }
-      
-      #reference-checker {
-        margin-bottom: 2rem !important;
-      }
-      
-      #resultsSection {
-        margin-top: 1.5rem !important;
-      }
-      
-      #resultsTable th,
-      #resultsTable td {
-        padding: 0.5rem !important;
-        font-size: 0.75rem !important;
-      }
-      
-      .status-badge {
-        font-size: 0.7rem !important;
-        padding: 0.15rem 0.4rem !important;
-      }
-      
-      footer {
-        padding: 2rem 1rem !important;
-      }
-      
-      #toast {
-        left: 1rem !important;
-        right: 1rem !important;
-        max-width: none !important;
-        bottom: 1rem !important;
+        padding: 0.625rem 1.25rem;
       }
     }
     
@@ -837,7 +958,11 @@
       'LeCun, Y., Bengio, Y., & Hinton, G. (2015). Deep learning. Nature, 521(7553), 436-444.',
       'This is an invalid reference that will show as not found'
     ];
-    
+
+    const CONTACT_EMAIL = 'rakshitdogra.work@gmail.com';
+    const CROSSREF_API_BASE = 'https://api.crossref.org/works';
+    const DATACITE_API_BASE = 'https://api.datacite.org/dois';
+
     // Cache for API responses to avoid duplicate requests
     const apiCache = new Map();
     
@@ -922,14 +1047,29 @@
     
     // API Functions
     async function queryCrossRef(query, isDOI = false) {
+      const cacheKey = `${isDOI ? 'doi' : 'search'}:${query}`;
+      if (apiCache.has(cacheKey)) {
+        return apiCache.get(cacheKey);
+      }
+
       try {
+        const params = new URLSearchParams();
+        if (isDOI) {
+          if (CONTACT_EMAIL) params.set('mailto', CONTACT_EMAIL);
+        } else {
+          params.set('query.bibliographic', query);
+          params.set('rows', '1');
+          if (CONTACT_EMAIL) params.set('mailto', CONTACT_EMAIL);
+        }
+
+        const queryString = params.toString();
         const url = isDOI 
-          ? `https://api.crossref.org/works/${encodeURIComponent(query)}`
-          : `https://api.crossref.org/works?query=${encodeURIComponent(query)}&rows=1`;
+          ? `${CROSSREF_API_BASE}/${encodeURIComponent(query)}${queryString ? `?${queryString}` : ''}`
+          : `${CROSSREF_API_BASE}?${queryString}`;
         
         const response = await fetch(url, {
           headers: {
-            'User-Agent': 'ReferenceChecker/1.0 (mailto:rakshitdogra.work@gmail.com)'
+            'Accept': 'application/json'
           }
         });
         
@@ -939,22 +1079,31 @@
         
         const data = await response.json();
         
+        let message = null;
+
         if (isDOI) {
-          return data.message;
+          message = data.message || null;
         } else if (data.message.items && data.message.items.length > 0) {
-          return data.message.items[0];
+          message = data.message.items[0];
         }
-        
-        return null;
+
+        apiCache.set(cacheKey, message);
+        return message;
       } catch (error) {
         console.error('Error querying CrossRef:', error);
+        apiCache.set(cacheKey, null);
         return null;
       }
     }
-    
+
     async function queryDataCite(doi) {
+      const cacheKey = `datacite:${doi}`;
+      if (apiCache.has(cacheKey)) {
+        return apiCache.get(cacheKey);
+      }
+
       try {
-        const response = await fetch(`https://api.datacite.org/dois/${encodeURIComponent(doi)}`, {
+        const response = await fetch(`${DATACITE_API_BASE}/${encodeURIComponent(doi)}`, {
           headers: {
             'Accept': 'application/vnd.api+json'
           }
@@ -968,20 +1117,24 @@
         
         if (data.data) {
           const attr = data.data.attributes;
-          return {
+          const normalized = {
             title: attr.titles?.[0]?.title || 'Untitled',
-            authors: attr.creators?.map(c => c.name || `${c.givenName} ${c.familyName}`.trim()).join(', ') || 'Unknown',
+            authors: attr.creators?.map(c => c.name || `${(c.givenName || '').trim()} ${(c.familyName || '').trim()}`.trim()).filter(Boolean).join(', ') || 'Unknown',
             journal: attr.publisher || 'Unknown',
             year: attr.publicationYear || new Date().getFullYear(),
             doi: attr.doi,
             url: attr.url || `https://doi.org/${attr.doi}`,
             type: attr.types?.resourceTypeGeneral || 'Article'
           };
+          apiCache.set(cacheKey, normalized);
+          return normalized;
         }
-        
+
+        apiCache.set(cacheKey, null);
         return null;
       } catch (error) {
         console.error('Error querying DataCite:', error);
+        apiCache.set(cacheKey, null);
         return null;
       }
     }
@@ -1518,4 +1671,3 @@ ER  -`;
   </script>
 </body>
 </html>
--->
