@@ -27,78 +27,14 @@
   <!-- SheetJS for XLS export -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
+  <!-- Glassmorphic CSS -->
+  <link rel="stylesheet" href="glassmorphic.css">
+  <!-- Main CSS -->
+  <link rel="stylesheet" href="styles.css">
+  <!-- Glassmorphic CSS -->
+  <link rel="stylesheet" href="glassmorphic.css">
+    
   <style>
-    /* Theme Variables */
-    :root {
-      --primary-color: #4f46e5;
-      --primary-hover: #4338ca;
-      --primary-light: #e0e7ff;
-      --background: #f9fafb;
-      --surface: #ffffff;
-      --text: #111827;
-      --text-light: #4b5563;
-      --text-lighter: #6b7280;
-      --border: #e5e7eb;
-      --success: #10b981;
-      --error: #ef4444;
-      --warning: #f59e0b;
-      --info: #3b82f6;
-      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-      --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-      --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-      --border-radius: 12px;
-      --transition: all 0.2s ease-in-out;
-    }
-
-    /* Dark Theme */
-    [data-theme="dark"] {
-      --primary-color: #818cf8;
-      --primary-hover: #a5b4fc;
-      --primary-light: #3730a3;
-      --background: #111827;
-      --surface: #1f2937;
-      --text: #f9fafb;
-      --text-light: #d1d5db;
-      --text-lighter: #9ca3af;
-      --border: #374151;
-      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
-      --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
-      --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
-    }
-
-    /* System preference for dark mode */
-    @media (prefers-color-scheme: dark) {
-      :root:not([data-theme="light"]) {
-        --primary-color: #818cf8;
-        --primary-hover: #a5b4fc;
-        --primary-light: #3730a3;
-        --background: #111827;
-        --surface: #1f2937;
-        --text: #f9fafb;
-        --text-light: #d1d5db;
-        --text-lighter: #9ca3af;
-        --border: #374151;
-        --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
-        --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
-        --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
-      }
-    }
-
-    /* Forced Light Theme */
-    [data-theme="light"] {
-      --primary-color: #4f46e5;
-      --primary-hover: #4338ca;
-      --primary-light: #e0e7ff;
-      --background: #f9fafb;
-      --surface: #ffffff;
-      --text: #111827;
-      --text-light: #4b5563;
-      --text-lighter: #6b7280;
-      --border: #e5e7eb;
-      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-      --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-      --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-    }
     /* Base Styles */
     * {
       box-sizing: border-box;
@@ -268,24 +204,48 @@
       }
     }
     
+    /* Theme Variables */
     :root {
-      --primary-color: #4f46e5;
-      --primary-hover: #4338ca;
-      --primary-light: #e0e7ff;
-      --background: #f9fafb;
-      --surface: #ffffff;
-      --text: #111827;
-      --text-light: #4b5563;
-      --text-lighter: #6b7280;
-      --border: #e5e7eb;
-      --success: #10b981;
-      --error: #ef4444;
-      --warning: #f59e0b;
-      --info: #3b82f6;
-      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-      --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-      --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-      --border-radius: 12px;
+      /* Light Theme Colors */
+      --primary-color: #2563eb;      /* More vibrant blue */
+      --primary-hover: #1d4ed8;     /* Slightly darker blue on hover */
+      --primary-light: #dbeafe;     /* Lighter blue for backgrounds */
+      --primary-dark: #1e40af;      /* Darker blue for active states */
+      
+      /* Base Colors */
+      --background: #f8fafc;        /* Slightly off-white */
+      --surface: #ffffff;           /* Pure white for cards/surfaces */
+      --surface-elevated: #ffffff;  /* For elevated surfaces */
+      
+      /* Text Colors */
+      --text: #1e293b;              /* Dark gray for primary text */
+      --text-secondary: #475569;    /* Slightly lighter gray */
+      --text-tertiary: #64748b;     /* Even lighter for subtle text */
+      
+      /* UI Colors */
+      --border: #e2e8f0;            /* Light border color */
+      --border-hover: #cbd5e1;      /* Slightly darker on hover */
+      --divider: #f1f5f9;           /* Very light for subtle dividers */
+      
+      /* Status Colors */
+      --success: #10b981;           /* Green */
+      --success-light: #d1fae5;     /* Light green background */
+      --error: #ef4444;             /* Red */
+      --error-light: #fee2e2;       /* Light red background */
+      --warning: #f59e0b;           /* Amber */
+      --warning-light: #fef3c7;     /* Light amber background */
+      --info: #3b82f6;              /* Blue */
+      --info-light: #dbeafe;        /* Light blue background */
+      
+      /* Shadows */
+      --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+      --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+      
+      /* Other */
+      --border-radius: 0.5rem;
+      --border-radius-lg: 0.75rem;
       --transition: all 0.2s ease-in-out;
     }
 
@@ -311,16 +271,40 @@
     }
 
     /* Responsive Table */
-    @media (max-width: 768px) {
+    @media (max-width: 1024px) {
       .results-table-container {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
         margin: 0 -1rem;
         padding: 0 1rem;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
       }
       
       .results-table {
-        min-width: 600px;
+        min-width: 800px;
+        font-size: 0.8125rem;
+      }
+      
+      .results-table th,
+      .results-table td {
+        padding: 0.75rem;
+      }
+      
+      /* Make the first column sticky */
+      .results-table th:first-child,
+      .results-table td:first-child {
+        position: sticky;
+        left: 0;
+        z-index: 1;
+        background: var(--glass-bg);
+      }
+      
+      /* Add subtle border between rows */
+      .results-table tr {
+        border-bottom: 1px solid var(--border);
+      }
+      
+      .results-table tr:last-child {
+        border-bottom: none;
       }
       
       .reference-checker {
@@ -348,6 +332,10 @@
       background: var(--surface);
       box-shadow: var(--shadow);
       position: sticky;
+      z-index: 1000;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
       top: 0;
       z-index: 50;
       transition: var(--transition);
@@ -471,7 +459,7 @@
     }
     
     [data-theme="dark"] .hero {
-      background: linear-gradient(135deg, #1e1b4b 0%, #2e1065 100%);
+      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
     }
 
     @media (min-width: 768px) {
@@ -542,6 +530,11 @@
     .status-found {
       background: rgba(16, 185, 129, 0.1);
       color: var(--success);
+      border-radius: 4px;
+      padding: 0.25rem 0.5rem;
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 500;
     }
 
     .status-not-found {
@@ -550,11 +543,36 @@
     }
     
     [data-theme="dark"] .status-found {
-      background: rgba(16, 185, 129, 0.2);
+      background: rgba(52, 211, 153, 0.15);
+      color: #4ade80;
     }
-    
+
     [data-theme="dark"] .status-not-found {
-      background: rgba(239, 68, 68, 0.2);
+      background: rgba(248, 113, 113, 0.15);
+      color: #f87171;
+    }
+
+    [data-theme="dark"] .status-error {
+      background: rgba(251, 146, 60, 0.15);
+      color: #fb923c;
+    }
+
+    /* Dark mode scrollbar */
+    [data-theme="dark"] ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    [data-theme="dark"] ::-webkit-scrollbar-track {
+      background: #1e293b;
+    }
+
+    [data-theme="dark"] ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+
+    [data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
     }
 
     /* Footer */
@@ -601,6 +619,123 @@
       }
     }
   </style>
+  <style>
+    /* Additional interactive styles */
+    #fileUploadLabel:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+    }
+    
+    #fileUploadLabel:hover i {
+      transform: scale(1.1);
+    }
+    
+    /* Button group styles */
+    .btn-group {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-top: 1.5rem;
+    }
+    
+    /* Toast notification */
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: var(--glass-bg);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border: var(--glass-border);
+      border-radius: 12px;
+      padding: 1rem 1.5rem;
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      z-index: 1000;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s ease;
+    }
+    
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    
+    .toast i {
+      font-size: 1.25rem;
+    }
+    
+    .toast.success i { color: var(--success); }
+    .toast.error i { color: var(--error); }
+    .toast.warning i { color: var(--warning); }
+    .toast.info i { color: var(--info); }
+    
+    /* Export button styles */
+    .export-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.25rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      min-width: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .export-btn:hover {
+      background: var(--primary-light);
+      border-color: var(--primary-color);
+      transform: translateY(-1px);
+    }
+    
+    .export-btn:active {
+      transform: translateY(0);
+    }
+    
+    .export-btn i {
+      font-size: 0.875rem;
+    }
+    
+    .export-btn .btn-text {
+      font-size: 0.6875rem;
+      font-weight: 500;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .container {
+        padding: 0 1.25rem;
+      }
+      
+      .btn-group {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 0.5rem !important;
+      }
+      
+      .export-btn {
+        min-height: 2.25rem !important;
+        padding: 0.375rem 0.25rem !important;
+      }
+      
+      .export-btn i {
+        font-size: 0.75rem;
+      }
+      
+      .export-btn .btn-text {
+        font-size: 0.625rem;
+      }
+    }
+  </style>
   
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -617,14 +752,19 @@
   <!-- SheetJS for XLS export -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
-  <body style="background-color: var(--background); color: var(--text); transition: background-color 0.3s ease, color 0.3s ease;">
+  <body>
+  <!-- Background Blur Elements -->
+  <div class="background-blur">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+  </div>
   <!-- Navigation -->
     <nav>
       <div class="container">
-        <div class="nav-inner" style="display: flex; align-items: center; justify-content: space-between; height: 4rem;">
-          <div class="nav-logo" style="display: flex; align-items: center; gap: 0.75rem;">
-            <i class="fas fa-search" style="color: var(--primary-color); font-size: 1.25rem;"></i>
-            <span style="font-weight: 700; font-size: 1.25rem; background: linear-gradient(90deg, var(--primary-color), #7c3aed); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">RefCheck</span>
+        <div class="nav-inner">
+          <div class="nav-logo">
+            <i class="fas fa-book-open"></i>
+            <span>RefCheck</span>
           </div>
           <div class="nav-actions" style="display: flex; align-items: center; gap: 1rem;">
             <button id="themeToggle" class="theme-toggle" aria-label="Toggle dark mode" style="margin-left: 1rem;">
@@ -642,53 +782,86 @@
       <div style="max-width: 48rem; margin: 0 auto;">
         <div style="display: inline-flex; align-items: center; padding: 0.5rem 1rem; border-radius: 9999px; background: var(--primary-light); color: var(--primary-hover); font-size: 0.875rem; font-weight: 500; margin-bottom: 1.5rem;">
           <span style="width: 0.5rem; height: 0.5rem; border-radius: 50%; background: var(--primary-color); margin-right: 0.5rem;"></span>
-          Now with more advance reference validation
+          The only tool you need
         </div>
         <h1 style="font-size: 2.25rem; font-weight: 800; color: var(--text); margin-bottom: 1.5rem; line-height: 1.2;">
           Validate & Format Academic References in Seconds
         </h1>
         <p style="font-size: 1.25rem; color: var(--text-light); margin-bottom: 2rem; max-width: 42rem; margin-left: auto; margin-right: auto; line-height: 1.6;">
-          Check references, format citations, and export results with our powerful reference checker. Perfect for researchers, students, and academics.
+          Check references, format citations, and export results with our powerful reference checker. Perfect for researchers and students.
         </p>
         <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; margin-bottom: 2rem;">
           <a href="#reference-checker" class="btn btn-primary" style="padding: 0.75rem 1.5rem; font-size: 1.125rem;">
             <i class="fas fa-play-circle mr-2"></i> Try It Now
           </a>
-        </div>
-      </div>
-      
-      <div style="max-width: 64rem; margin: 4rem auto 0; background: var(--surface); border-radius: 1rem; box-shadow: var(--shadow-lg);">
-        <div style="height: 0.5rem; background: linear-gradient(90deg, var(--primary-color), #7c3aed);"></div>
-        <div style="padding: 1.5rem;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-            <div style="display: flex; gap: 0.5rem;">
-              <span style="width: 0.75rem; height: 0.75rem; border-radius: 50%; background: var(--error);"></span>
-              <span style="width: 0.75rem; height: 0.75rem; border-radius: 50%; background: var(--warning);"></span>
-              <span style="width: 0.75rem; height: 0.75rem; border-radius: 50%; background: var(--success);"></span>
+          
+          <!-- Scroll Indicator -->
+          <div class="scroll-indicator" style="text-align: center; margin-top: 2rem; cursor: pointer; animation: fadeInUp 1s ease-out;">
+            <div class="scroll-text" style="color: var(--text-light); font-size: 0.875rem; margin-bottom: 0.5rem; opacity: 0; animation: fadeIn 1s ease-out 0.5s forwards;">Scroll to explore</div>
+            <div class="scroll-arrow" style="width: 30px; height: 48px; margin: 0 auto; border: 2px solid var(--primary-color); border-radius: 15px; position: relative;">
+              <div class="arrow" style="position: absolute; top: 8px; left: 50%; transform: translateX(-50%); width: 4px; height: 8px; background: var(--primary-color); border-radius: 2px; animation: bounce 2s infinite;"></div>
             </div>
-            <div style="font-size: 0.875rem; color: var(--text-lighter);">reference-checker.js</div>
           </div>
-          <div style="background: var(--background); padding: 1rem; border-radius: 0.5rem; font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace; font-size: 0.875rem; color: var(--text); overflow-x: auto; border: 1px solid var(--border);">
-            <div style="margin-bottom: 0.5rem;"><span style="color: var(--primary-color);">const</span> <span style="color: var(--primary-hover);">references</span> = [</div>
-            <div style="margin-left: 1rem; margin-bottom: 0.5rem;"><span style="color: var(--warning);">'Smith, J. (2020). Title of the paper. Journal Name, 15(3), 123-145.'</span>,</div>
-            <div style="margin-left: 1rem; margin-bottom: 0.5rem;"><span style="color: var(--warning);">'10.1234/example.doi.2020'</span>,</div>
-            <div style="margin-left: 1rem;"><span style="color: var(--warning);">'Doe, A. B. (2021). Another interesting study. Nature, 592(7855), 590-596.'</span></div>
-            <div>];</div>
-            <div style="margin-top: 1rem; color: var(--success);">// Click 'Check References' to validate and format</div>
-          </div>
+          
+          <style>
+            @keyframes bounce {
+              0%, 20%, 50%, 80%, 100% { transform: translateY(0) translateX(-50%); }
+              40% { transform: translateY(-10px) translateX(-50%); }
+              60% { transform: translateY(-5px) translateX(-50%); }
+            }
+            
+            @keyframes fadeIn {
+              from { opacity: 0; }
+              to { opacity: 1; }
+            }
+            
+            @keyframes fadeInUp {
+              from { 
+                opacity: 0;
+                transform: translateY(10px);
+              }
+              to {
+                opacity: 1;
+                transform: translateY(0);
+              }
+            }
+            
+            .scroll-arrow:hover .arrow {
+              animation: none;
+              transform: translateY(5px) translateX(-50%);
+              transition: transform 0.3s ease;
+            }
+            
+            .scroll-indicator:hover .scroll-text {
+              color: var(--primary-color);
+              transition: color 0.3s ease;
+            }
+          </style>
+          
+          <script>
+            document.addEventListener('DOMContentLoaded', function() {
+              const scrollIndicator = document.querySelector('.scroll-indicator');
+              if (scrollIndicator) {
+                scrollIndicator.addEventListener('click', function() {
+                  document.querySelector('#reference-checker').scrollIntoView({ 
+                    behavior: 'smooth' 
+                  });
+                });
+              }
+            });
+          </script>
         </div>
       </div>
     </div>
   </header>
 
-  <main class="container" style="padding: 3rem 1rem;">
+  <main class="container" style="padding: 2rem 1rem;">
     <!-- Reference Checker Section -->
-    <section id="reference-checker" style="margin-bottom: 5rem;">
-      <div class="reference-checker">
-        <div class="reference-checker-header"></div>
+    <section id="reference-checker" style="margin-bottom: 3rem;">
+      <div class="glass-card fade-in" style="margin-top: 2rem;">
         <div class="reference-checker-body">
-          <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--text); margin-bottom: 1.5rem; display: flex; align-items: center;">
-            <i class="fas fa-search mr-2" style="color: var(--primary-color);"></i> Check Your References
+          <h2 style="font-size: 1.75rem; font-weight: 700; color: var(--text); margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between;">
+            <span><i class="fas fa-search mr-3" style="color: var(--primary-color);"></i> Check Your References</span>
           </h2>
           
           <div style="margin-bottom: 1.5rem;">
@@ -706,39 +879,43 @@
             </div>
           </div>
           
-          <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.5rem;">
-            <div style="position: relative; flex: 1; min-width: 200px;">
-              <label for="fileUpload" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1.25rem; border: 2px dashed var(--border); border-radius: 0.5rem; background: var(--background); cursor: pointer; text-align: center; transition: all 0.2s; min-height: 120px;">
-                <i class="fas fa-cloud-upload-alt text-2xl mb-2" style="color: var(--primary-color);"></i>
-                <span style="font-weight: 500; color: var(--text-light); font-size: 0.9375rem;">Drop files or click to upload</span>
-                <span style="font-size: 0.75rem; color: var(--text-lighter); margin-top: 0.25rem;">.txt, .csv, .bib</span>
-                <input type="file" id="fileUpload" accept=".txt,.csv,.bib" style="position: absolute; width: 0.1px; height: 0.1px; opacity: 0; overflow: hidden; z-index: -1;">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+            <div class="glass-card" style="padding: 1.5rem; transition: all 0.3s ease; cursor: pointer;" id="fileUploadLabel">
+              <label for="fileUpload" style="display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; text-align: center; min-height: 160px; width: 100%;">
+                <div style="width: 60px; height: 60px; background: var(--primary-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem; transition: all 0.3s ease;">
+                  <i class="fas fa-cloud-upload-alt text-2xl" style="color: var(--primary-color);"></i>
+                </div>
+                <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--text); margin-bottom: 0.5rem;">Upload References</h3>
+                <p style="color: var(--text-light); font-size: 0.9375rem; margin-bottom: 1rem;">Drop files or click to upload</p>
+                <span style="font-size: 0.8125rem; color: var(--text-lighter);">Upload a text file with one reference per line</span>
+                <span style="font-size: 0.75rem; color: var(--text-lighter); margin-top: 0.25rem;">.txt only</span>
+                <input type="file" id="fileUpload" accept=".txt" style="position: absolute; width: 0.1px; height: 0.1px; opacity: 0; overflow: hidden; z-index: -1;">
               </label>
             </div>
             
             <div style="display: flex; flex-direction: column; gap: 0.75rem; min-width: 0; width: 100%;">
               <button id="checkBtn" class="btn btn-primary" style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 0.75rem 1rem; font-weight: 500; font-size: 0.9375rem; width: 100%;">
-                <i class="fas fa-check-circle mr-2"></i> Check References
+                <i class="fas fa-check-circle mr-2"></i>‎ Check References
               </button>
-              <p>Export Results</p>
-              <div class="btn-group" style="display: flex; gap: 0.5rem; width: 100%; flex-wrap: wrap;">
-                <button id="exportTxtBtn" class="btn btn-outline" style="flex: 1; min-width: 80px; padding: 0.5rem 0.75rem; font-size: 0.8125rem;" disabled>
-                  <i class="fas fa-file-alt mr-1"></i> <span class="btn-text">TXT</span>
+              <p style="margin-bottom: 0.5rem; font-size: 0.875rem; color: var(--text-light);">Export Results</p>
+              <div class="btn-group" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; width: 100%;">
+                <button id="exportTxtBtn" class="export-btn" style="padding: 0.5rem 0.25rem; font-size: 0.75rem; min-height: 2.5rem;" disabled>
+                  <i class="fas fa-file-alt"></i> <span class="btn-text">TXT</span>
                 </button>
-                <button id="exportCsvBtn" class="btn btn-outline" style="flex: 1; min-width: 80px; padding: 0.5rem 0.75rem; font-size: 0.8125rem;" disabled>
-                  <i class="fas fa-file-csv mr-1"></i> <span class="btn-text">CSV</span>
+                <button id="exportCsvBtn" class="export-btn" style="padding: 0.5rem 0.25rem; font-size: 0.75rem; min-height: 2.5rem;" disabled>
+                  <i class="fas fa-file-csv"></i> <span class="btn-text">CSV</span>
                 </button>
-                <button id="exportBibBtn" class="btn btn-outline" style="flex: 1; min-width: 80px; padding: 0.5rem 0.75rem; font-size: 0.8125rem;" disabled>
-                  <i class="fas fa-book mr-1"></i> <span class="btn-text">BibTeX</span>
+                <button id="exportBibBtn" class="export-btn" style="padding: 0.5rem 0.25rem; font-size: 0.75rem; min-height: 2.5rem;" disabled>
+                  <i class="fas fa-book"></i> <span class="btn-text">BibTeX</span>
                 </button>
-                <button id="exportRisBtn" class="btn btn-outline" style="flex: 1; min-width: 80px; padding: 0.5rem 0.75rem; font-size: 0.8125rem;" disabled>
-                  <i class="fas fa-file-export mr-1"></i> <span class="btn-text">RIS</span>
+                <button id="exportRisBtn" class="export-btn" style="padding: 0.5rem 0.25rem; font-size: 0.75rem; min-height: 2.5rem;" disabled>
+                  <i class="fas fa-file-export"></i> <span class="btn-text">RIS</span>
                 </button>
-                <button id="exportXlsBtn" class="btn btn-outline" style="flex: 1; min-width: 80px; padding: 0.5rem 0.75rem; font-size: 0.8125rem;" title="Export to Excel">
-                  <i class="fas fa-file-excel mr-1"></i> <span class="btn-text">XLS</span>
+                <button id="exportXlsBtn" class="export-btn" style="padding: 0.5rem 0.25rem; font-size: 0.75rem; min-height: 2.5rem;" title="Export to Excel">
+                  <i class="fas fa-file-excel"></i> <span class="btn-text">XLS</span>
                 </button>
-                <button id="exportPdfBtn" class="btn btn-outline" style="flex: 1; min-width: 80px; padding: 0.5rem 0.75rem; font-size: 0.8125rem; background: var(--primary-color); color: white; border-color: var(--primary-color);" title="Export to PDF">
-                  <i class="fas fa-file-pdf mr-1"></i> <span class="btn-text">PDF</span>
+                <button id="exportPdfBtn" class="export-btn" style="padding: 0.5rem 0.25rem; font-size: 0.75rem; min-height: 2.5rem; background: var(--primary-color); color: white; border-color: var(--primary-color);" title="Export to PDF">
+                  <i class="fas fa-file-pdf"></i> <span class="btn-text">PDF</span>
                 </button>
               </div>
             </div>
@@ -771,25 +948,28 @@
             </div>
           </div>
           
-          <div class="results-table-container">
-            <div style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
-              <table id="resultsTable" class="results-table" style="min-width: 800px;">
+          <div class="results-table-container" style="margin: 0 -1rem; padding: 0 1rem;">
+            <div style="overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 12px; background: var(--glass-bg); backdrop-filter: var(--glass-blur); border: var(--glass-border);">
+              <table id="resultsTable" class="results-table" style="width: 100%; min-width: 800px; border-collapse: separate; border-spacing: 0; background: var(--bg-secondary);">
                 <thead>
                   <tr>
-                    <th style="width: 3rem;">#</th>
-                    <th>Input</th>
-                    <th style="width: 8rem;">Status</th>
-                    <th>Title</th>
-                    <th>Journal/Source</th>
-                    <th style="width: 6rem;">Year</th>
-                    <th style="width: 10rem;">DOI</th>
-                    <th style="width: 8rem;">URL</th>
+                    <th style="padding: 1rem; text-align: left; font-weight: 600; color: var(--text); background: var(--glass-bg); position: sticky; left: 0; min-width: 3rem; max-width: 3rem;">#</th>
+                    <th style="padding: 1rem; text-align: left; font-weight: 600; color: var(--text); background: var(--glass-bg); min-width: 200px; max-width: 200px;">Input</th>
+                    <th style="padding: 1rem; text-align: left; font-weight: 600; color: var(--text); background: var(--glass-bg); min-width: 8rem; max-width: 8rem;">Status</th>
+                    <th style="padding: 1rem; text-align: left; font-weight: 600; color: var(--text); background: var(--glass-bg); min-width: 200px;">Title</th>
+                    <th style="padding: 1rem; text-align: left; font-weight: 600; color: var(--text); background: var(--glass-bg); min-width: 200px;">Journal/Source</th>
+                    <th style="padding: 1rem; text-align: left; font-weight: 600; color: var(--text); background: var(--glass-bg); min-width: 6rem; max-width: 6rem;">Year</th>
+                    <th style="padding: 1rem; text-align: left; font-weight: 600; color: var(--text); background: var(--glass-bg); min-width: 10rem;">DOI</th>
+                    <th style="padding: 1rem; text-align: left; font-weight: 600; color: var(--text); background: var(--glass-bg); min-width: 8rem;">URL</th>
                   </tr>
                 </thead>
-                <tbody id="resultsBody">
+                <tbody id="resultsBody" style="font-size: 0.875rem;">
                   <!-- Results will be inserted here by JavaScript -->
                 </tbody>
               </table>
+            </div>
+            <div style="text-align: center; margin-top: 0.5rem; font-size: 0.75rem; color: var(--text-lighter);">
+              <i class="fas fa-arrows-alt-h"></i> Scroll horizontally to view all columns
             </div>
           </div>
           
@@ -802,14 +982,14 @@
     </section>
   </main>
 
-  <footer>
-    <div class="footer-content">
-      <div style="text-align: center; margin-bottom: 2rem;">
+  <footer style="margin-top: auto; padding: 2rem 0;">
+    <div class="container">
+      <div class="glass-card" style="padding: 2rem; text-align: center;">
         <div style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem; color: var(--text);">
           Advanced Reference Checker
         </div>
         <p style="color: var(--text-lighter); max-width: 42rem; margin: 0 auto 1.5rem; line-height: 1.6;">
-          A powerful tool for researchers, students, and academics to validate, format, and manage academic references with ease.
+          A powerful tool for researchers and students to validate, format, and manage academic references with ease.
         </p>
         <div style="display: flex; justify-content: center; gap: 1rem; margin-bottom: 2rem;">
           <a href="https://github.com/rakshitdogra" style="color: var(--text); background: var(--background); width: 2.5rem; height: 2.5rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.2s;" title="GitHub" target="_blank" rel="noopener noreferrer">
@@ -996,6 +1176,7 @@
     
     // Export buttons
     exportCsvBtn.addEventListener('click', exportToCsv);
+    exportTxtBtn.addEventListener('click', exportToTxt);
     exportBibBtn.addEventListener('click', exportToBibtex);
     exportRisBtn.addEventListener('click', exportToRis);
     exportPdfBtn.addEventListener('click', generatePdfReport);
@@ -1278,6 +1459,7 @@
       
       // Enable export buttons if we have results
       const hasResults = results.some(r => r.status === 'found');
+      exportTxtBtn.disabled = !hasResults;
       exportCsvBtn.disabled = !hasResults;
       exportBibBtn.disabled = !hasResults;
       exportRisBtn.disabled = !hasResults;
@@ -1366,6 +1548,7 @@
       results = [];
       renderResults();
       resultsSection.style.display = 'none';
+      exportTxtBtn.disabled = true;
       exportCsvBtn.disabled = true;
       exportBibBtn.disabled = true;
       exportRisBtn.disabled = true;
@@ -1380,15 +1563,39 @@
     async function handleFileUpload(event) {
       const file = event.target.files[0];
       if (!file) return;
-      
-      try {
-        const content = await readFileAsText(file);
-        referencesTextarea.value = content;
-        showToast(`Loaded ${file.name}`, 'success');
-      } catch (error) {
-        console.error('Error reading file:', error);
-        showToast('Error reading file', 'error');
+
+      // Check file type
+      if (!file.name.endsWith('.txt')) {
+        showToast('Please upload a .txt file', 'error');
+        return;
       }
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const content = e.target.result;
+          // Split by new lines and filter out empty lines
+          const lines = content.split(/\r?\n/).filter(line => line.trim() !== '');
+          
+          if (lines.length === 0) {
+            showToast('The file is empty', 'warning');
+            return;
+          }
+          
+          // Join with newlines to maintain formatting
+          document.getElementById('references').value = lines.join('\n');
+          showToast(`Loaded ${lines.length} references from file`, 'success');
+        } catch (error) {
+          console.error('Error processing file:', error);
+          showToast('Error processing the file', 'error');
+        }
+      };
+      
+      reader.onerror = function() {
+        showToast('Error reading the file', 'error');
+      };
+      
+      reader.readAsText(file);
     }
     
     function readFileAsText(file) {
@@ -1462,6 +1669,82 @@ ER  -`;
       showToast('Exported to RIS', 'success');
     }
     
+    function exportToTxt() {
+      if (!results || results.length === 0) {
+        showToast('No results to export', 'error');
+        return;
+      }
+
+      let txtContent = `Reference Checker Report\n`;
+      txtContent += `Generated on: ${new Date().toLocaleString()}\n\n`;
+      txtContent += '='.repeat(80) + '\n\n';
+
+      // Add summary
+      const foundCount = results.filter(r => r.status === 'found').length;
+      const notFoundCount = results.filter(r => r.status === 'not-found').length;
+      const errorCount = results.filter(r => r.status === 'error').length;
+
+      txtContent += 'SUMMARY\n';
+      txtContent += '='.repeat(80) + '\n';
+      txtContent += `Total References: ${results.length}\n`;
+      txtContent += `Found: ${foundCount}\n`;
+      txtContent += `Not Found: ${notFoundCount}\n`;
+      txtContent += `Errors: ${errorCount}\n\n`;
+
+      // Add references
+      txtContent += 'REFERENCES\n';
+      txtContent += '='.repeat(80) + '\n\n';
+
+      results.forEach((result, index) => {
+        txtContent += `[${index + 1}] ${result.title || 'No title available'}\n`;
+        if (result.authors) txtContent += `Authors: ${result.authors}\n`;
+        if (result.journal) txtContent += `Journal: ${result.journal}\n`;
+        if (result.year) txtContent += `Year: ${result.year}\n`;
+        if (result.volume) txtContent += `Volume: ${result.volume}\n`;
+        if (result.issue) txtContent += `Issue: ${result.issue}\n`;
+        if (result.pages) txtContent += `Pages: ${result.pages}\n`;
+        if (result.doi) txtContent += `DOI: ${result.doi}\n`;
+        if (result.url) txtContent += `URL: ${result.url}\n`;
+        
+        // Status with emoji
+        let status = '';
+        switch(result.status) {
+          case 'found':
+            status = '✅ Found';
+            break;
+          case 'not-found':
+            status = '❌ Not Found';
+            break;
+          case 'error':
+            status = '⚠️ Error';
+            break;
+          default:
+            status = '❓ Unknown';
+        }
+        txtContent += `Status: ${status}\n`;
+        
+        // Add original input
+        if (result.original) {
+          txtContent += `\nOriginal: ${result.original}\n`;
+        }
+        
+        txtContent += '\n' + '─'.repeat(80) + '\n\n';
+      });
+
+      // Create and trigger download
+      const blob = new Blob([txtContent], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `references-${new Date().toISOString().split('T')[0]}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      showToast('Exported to TXT', 'success');
+    }
+    
     function exportToXls() {
       if (!results || results.length === 0) {
         showToast('No results to export', 'error');
@@ -1506,106 +1789,162 @@ ER  -`;
         return;
       }
 
-      // Create a new PDF document
-      const doc = new jsPDF();
+      // Create a new PDF document with landscape orientation
+      const doc = new jsPDF('l');
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
       
-      // Add title
-      doc.setFontSize(20);
-      doc.setTextColor(40, 62, 80);
-      doc.text('Reference Checker Report', 14, 22);
+      // Set default font
+      doc.setFont('helvetica');
       
-      // Add date
+      // Add header with title and date
+      doc.setFontSize(18);
+      doc.setTextColor(31, 41, 55);
+      doc.text('Reference Checker Report', 20, 25);
+      
       doc.setFontSize(10);
-      doc.setTextColor(100);
-      doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 30);
+      doc.setTextColor(107, 114, 128);
+      doc.text(`Generated on ${new Date().toLocaleString()}`, 20, 32);
+      doc.circle(50, pageHeight - 80, 40, 'F');
       
-      // Add summary
+      // Add summary section
+      doc.setFontSize(12);
+      doc.setTextColor(31, 41, 55);
+      doc.text('Summary', 20, 45);
+      
       const foundCount = results.filter(r => r.status === 'found').length;
       const notFoundCount = results.filter(r => r.status === 'not-found').length;
       const errorCount = results.filter(r => r.status === 'error').length;
       
-      doc.setFontSize(12);
-      doc.setTextColor(40, 62, 80);
-      doc.text('Summary', 14, 45);
-      
       doc.setFontSize(10);
-      doc.text(`Total References: ${results.length}`, 20, 55);
-      doc.setTextColor(34, 197, 94);
-      doc.text(`✓ Found: ${foundCount}`, 20, 62);
-      doc.setTextColor(239, 68, 68);
-      doc.text(`✗ Not Found: ${notFoundCount}`, 20, 69);
-      doc.setTextColor(245, 158, 11);
-      doc.text(`⚠ Errors: ${errorCount}`, 20, 76);
+      doc.setTextColor(55, 65, 81);
+      doc.text(`• Total References: ${results.length}`, 25, 55);
+      doc.text(`• Found: ${foundCount}`, 25, 62);
+      doc.text(`• Not Found: ${notFoundCount}`, 25, 69);
+      doc.text(`• Errors: ${errorCount}`, 25, 76);
       
       // Add table headers
-      const headers = [['#', 'Title', 'Authors', 'Journal', 'Year', 'Status', 'DOI']];
-      const data = [];
+      const headers = [
+        {header: '#', dataKey: 'index'},
+        {header: 'Title', dataKey: 'title'},
+        {header: 'Authors', dataKey: 'authors'},
+        {header: 'Journal', dataKey: 'journal'},
+        {header: 'Year', dataKey: 'year'},
+        {header: 'Status', dataKey: 'status'},
+        {header: 'DOI', dataKey: 'doi'}
+      ];
       
-      // Add table data with truncated text
-      results.forEach((result, index) => {
-        const row = [
-          (index + 1).toString(),
-          (result.title || '—').substring(0, 60) + (result.title && result.title.length > 60 ? '...' : ''),
-          (result.authors || '—').substring(0, 40) + (result.authors && result.authors.length > 40 ? '...' : ''),
-          (result.journal || '—').substring(0, 40) + (result.journal && result.journal.length > 40 ? '...' : ''),
-          result.year || '—',
-          result.status.charAt(0).toUpperCase() + result.status.slice(1),
-          result.doi ? 'View' : '—'
-        ];
-        data.push(row);
-      });
+      // Prepare table data
+      const tableData = results.map((result, index) => ({
+        index: (index + 1).toString(),
+        title: result.title ? result.title.substring(0, 60) + (result.title.length > 60 ? '...' : '') : '—',
+        authors: result.authors ? result.authors.substring(0, 40) + (result.authors.length > 40 ? '...' : '') : '—',
+        journal: result.journal ? result.journal.substring(0, 30) + (result.journal.length > 30 ? '...' : '') : '—',
+        year: result.year || '—',
+        status: result.status.charAt(0).toUpperCase() + result.status.slice(1),
+        doi: result.doi ? result.doi : '—'
+      }));
       
       // Set up table styles
       doc.autoTable({
-        head: headers,
-        body: data,
-        startY: 90,
-        margin: { left: 5, right: 5 },
+        head: [headers.map(h => h.header)],
+        body: tableData.map(row => headers.map(h => row[h.dataKey])),
+        startY: 85,
+        margin: { left: 20, right: 20 },
         headStyles: {
-          fillColor: [79, 70, 229],
-          textColor: 255,
+          fillColor: [243, 244, 246],
+          textColor: [31, 41, 55],
           fontStyle: 'bold',
-          fontSize: 8,
-          cellPadding: 2
+          fontSize: 9,
+          cellPadding: 5,
+          lineWidth: 0.3,
+          lineColor: [209, 213, 219],
+          halign: 'left',
+          valign: 'middle'
+        },
+        bodyStyles: {
+          fillColor: [255, 255, 255],
+          textColor: [55, 65, 81],
+          fontSize: 9,
+          cellPadding: 4,
+          lineWidth: 0.1,
+          lineColor: [229, 231, 235],
+          valign: 'middle'
         },
         alternateRowStyles: {
-          fillColor: [243, 244, 246]
+          fillColor: [249, 250, 251]
         },
         styles: {
-          fontSize: 7,
-          cellPadding: 1.5,
+          fontSize: 9,
+          cellPadding: 4,
           overflow: 'linebreak',
+          lineWidth: 0.1,
           lineWidth: 0.1,
           cellWidth: 'wrap',
           minCellHeight: 10
         },
         columnStyles: {
-          0: { cellWidth: 8, fontStyle: 'bold' },     // #
-          1: { cellWidth: 50, fontStyle: 'bold' },    // Title
-          2: { cellWidth: 30, fontSize: 6 },          // Authors
-          3: { cellWidth: 30, fontSize: 6 },          // Journal
-          4: { cellWidth: 12 },                       // Year
-          5: { cellWidth: 15, halign: 'center' },     // Status
-          6: { cellWidth: 20, halign: 'center' }      // DOI
+          0: { cellWidth: 12, halign: 'center' },
+          1: { cellWidth: 60 },
+          2: { cellWidth: 45 },
+          3: { cellWidth: 35 },
+          4: { cellWidth: 15, halign: 'center' },
+          5: { cellWidth: 20, halign: 'center' },
+          6: { cellWidth: 25, halign: 'center' }
+        },
+        willDrawCell: function(data) {
+          // Color status cells
+          if (data.column.dataKey === 'status') {
+            if (data.cell.raw === 'Found') {
+              doc.setFillColor(220, 252, 231);
+              doc.setTextColor(22, 163, 74);
+            } else if (data.cell.raw === 'Not-found') {
+              doc.setFillColor(254, 226, 226);
+              doc.setTextColor(220, 38, 38);
+            } else if (data.cell.raw === 'Error') {
+              doc.setFillColor(254, 243, 199);
+              doc.setTextColor(202, 138, 4);
+            }
+          }
+          
+          // Style DOI links
+          if (data.column.dataKey === 'doi' && data.cell.raw !== '—') {
+            doc.setTextColor(59, 130, 246);
+            doc.setFont('helvetica', 'normal');
+          }
+        },
+        didDrawCell: function(data) {
+          // Reset styles after each cell
+          doc.setTextColor(31, 41, 55);
+          doc.setFont('helvetica', 'normal');
         },
         didDrawPage: function(data) {
-          // Add page numbers
           const pageCount = doc.internal.getNumberOfPages();
           const pageSize = doc.internal.pageSize;
           const pageHeight = pageSize.height ? pageSize.height : pageSize.getHeight();
+          
+          // Simple footer
           doc.setFontSize(8);
-          doc.setTextColor(100);
+          doc.setTextColor(107, 114, 128);
+          doc.setFont('helvetica', 'normal');
+          
+          // Footer line
+          doc.setDrawColor(209, 213, 219);
+          doc.setLineWidth(0.3);
+          doc.line(20, pageHeight - 20, pageWidth - 20, pageHeight - 20);
+          
+          // Footer text
           doc.text(
-            `Page ${data.pageNumber} of ${pageCount}`,
-            data.settings.margin.left,
-            pageHeight - 10
+            `RefCheck • Page ${doc.internal.getCurrentPageInfo().pageNumber} of ${pageCount}`,
+            pageWidth / 2,
+            pageHeight - 10,
+            { align: 'center' }
           );
         }
       });
       
-      // Save the PDF
-      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-      doc.save(`reference-report-${timestamp}.pdf`);
+      // Save the PDF with a simple filename
+      doc.save(`refcheck-report-${new Date().toISOString().slice(0, 10)}.pdf`);
     }
     
     function downloadFile(filename, type, content) {
