@@ -2,7 +2,11 @@
 <html lang="en" class="scroll-smooth" data-theme="light">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+  <meta name="theme-color" content="#4f46e5">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Advanced Reference Checker | Validate & Format Academic References</title>
   <meta name="description" content="Check and validate academic references with our advanced reference checker. Supports DOI, BibTeX, and manual entry. Export results to multiple formats.">
   <meta name="author" content="Rakshit Dogra">
@@ -58,24 +62,25 @@
   </div>
   <!-- Navigation -->
     <nav>
-      <div class="container">
-        <div class="nav-inner">
-          <div class="nav-logo">
-            <i class="fas fa-book-open"></i>
-            <span>RefCheck</span>
-          </div>
-          <div class="nav-actions" style="display: flex; align-items: center; gap: 1rem;">
-            <button id="themeToggle" class="theme-toggle" aria-label="Toggle dark mode" style="margin-left: 1rem;">
-              <i class="fas fa-moon"></i>
-              <i class="fas fa-sun"></i>
-            </button>
-          </div>
+    <div class="container">
+      <div class="nav-inner" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 0;">
+        <div class="nav-logo" style="display: flex; align-items: center; gap: 0.75rem; font-size: 1.25rem; font-weight: 600; color: var(--text);">
+          <i class="fas fa-book-open" style="color: var(--primary-color);"></i>
+          <span>RefCheck</span>
+        </div>
+        <div class="nav-actions" style="display: flex; align-items: center; gap: 0.75rem;">
+          <button id="themeToggle" class="theme-toggle glass-button" aria-label="Toggle dark mode" style="width: 2.5rem; height: 2.5rem; display: flex; align-items: center; justify-content: center; border: none; border-radius: 0.5rem; background: var(--glass-bg); backdrop-filter: var(--glass-blur); color: var(--text); cursor: pointer; transition: all 0.2s ease;">
+            <i class="fas fa-moon"></i>
+            <i class="fas fa-sun"></i>
+          </button>
         </div>
       </div>
-    </nav>
+    </div>
+  </nav>
   
   <!-- Hero Section -->
   <header class="hero">
+  <br>
     <div class="container text-center">
       <div style="max-width: 48rem; margin: 0 auto;">
         <div style="display: inline-flex; align-items: center; padding: 0.5rem 1rem; border-radius: 9999px; background: var(--primary-light); color: var(--primary-hover); font-size: 0.875rem; font-weight: 500; margin-bottom: 1.5rem;">
@@ -118,72 +123,297 @@
     </div>
   </header>
 
-  <main class="container" style="padding: 2rem 1rem;">
+  <main class="container" style="padding: 1.5rem 0;">
     <!-- Reference Checker Section -->
-    <section id="reference-checker" style="margin-bottom: 3rem;">
-      <div class="glass-card fade-in" style="margin-top: 2rem;">
+    <section id="reference-checker" style="margin-bottom: 2rem; padding: 0 1rem;">
+      <div class="glass-card fade-in" style="margin-top: 1.5rem; padding: 1.25rem;">
         <div class="reference-checker-body">
-          <h2 style="font-size: 1.75rem; font-weight: 700; color: var(--text); margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between;">
-            <span><i class="fas fa-search mr-3" style="color: var(--primary-color);"></i> Check Your References</span>
+          <h2 style="font-size: clamp(1.5rem, 5vw, 1.75rem); font-weight: 700; color: var(--text); margin-bottom: 1.25rem; display: flex; align-items: center;">
+            <i class="fas fa-search" style="color: var(--primary-color); margin-right: 0.75rem;"></i> 
+            <span>Check Your References</span>
           </h2>
           
-          <div style="margin-bottom: 1.5rem;">
-            <label for="references" style="display: block; font-weight: 500; color: var(--text-light); margin-bottom: 0.5rem;">Paste references (one per line) or upload a file:</label>
+          <div style="margin-bottom: 1.25rem;">
+            <label for="references" style="display: block; font-weight: 500; color: var(--text-light); margin-bottom: 0.5rem; font-size: 0.9375rem;">
+              Paste references (one per line) or upload a file:
+            </label>
             <div style="position: relative;">
-              <textarea id="references" rows="8" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 0.5rem; font-family: inherit; font-size: 0.9375rem; resize: vertical; min-height: 10rem; background: var(--surface); color: var(--text);" placeholder="Paste your references here, one per line..."></textarea>
-              <div style="position: absolute; bottom: 0.75rem; right: 0.75rem; display: flex; gap: 0.5rem;">
-                <button id="clearBtn" style="background: var(--background); border: 1px solid var(--border); border-radius: 0.375rem; padding: 0.25rem 0.5rem; font-size: 0.75rem; color: var(--text-light); cursor: pointer; display: flex; align-items: center; transition: all 0.2s; border-color: var(--primary-color);">
-                  <i class="fas fa-times mr-1"></i>‎  Clear
+              <textarea 
+                id="references" 
+                rows="6" 
+                style="
+                  width: 100%; 
+                  padding: 1rem; 
+                  border: 1px solid var(--border); 
+                  border-radius: 0.5rem; 
+                  font-family: inherit; 
+                  font-size: 0.9375rem; 
+                  resize: vertical; 
+                  min-height: 8rem; 
+                  background: var(--surface); 
+                  color: var(--text);
+                  -webkit-appearance: none;
+                  -moz-appearance: none;
+                  appearance: none;
+                " 
+                placeholder="Paste your references here, one per line...">
+              </textarea>
+              <div style="position: absolute; bottom: 0.75rem; right: 0.75rem; display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: flex-end;">
+                <button 
+                  id="clearBtn" 
+                  class="glass-button" 
+                  style="
+                    border: 1px solid var(--border); 
+                    border-radius: 0.5rem; 
+                    padding: 0.5rem 0.75rem; 
+                    font-size: 0.8125rem; 
+                    font-weight: 500; 
+                    color: var(--text); 
+                    cursor: pointer; 
+                    display: inline-flex; 
+                    align-items: center; 
+                    gap: 0.5rem; 
+                    background: var(--glass-bg); 
+                    backdrop-filter: var(--glass-blur);
+                    white-space: nowrap;
+                  ">
+                  <i class="fas fa-times"></i>
+                  <span>Clear</span>
                 </button>
-                <button id="sampleBtn" style="background: var(--background); border: 1px solid var(--border); border-radius: 0.375rem; padding: 0.5rem 0.75rem; font-size: 0.75rem; color: var(--text-light); cursor: pointer; display: flex; align-items: center; transition: all 0.2s; border-color: var(--primary-color);">
-                  <i class="fas fa-magic mr-1"></i>‎  Load Sample
+                <button 
+                  id="sampleBtn" 
+                  class="glass-button" 
+                  style="
+                    border: 1px solid var(--border); 
+                    border-radius: 0.5rem; 
+                    padding: 0.5rem 0.75rem; 
+                    font-size: 0.8125rem; 
+                    font-weight: 500; 
+                    color: var(--text); 
+                    cursor: pointer; 
+                    display: inline-flex; 
+                    align-items: center; 
+                    gap: 0.5rem; 
+                    background: var(--glass-bg); 
+                    backdrop-filter: var(--glass-blur);
+                    white-space: nowrap;
+                  ">
+                  <i class="fas fa-magic"></i>
+                  <span>Sample</span>
                 </button>
               </div>
             </div>
           </div>
 
-          <div id="progressContainer" style="display: none; width: 100%; height: 0.5rem; background: var(--border); border-radius: 0.25rem; margin: 1.5rem 0; overflow: hidden;">
+          <div id="progressContainer" style="display: none; width: 100%; height: 0.375rem; background: var(--border); border-radius: 0.25rem; margin: 1.25rem 0; overflow: hidden;">
             <div id="progressBar" style="height: 100%; width: 0%; background: linear-gradient(90deg, var(--primary-color), #7c3aed); transition: width 0.3s ease-in-out;"></div>
           </div>
           
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
-            <div class="glass-card" style="padding: 1.5rem; transition: all 0.3s ease; cursor: pointer; position: relative; overflow: hidden;" id="fileUploadLabel">
+          <div style="display: grid; grid-template-columns: 1fr; gap: 1.25rem; margin-bottom: 1.5rem;">
+            <div 
+              class="glass-card" 
+              style="
+                padding: 1.25rem; 
+                transition: all 0.3s ease; 
+                cursor: pointer; 
+                position: relative; 
+                overflow: hidden;
+                border: 1px solid var(--border);
+              " 
+              id="fileUploadLabel"
+            >
               <div style="position: absolute; inset: 0; border: 2px dashed var(--border); margin: 7px; border-radius: 0.5rem; transition: all 0.3s ease; pointer-events: none;"></div>
-              <label for="fileUpload" style="display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; text-align: center; min-height: 160px; width: 100%; position: relative; z-index: 1;">
-                <div style="width: 60px; height: 60px; background: var(--primary-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem; transition: all 0.3s ease;">
-                  <i class="fas fa-cloud-upload-alt text-2xl" style="color: var(--primary-color);"></i>
+              <label 
+                for="fileUpload" 
+                style="
+                  display: flex; 
+                  flex-direction: column; 
+                  align-items: center; 
+                  justify-content: center; 
+                  cursor: pointer; 
+                  text-align: center; 
+                  min-height: 140px; 
+                  width: 100%; 
+                  position: relative; 
+                  z-index: 1;
+                  padding: 1rem;
+                "
+              >
+                <div 
+                  class="upload-icon" 
+                  style="
+                    width: 50px; 
+                    height: 50px; 
+                    background: var(--primary-light); 
+                    border-radius: 50%; 
+                    display: flex; 
+                    align-items: center; 
+                    justify-content: center; 
+                    margin-bottom: 0.75rem; 
+                    transition: all 0.3s ease;
+                  "
+                >
+                  <i class="fas fa-cloud-upload-alt" style="color: var(--primary-color); font-size: 1.25rem;"></i>
                 </div>
-                <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--text); margin-bottom: 0.5rem;">Upload References</h3>
-                <p style="color: var(--text-light); font-size: 0.9375rem; margin-bottom: 1rem;">Drop files or click to upload</p>
-                <span style="font-size: 0.8125rem; color: var(--text-lighter);">Upload a text file with one reference per line</span>
-                <span style="font-size: 0.75rem; color: var(--text-lighter); margin-top: 0.25rem;">.txt only</span>
-                <input type="file" id="fileUpload" accept=".txt" style="position: absolute; width: 0.1px; height: 0.1px; opacity: 0; overflow: hidden; z-index: -1;">
+                <div class="upload-text">
+                  <h3 style="font-size: 1rem; font-weight: 600; color: var(--text); margin-bottom: 0.375rem;">Upload References</h3>
+                  <p style="color: var(--text-light); font-size: 0.875rem; margin-bottom: 0.75rem;">Drop files or tap to upload</p>
+                  <span style="font-size: 0.75rem; color: var(--text-tertiary); display: block;">.txt files only, one reference per line</span>
+                </div>
+                <input 
+                  type="file" 
+                  id="fileUpload" 
+                  accept=".txt" 
+                  style="
+                    position: absolute; 
+                    width: 1px; 
+                    height: 1px; 
+                    padding: 0; 
+                    margin: -1px; 
+                    overflow: hidden; 
+                    clip: rect(0, 0, 0, 0); 
+                    white-space: nowrap; 
+                    border: 0;
+                  "
+                >
               </label>
             </div>
             
-            <div style="display: flex; flex-direction: column; gap: 0.75rem; min-width: 0; width: 100%;">
-              <button id="checkBtn" class="btn btn-primary" style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 0.75rem 1rem; font-weight: 500; font-size: 0.9375rem; width: 100%;">
-                <i class="fas fa-check-circle mr-2"></i>‎ Check References
+            <div style="display: flex; flex-direction: column; gap: 0.75rem; width: 100%;">
+              <button 
+                id="checkBtn" 
+                class="btn btn-primary" 
+                style="
+                  display: flex; 
+                  align-items: center; 
+                  justify-content: center; 
+                  padding: 0.75rem 1rem; 
+                  font-weight: 500; 
+                  font-size: 0.9375rem; 
+                  width: 100%;
+                  border: none;
+                  border-radius: 0.5rem;
+                  background: var(--primary-color);
+                  color: white;
+                  cursor: pointer;
+                  transition: all 0.2s ease;
+                "
+              >
+                <i class="fas fa-check-circle" style="margin-right: 0.5rem;"></i>
+                Check References
               </button>
-              <p style="margin-top: 2.5rem; font-size: 0.875rem; color: var(--text-light);">Export Results</p>
+              
+              <p style="margin: 0.75rem 0 0.5rem; font-size: 0.875rem; color: var(--text-light);">Export Results</p>
+              
               <div class="btn-group" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; width: 100%;">
-                <button id="exportTxtBtn" class="export-btn" style="padding: 0.5rem 0.25rem; font-size: 0.75rem; min-height: 2.5rem;" disabled>
-                  <i class="fas fa-file-alt"></i> <span class="btn-text">TXT</span>
+                <button 
+                  id="exportTxtBtn" 
+                  class="export-btn" 
+                  disabled
+                  style="
+                    padding: 0.5rem 0.25rem; 
+                    min-height: 2.5rem;
+                    font-size: 0.75rem;
+                    border: 1px solid var(--border);
+                    background: var(--surface);
+                    border-radius: 0.5rem;
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                  "
+                >
+                  <i class="fas fa-file-alt"></i> 
+                  <span class="btn-text">TXT</span>
                 </button>
-                <button id="exportCsvBtn" class="export-btn" style="padding: 0.5rem 0.25rem; font-size: 0.75rem; min-height: 2.5rem;" disabled>
-                  <i class="fas fa-file-csv"></i> <span class="btn-text">CSV</span>
+                <button 
+                  id="exportCsvBtn" 
+                  class="export-btn" 
+                  disabled
+                  style="
+                    padding: 0.5rem 0.25rem; 
+                    min-height: 2.5rem;
+                    font-size: 0.75rem;
+                    border: 1px solid var(--border);
+                    background: var(--surface);
+                    border-radius: 0.5rem;
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                  "
+                >
+                  <i class="fas fa-file-csv"></i> 
+                  <span class="btn-text">CSV</span>
                 </button>
-                <button id="exportBibBtn" class="export-btn" style="padding: 0.5rem 0.25rem; font-size: 0.75rem; min-height: 2.5rem;" disabled>
-                  <i class="fas fa-book"></i> <span class="btn-text">BibTeX</span>
+                <button 
+                  id="exportBibBtn" 
+                  class="export-btn" 
+                  disabled
+                  style="
+                    padding: 0.5rem 0.25rem; 
+                    min-height: 2.5rem;
+                    font-size: 0.75rem;
+                    border: 1px solid var(--border);
+                    background: var(--surface);
+                    border-radius: 0.5rem;
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                  "
+                >
+                  <i class="fas fa-book"></i> 
+                  <span class="btn-text">BibTeX</span>
                 </button>
-                <button id="exportRisBtn" class="export-btn" style="padding: 0.5rem 0.25rem; font-size: 0.75rem; min-height: 2.5rem;" disabled>
-                  <i class="fas fa-file-export"></i> <span class="btn-text">RIS</span>
+                <button 
+                  id="exportRisBtn" 
+                  class="export-btn" 
+                  disabled
+                  style="
+                    padding: 0.5rem 0.25rem; 
+                    min-height: 2.5rem;
+                    font-size: 0.75rem;
+                    border: 1px solid var(--border);
+                    background: var(--surface);
+                    border-radius: 0.5rem;
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                  "
+                >
+                  <i class="fas fa-file-export"></i> 
+                  <span class="btn-text">RIS</span>
                 </button>
-                <button id="exportXlsBtn" class="export-btn" style="padding: 0.5rem 0.25rem; font-size: 0.75rem; min-height: 2.5rem;" title="Export to Excel">
-                  <i class="fas fa-file-excel"></i> <span class="btn-text">XLS</span>
+                <button 
+                  id="exportXlsBtn" 
+                  class="export-btn" 
+                  style="
+                    padding: 0.5rem 0.25rem; 
+                    min-height: 2.5rem;
+                    font-size: 0.75rem;
+                    border: 1px solid var(--border);
+                    background: var(--surface);
+                    border-radius: 0.5rem;
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                  "
+                  title="Export to Excel"
+                >
+                  <i class="fas fa-file-excel"></i> 
+                  <span class="btn-text">XLS</span>
                 </button>
-                <button id="exportPdfBtn" class="export-btn" style="padding: 0.5rem 0.25rem; font-size: 0.75rem; min-height: 2.5rem; background: var(--primary-color); color: white; border-color: var(--primary-color);" title="Export to PDF">
-                  <i class="fas fa-file-pdf"></i> <span class="btn-text">PDF Report</span>
+                <button 
+                  id="exportPdfBtn" 
+                  class="export-btn" 
+                  style="
+                    padding: 0.5rem 0.25rem; 
+                    min-height: 2.5rem;
+                    font-size: 0.75rem;
+                    border: 1px solid var(--primary-color);
+                    background: var(--primary-color);
+                    color: white;
+                    border-radius: 0.5rem;
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                  "
+                  title="Export to PDF"
+                >
+                  <i class="fas fa-file-pdf"></i> 
+                  <span class="btn-text">PDF</span>
                 </button>
               </div>
             </div>
@@ -193,9 +423,9 @@
       </div>
       
       <!-- Results Section -->
-      <div id="resultsSection" class="results-section">
-        <div style="display: flex; flex-direction: column; margin-top: 2rem;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+      <div id="resultsSection" class="results-section" style="padding: 0 1rem;">
+        <div style="display: flex; flex-direction: column; margin: 2rem 0 1rem 0;">
+          <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 1.25rem;">
             <h3 style="font-size: 1.25rem; font-weight: 600; color: var(--text);">
               Results <span id="resultsCount" style="color: var(--text-lighter); font-size: 0.875rem;">(0 references)</span>
             </h3>
@@ -207,25 +437,27 @@
                 <option value="not-found">Not Found</option>
                 <option value="error">Error</option>
               </select>
-              <button id="clearResultsBtn" style="padding: 0.375rem 0.75rem; border: 1px solid var(--border); border-radius: 0.375rem; background: var(--surface); color: var(--text-light); font-size: 0.875rem; cursor: pointer; display: flex; align-items: center; transition: all 0.2s;">
-                <i class="fas fa-trash-alt mr-1"></i> Clear
+              <button id="clearResultsBtn" class="glass-button" style="padding: 0.5rem 1rem; border: 1px solid var(--border); border-radius: 0.5rem; background: var(--glass-bg); backdrop-filter: var(--glass-blur); color: var(--text); font-size: 0.875rem; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; transition: all 0.2s ease;">
+                <i class="fas fa-trash-alt"></i>
+                <span>Clear All</span>
               </button>
             </div>
           </div>
           
-          <div class="results-table-container" style="margin: 0 -1rem; padding: 0 1rem;">
-            <div style="overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 12px; background: var(--glass-bg); backdrop-filter: var(--glass-blur); border: var(--glass-border);">
+          <!-- Desktop Table View -->
+          <div class="desktop-results" style="display: none;">
+            <div style="overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 12px; background: var(--glass-bg); backdrop-filter: var(--glass-blur); border: var(--glass-border); padding: 0.5rem;">
               <table id="resultsTable" class="results-table" style="width: 100%; min-width: 800px; border-collapse: separate; border-spacing: 0; background: var(--bg-secondary);">
                 <thead>
                   <tr>
-                    <th style="padding: 1rem; text-align: left; font-weight: 600; color: var(--text); background: var(--glass-bg); position: sticky; left: 0; min-width: 3rem; max-width: 3rem;">#</th>
-                    <th style="padding: 1rem; text-align: left; font-weight: 600; color: var(--text); background: var(--glass-bg); min-width: 200px; max-width: 200px;">Input</th>
-                    <th style="padding: 1rem; text-align: left; font-weight: 600; color: var(--text); background: var(--glass-bg); min-width: 8rem; max-width: 8rem;">Status</th>
-                    <th style="padding: 1rem; text-align: left; font-weight: 600; color: var(--text); background: var(--glass-bg); min-width: 200px;">Title</th>
-                    <th style="padding: 1rem; text-align: left; font-weight: 600; color: var(--text); background: var(--glass-bg); min-width: 200px;">Journal/Source</th>
-                    <th style="padding: 1rem; text-align: left; font-weight: 600; color: var(--text); background: var(--glass-bg); min-width: 6rem; max-width: 6rem;">Year</th>
-                    <th style="padding: 1rem; text-align: left; font-weight: 600; color: var(--text); background: var(--glass-bg); min-width: 10rem;">DOI</th>
-                    <th style="padding: 1rem; text-align: left; font-weight: 600; color: var(--text); background: var(--glass-bg); min-width: 8rem;">URL</th>
+                    <th style="padding: 0.75rem; text-align: left; font-weight: 600; color: var(--text); background: var(--glass-bg); position: sticky; left: 0; min-width: 2.5rem; max-width: 2.5rem;">#</th>
+                    <th style="padding: 0.75rem; text-align: left; font-weight: 600; color: var(--text); background: var(--glass-bg); min-width: 180px; max-width: 180px; font-size: 0.9rem;">Input</th>
+                    <th style="padding: 0.75rem; text-align: left; font-weight: 600; color: var(--text); background: var(--glass-bg); min-width: 7rem; max-width: 7rem; font-size: 0.9rem;">Status</th>
+                    <th style="padding: 0.75rem; text-align: left; font-weight: 600; color: var(--text); background: var(--glass-bg); min-width: 180px; font-size: 0.9rem;">Title</th>
+                    <th style="padding: 0.75rem; text-align: left; font-weight: 600; color: var(--text); background: var(--glass-bg); min-width: 180px; font-size: 0.9rem;">Journal/Source</th>
+                    <th style="padding: 0.75rem; text-align: left; font-weight: 600; color: var(--text); background: var(--glass-bg); min-width: 5rem; max-width: 5rem; font-size: 0.9rem;">Year</th>
+                    <th style="padding: 0.75rem; text-align: left; font-weight: 600; color: var(--text); background: var(--glass-bg); min-width: 9rem; font-size: 0.9rem;">DOI</th>
+                    <th style="padding: 0.75rem; text-align: left; font-weight: 600; color: var(--text); background: var(--glass-bg); min-width: 7rem; font-size: 0.9rem;">URL</th>
                   </tr>
                 </thead>
                 <tbody id="resultsBody" style="font-size: 0.875rem;">
@@ -236,6 +468,12 @@
             <div style="text-align: center; margin-top: 0.5rem; font-size: 0.75rem; color: var(--text-lighter);">
               <i class="fas fa-arrows-alt-h"></i> Scroll horizontally to view all columns
             </div>
+          </div>
+          
+          <!-- Mobile Card View -->
+          <div id="mobileResults" class="mobile-results" style="display: none;">
+            <!-- Cards will be inserted here by JavaScript -->
+          </div>
           </div>
           
           <div id="noResults" style="display: none; text-align: center; padding: 2rem; color: var(--text-lighter);">
@@ -753,9 +991,23 @@
       }, 300);
     }
     
+    function getStatusBadge(status) {
+      switch (status) {
+        case 'found':
+          return '<span class="status-badge status-found"><i class="fas fa-check-circle mr-1"></i> Found</span>';
+        case 'not-found':
+          return '<span class="status-badge status-not-found"><i class="fas fa-times-circle mr-1"></i> Not Found</span>';
+        case 'error':
+          return '<span class="status-badge status-error"><i class="fas fa-exclamation-circle mr-1"></i> Error</span>';
+        default:
+          return '';
+      }
+    }
+    
     function renderResults() {
       if (!results || results.length === 0) {
         resultsBody.innerHTML = '';
+        document.getElementById('mobileResults').innerHTML = '';
         noResults.style.display = 'block';
         resultsCount.textContent = '(0 references)';
         return;
@@ -776,48 +1028,107 @@
       
       resultsCount.textContent = `(${results.length} references: ${foundCount} found, ${notFoundCount} not found, ${errorCount} errors)`;
       
-      // Render table rows
+      // Render desktop table rows
       resultsBody.innerHTML = filteredResults.map((result, index) => {
-        let statusBadge = '';
-        
-        switch (result.status) {
-          case 'found':
-            statusBadge = '<span class="status-badge status-found"><i class="fas fa-check-circle mr-1"></i> Found</span>';
-            break;
-          case 'not-found':
-            statusBadge = '<span class="status-badge status-not-found"><i class="fas fa-times-circle mr-1"></i> Not Found</span>';
-            break;
-          case 'error':
-            statusBadge = '<span class="status-badge" style="background: #fee2e2; color: #991b1b;"><i class="fas fa-exclamation-circle mr-1"></i> Error</span>';
-            break;
-        }
+        const statusBadge = getStatusBadge(result.status);
         
         // Format title with link if available
         const titleDisplay = result.url 
-          ? `<a href="${result.url}" target="_blank" rel="noopener noreferrer" style="color: #4f46e5; text-decoration: none;">${result.title || 'Untitled'}</a>`
+          ? `<a href="${result.url}" target="_blank" rel="noopener noreferrer" class="text-link">${result.title || 'Untitled'}</a>`
           : (result.title || '—');
-        
-        // Format authors
-        const authors = result.authors || '—';
         
         return `
           <tr data-status="${result.status}">
             <td>${index + 1}</td>
-            <td style="max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${result.input.replace(/"/g, '&quot;')}">
+            <td class="truncate" title="${result.input.replace(/"/g, '&quot;')}">
               ${result.input.length > 40 ? result.input.substring(0, 40) + '...' : result.input}
             </td>
             <td>${statusBadge}</td>
-            <td style="max-width: 300px;">${titleDisplay}</td>
-            <td style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${(result.journal || '').replace(/"/g, '&quot;')}">
+            <td class="truncate">${titleDisplay}</td>
+            <td class="truncate" title="${(result.journal || '').replace(/"/g, '&quot;')}">
               ${result.journal || '—'}
             </td>
             <td>${result.year || '—'}</td>
-            <td>${result.doi ? `<a href="https://doi.org/${result.doi}" target="_blank" rel="noopener noreferrer" style="color: var(--primary-color); text-decoration: none; word-break: break-all;">${result.doi}</a>` : '—'}</td>
-            <td>${result.url ? `<a href="${result.url}" target="_blank" rel="noopener noreferrer" style="color: var(--primary-color); text-decoration: none; word-break: break-all;" title="${result.url}">View</a>` : '—'}</td>
+            <td>${result.doi ? `<a href="https://doi.org/${result.doi}" target="_blank" rel="noopener noreferrer" class="text-link">${result.doi}</a>` : '—'}</td>
+            <td>${result.url ? `<a href="${result.url}" target="_blank" rel="noopener noreferrer" class="text-link" title="${result.url}">View</a>` : '—'}</td>
           </tr>
         `;
       }).join('');
+      
+      // Render mobile cards
+      const mobileResults = document.getElementById('mobileResults');
+      mobileResults.innerHTML = filteredResults.map((result, index) => {
+        const statusBadge = getStatusBadge(result.status);
+        const titleDisplay = result.url 
+          ? `<a href="${result.url}" target="_blank" rel="noopener noreferrer" class="text-link">${result.title || 'Untitled'}</a>`
+          : (result.title || 'Untitled');
+          
+        return `
+          <div class="reference-card" data-status="${result.status}">
+            <div class="card-header">
+              <span class="card-index">${index + 1}.</span>
+              ${statusBadge}
+            </div>
+            <div class="card-body">
+              <div class="card-row">
+                <span class="card-label">Title:</span>
+                <div class="card-value">${titleDisplay}</div>
+              </div>
+              ${result.journal ? `
+              <div class="card-row">
+                <span class="card-label">Journal:</span>
+                <div class="card-value">${result.journal}</div>
+              </div>` : ''}
+              ${result.year ? `
+              <div class="card-row">
+                <span class="card-label">Year:</span>
+                <div class="card-value">${result.year}</div>
+              </div>` : ''}
+              ${result.doi ? `
+              <div class="card-row">
+                <span class="card-label">DOI:</span>
+                <div class="card-value">
+                  <a href="https://doi.org/${result.doi}" target="_blank" rel="noopener noreferrer" class="text-link">${result.doi}</a>
+                </div>
+              </div>` : ''}
+              ${result.url ? `
+              <div class="card-row">
+                <span class="card-label">URL:</span>
+                <div class="card-value">
+                  <a href="${result.url}" target="_blank" rel="noopener noreferrer" class="text-link">View Source</a>
+                </div>
+              </div>` : ''}
+              <div class="card-row">
+                <span class="card-label">Input:</span>
+                <div class="card-value card-input" title="${result.input.replace(/"/g, '&quot;')}">
+                  ${result.input.length > 60 ? result.input.substring(0, 60) + '...' : result.input}
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+      
+      // Show/hide appropriate view based on screen size
+      updateView();
     }
+    
+    // Handle responsive layout
+    function updateView() {
+      const desktopView = document.querySelector('.desktop-results');
+      const mobileView = document.getElementById('mobileResults');
+      
+      if (window.innerWidth < 768) {
+        desktopView.style.display = 'none';
+        mobileView.style.display = 'block';
+      } else {
+        desktopView.style.display = 'block';
+        mobileView.style.display = 'none';
+      }
+    }
+    
+    // Add event listener for window resize
+    window.addEventListener('resize', updateView);
     
     function filterResults() {
       renderResults();
@@ -1290,5 +1601,76 @@ ER  -`;
       }, 1000);
     });
   </script>
-</body>
+  <script>
+    // Mobile menu toggle
+    document.addEventListener('DOMContentLoaded', function() {
+      const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+      const mobileMenu = document.getElementById('mobileMenu');
+      const menuIcon = document.querySelector('.menu-icon');
+      
+      if (mobileMenuBtn && mobileMenu) {
+        mobileMenuBtn.addEventListener('click', function() {
+          const isExpanded = this.getAttribute('aria-expanded') === 'true';
+          this.setAttribute('aria-expanded', !isExpanded);
+          mobileMenu.classList.toggle('active');
+          menuIcon.classList.toggle('active');
+        });
+        
+        // Close menu when clicking outside
+        document.addEventListener('click', function(event) {
+          if (!mobileMenuBtn.contains(event.target) && !mobileMenu.contains(event.target)) {
+            mobileMenuBtn.setAttribute('aria-expanded', 'false');
+            mobileMenu.classList.remove('active');
+            menuIcon.classList.remove('active');
+          }
+        });
+        
+        // Close menu when a link is clicked (for single-page navigation)
+        document.querySelectorAll('.mobile-menu-link').forEach(link => {
+          link.addEventListener('click', () => {
+            mobileMenuBtn.setAttribute('aria-expanded', 'false');
+            mobileMenu.classList.remove('active');
+            menuIcon.classList.remove('active');
+          });
+        });
+      }
+      
+      // Add touch feedback for buttons
+      const buttons = document.querySelectorAll('button, a.btn, .export-btn');
+      buttons.forEach(button => {
+        button.addEventListener('touchstart', function() {
+          this.classList.add('touch-active');
+        }, { passive: true });
+        
+        button.addEventListener('touchend', function() {
+          this.classList.remove('touch-active');
+        }, { passive: true });
+      });
+      
+      // Prevent zoom on double-tap for buttons and form elements
+      const interactiveElements = document.querySelectorAll('button, input, textarea, select, a');
+      interactiveElements.forEach(el => {
+        el.addEventListener('touchend', function(e) {
+          if (e.target === this) {
+            e.preventDefault();
+            this.focus();
+          }
+        }, { passive: false });
+      });
+    });
+    
+    // Handle viewport height for mobile browsers
+    function updateViewportHeight() {
+      const vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty('--vh', `${vh}px`);
+    }
+    
+    // Initial call
+    updateViewportHeight();
+    
+    // Update on resize or orientation change
+    window.addEventListener('resize', updateViewportHeight);
+    window.addEventListener('orientationchange', updateViewportHeight);
+  </script>
+  </body>
 </html>
