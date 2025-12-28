@@ -1,0 +1,1541 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, minimum-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <meta name="theme-color" content="#4f46e5">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>RefUnlocker</title>
+    <meta name="description" content="This tool helps you unlock papers for easier access.">
+    <meta name="author" content="Unknown">
+    <meta name="color-scheme" content="light dark">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+     /* Base styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+            line-height: 1.6;
+            color: var(--text, #1f2937);
+            background: var(--background, #f9fafb);
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+        
+        /* Header */
+        header {
+            background: var(--surface, #ffffff);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--border, #e5e7eb);
+        }
+        
+        .header-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            position: relative;
+        }
+        
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .vpn-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-right: 0.5rem;
+            box-shadow: 0 2px 10px rgba(79, 70, 229, 0.2);
+            transition: all 0.2s ease;
+            cursor: help;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .vpn-badge:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+        
+        .vpn-badge i {
+            font-size: 0.9rem;
+        }
+        
+        /* VPN Modal Styles */
+        .vpn-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            padding: 1rem;
+            box-sizing: border-box;
+        }
+        
+        .vpn-modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .vpn-modal-content {
+            background: #ffffff;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            transform: translateY(10px) scale(0.98);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+        
+        [data-theme="dark"] .vpn-modal-content {
+            background: var(--bg);
+        }
+        
+        .vpn-modal.active .vpn-modal-content {
+            transform: translateY(0) scale(1);
+        }
+        
+        .vpn-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            background: #f8fafc;
+        }
+        
+        [data-theme="dark"] .vpn-modal-header {
+            background: var(--surface);
+        }
+        
+        .vpn-modal-header h3 {
+            margin: 0;
+            font-size: 1.25rem;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .vpn-modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-light);
+            cursor: pointer;
+            line-height: 1;
+            padding: 0.5rem;
+            margin: -0.5rem -0.5rem -0.5rem auto;
+            transition: all 0.2s ease;
+            border-radius: 50%;
+            width: 2.5rem;
+            height: 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .vpn-modal-close:hover {
+            color: var(--text);
+            background: rgba(0, 0, 0, 0.05);
+        }
+        
+        [data-theme="dark"] .vpn-modal-close:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .vpn-modal-close:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px var(--primary-light);
+        }
+        
+        .vpn-modal-body {
+            padding: 1.5rem;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            flex: 1;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary) transparent;
+        }
+        
+        .vpn-modal-body::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .vpn-modal-body::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .vpn-modal-body::-webkit-scrollbar-thumb {
+            background-color: var(--primary);
+            border-radius: 3px;
+        }
+        
+        .vpn-alert {
+            display: flex;
+            gap: 1rem;
+            background: rgba(239, 68, 68, 0.05);
+            border: 1px solid rgba(239, 68, 68, 0.15);
+            border-left: 4px solid #ef4444;
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1.5rem;
+            transition: all 0.2s ease;
+        }
+        
+        .vpn-alert i {
+            color: #ef4444;
+            font-size: 1.25rem;
+            margin-top: 0.1rem;
+        }
+        
+        .vpn-alert p {
+            margin: 0;
+            color: var(--text);
+            line-height: 1.5;
+        }
+        
+        .vpn-tips {
+            margin-bottom: 1.5rem;
+        }
+        
+        .vpn-tips h4 {
+            margin: 0 0 1rem 0;
+            color: var(--text);
+            font-size: 1rem;
+        }
+        
+        .vpn-tips ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .vpn-tips li {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 0.5rem 0;
+            color: var(--text);
+            line-height: 1.5;
+        }
+        
+        .vpn-tips li i {
+            margin-top: 0.25rem;
+            flex-shrink: 0;
+        }
+        
+        .vpn-tips i {
+            color: var(--primary);
+            width: 1.25rem;
+            text-align: center;
+        }
+        
+        .vpn-note {
+            background: rgba(99, 102, 241, 0.05);
+            border: 1px solid rgba(99, 102, 241, 0.15);
+            border-left: 4px solid var(--primary);
+            padding: 1rem;
+            border-radius: 6px;
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1rem;
+            transition: all 0.2s ease;
+        }
+        
+        .vpn-note i {
+            color: var(--primary);
+            font-size: 1.25rem;
+            margin-top: 0.1rem;
+        }
+        
+        .vpn-note p {
+            margin: 0;
+            color: var(--text);
+            line-height: 1.5;
+            font-size: 0.9375rem;
+        }
+        
+        .vpn-modal-footer {
+            padding: 1.25rem 1.5rem;
+            display: flex;
+            justify-content: flex-end;
+            border-top: 1px solid var(--border);
+            background: #f8fafc;
+        }
+        
+        [data-theme="dark"] .vpn-modal-footer {
+            background: var(--surface);
+        }
+        
+        .vpn-btn {
+            padding: 0.6875rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            border: none;
+            font-size: 0.9375rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .vpn-btn:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+        
+        .vpn-btn:active {
+            transform: translateY(1px);
+        }
+        
+        .vpn-btn-primary {
+            background: var(--primary-dark);
+            color: white;
+            font-weight: 500;
+            letter-spacing: 0.01em;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        
+        [data-theme="dark"] .vpn-btn-primary {
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .vpn-btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 3px 10px rgba(79, 70, 229, 0.2);
+        }
+        
+        .vpn-btn-primary:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 700;
+            font-size: 1.25rem;
+            text-decoration: none;
+            color: var(--text, #1f2937);
+        }
+        
+        /* Main content */
+        main {
+            flex: 1;
+            padding: 2rem 0;
+        }
+        
+        .card {
+            background: var(--surface, #ffffff);
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            padding: 1.5rem;
+            margin-top: 20px;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--border, #e5e7eb);
+        }
+        
+        h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--text, #1f2937);
+        }
+        
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text, #1f2937);
+        }
+        
+        textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 1rem;
+            border: 1px solid var(--border, #e5e7eb);
+            border-radius: 0.5rem;
+            font-family: inherit;
+            font-size: 0.9375rem;
+            resize: vertical;
+            background: var(--surface, #ffffff);
+            color: var(--text, #1f2937);
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.625rem 1.25rem;
+            font-size: 0.9375rem;
+            font-weight: 500;
+            line-height: 1.5;
+            color: #ffffff;
+            background-color: var(--primary, #4f46e5);
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            gap: 0.5rem;
+            min-height: 44px;
+        }
+        
+        .btn:hover {
+            background-color: var(--primary-dark, #4338ca);
+            transform: translateY(-1px);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid var(--border, #e5e7eb);
+            color: var(--text, #1f2937);
+        }
+        
+        .btn-outline:hover {
+            background-color: var(--bg-secondary, #f3f4f6);
+        }
+        
+        /* Results table */
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1.5rem;
+            background: var(--surface, #ffffff);
+            border-radius: 0.5rem;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .results-table th,
+        .results-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border, #e5e7eb);
+            display: block;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        .results-table th {
+            display: none; /* Hide headers on mobile */
+        }
+        
+        .results-table tr {
+            display: block;
+            margin-bottom: 1rem;
+            border: 1px solid var(--border, #e5e7eb);
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+        
+        .results-table tr:last-child {
+            margin-bottom: 0;
+        }
+        
+        .results-table td {
+            border: none;
+            padding: 0.75rem 1rem;
+        }
+        
+        .results-table td:first-child {
+            padding-top: 1rem;
+        }
+        
+        .results-table td:last-child {
+            padding-bottom: 1rem;
+            border-top: 1px dashed var(--border, #e5e7eb);
+            margin-top: 0.5rem;
+            padding-top: 1rem;
+        }
+        
+        .results-table a {
+            color: var(--primary, #4f46e5);
+            text-decoration: none;
+            transition: color 0.2s ease;
+            word-break: break-all;
+            display: inline-block;
+            width: 100%;
+            text-align: center;
+        }
+        
+        /* Desktop styles */
+        @media (min-width: 768px) {
+            .results-table th,
+            .results-table td {
+                display: table-cell;
+                width: auto;
+            }
+            
+            .results-table th {
+                display: table-cell;
+            }
+            
+            .results-table tr {
+                display: table-row;
+                margin-bottom: 0;
+                border: none;
+                border-radius: 0;
+            }
+            
+            .results-table td {
+                padding: 1rem;
+                border-bottom: 1px solid var(--border, #e5e7eb);
+            }
+            
+            .results-table td:last-child {
+                border-top: none;
+                margin-top: 0;
+                padding-top: 1rem;
+                text-align: center;
+            }
+            
+            .results-table a {
+                width: auto;
+                text-align: left;
+            }
+        }
+        
+        .results-table a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 1rem;
+            }
+            
+            .button-group {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+            
+            .results-table {
+                display: block;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+        
+        /* Theme Toggle */
+        .theme-toggle {
+            background: none;
+            border: none;
+            color: var(--text);
+            font-size: 1.25rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 50%;
+            width: 2.5rem;
+            height: 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            margin-left: 0.5rem;
+        }
+
+        .theme-toggle:hover {
+            background: var(--bg-secondary);
+        }
+
+        /* Dark mode */
+        @media (prefers-color-scheme: dark) {
+            :root:not([data-theme="light"]) {
+                --background: #111827;
+                --surface: #1f2937;
+                --text: #f9fafb;
+                --text-light: #9ca3af;
+                --border: #374151;
+                --primary: #818cf8;
+                --primary-dark: #6366f1;
+                --bg-secondary: #1f2937;
+            }
+        }
+
+        /* Dark theme when data-theme is dark */
+        [data-theme="dark"] {
+            --background: #111827;
+            --surface: #1f2937;
+            --text: #f9fafb;
+            --text-light: #9ca3af;
+            --border: #374151;
+            --primary: #818cf8;
+            --primary-dark: #6366f1;
+            --bg-secondary: #1f2937;
+        }
+        
+        /* Animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+        
+        /* Ripple effect styles */
+        .ripple {
+            position: fixed;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 1000;
+        }
+        
+        @keyframes ripple {
+            to {
+                width: 200vw;
+                height: 200vw;
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-inner">
+                <a href="#" class="logo">
+                    <span><i class="fa-solid fa-unlock" style="color: #4f46e5; margin-right: 4px;"></i> RefUnlocker</span>
+                </a>
+                <div class="header-actions">
+                    <div id="vpnBadge" class="vpn-badge" title="For best results, use a VPN or Proxy">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Always use VPN/Proxy</span>
+                    </div>
+                    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark/light mode">
+                        <i class="fas fa-moon"></i>
+                        <i class="fas fa-sun" style="display: none;"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <main class="container">
+        
+        <div class="card fade-in">
+            <div style="font-size: 10px; margin-bottom: 1rem; color: grey">
+                <h3>Disclaimer</h3>
+                <p>Use Proxy or Vpn.</p>
+                <p>These links are for educational purposes only. Please use them responsibly.</p>
+                <p>No files are hosted on this website it only redirects to other pages.</p>
+            </div>
+            
+            <div class="input-group">
+                <label for="doiInput" class="input-label">Enter DOIs (one per line):</label>
+                <textarea id="doiInput" class="input-field" rows="6" placeholder="Paste DOIs here, one per line...
+Example: 10.1038/s41586-020-2180-5"></textarea>
+                <div style="display: flex; justify-content: flex-end; margin-top: 0.5rem;">
+                    <button id="loadSampleBtn" class="btn btn-outline" style="margin-right: 15px;">
+                        <i class="fas fa-vial"></i> Load Sample DOIs
+                    </button>
+                    <button id="clearBtn" class="btn btn-outline">
+                        <i class="fas fa-trash-alt"></i>
+                        <span>Clear</span>
+                    </button>
+                </div>
+            </div>
+            <div class="button-group">
+                <button id="generateBtn" class="btn">
+                    <i class="fas fa-link"></i>
+                    <span>Unlock Papers Now!</span>
+                </button>                
+            </div>
+            
+            <div id="resultsContainer" style="display: none;">
+                <h2 style="font-size: 1.25rem; margin-bottom: 1rem; color: var(--text);">Generated Links</h2>
+                    <button id="copyAllBtn" class="btn btn-outline">
+                    <i class="fas fa-copy"></i>
+                    <span>Copy All Links</span>
+                </button>
+                <div style="overflow-x: auto;">
+                    <table class="results-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;">#</th>
+                                <th>Paper Title</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resultsBody">
+                            <!-- Results will be inserted here by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- VPN/Proxy Modal -->
+    <div id="vpnModal" class="vpn-modal">
+        <div class="vpn-modal-content">
+            <div class="vpn-modal-header">
+                <h3><i class="fas fa-shield-alt"></i> Important Notice</h3>
+                <button id="closeVpnModal" class="vpn-modal-close">&times;</button>
+            </div>
+            <div class="vpn-modal-body">
+                <div class="vpn-alert">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <p>For best results when accessing unlocked papers, please ensure you are using a <strong>VPN or Proxy</strong> service.</p>
+                </div>
+                <div class="vpn-tips">
+                    <h4>Why use a VPN/Proxy?</h4>
+                    <ul>
+                        <li><i class="fas fa-lock"></i> Enhanced privacy and security</li>
+                        <li><i class="fas fa-unlock"></i> Access to region-restricted content</li>
+                        <li><i class="fas fa-shield-virus"></i> Protection from tracking</li>
+                    </ul>
+                </div>
+                <div class="vpn-note">
+                    <p><i class="fas fa-info-circle"></i> Some networks may block access to certain resources. A VPN helps bypass these restrictions.</p>
+                </div>
+            </div>
+            <div class="vpn-modal-footer">
+                <button id="gotItBtn" class="vpn-btn vpn-btn-primary">I understand</button>
+            </div>
+        </div>
+    </div>
+    
+    <footer style="margin-top: auto; padding: 2rem 0; text-align: center; color: var(--text-light, #6b7280); font-size: 0.875rem;">
+        <div class="container">
+            <p>This tool helps you unlock papers for easier access.</p>
+            <p style="margin-top: 0.5rem;">Use responsibly and respect copyright laws in your country.</p>
+        </div>
+    </footer>
+
+    <!-- Floating Action Button -->
+    <a href="refcheck.html" class="floating-btn" title="Go to Reference Checker">
+        <span>Goto</span>
+        <i class="fas fa-book-open"></i>
+        <span>Refcheck</span>
+    </a>
+
+    <style>
+        .floating-btn {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: #4f46e5; /* indigo-600 */
+            color: white;
+            border-radius: 50px;
+            padding: 0.75rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            box-shadow: 0 4px 20px rgba(79, 70, 229, 0.2);
+            transition: all 0.3s ease;
+            z-index: 100;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        
+        [data-theme="dark"] .floating-btn {
+            background: var(--primary);
+        }
+
+        .floating-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 24px rgba(79, 70, 229, 0.3);
+            background: #4338ca; /* indigo-700 */
+        }
+        
+        [data-theme="dark"] .floating-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        .floating-btn:active {
+            transform: translateY(0);
+        }
+
+        .floating-btn i {
+            font-size: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .floating-btn {
+                bottom: 1rem;
+                right: 1rem;
+                padding: 0.75rem;
+                width: 2.5rem;
+                height: 2.5rem;
+                border-radius: 50%;
+                justify-content: center;
+            }
+            
+            .floating-btn span {
+                display: none;
+            }
+        }
+    </style>
+
+    <style>
+        /* Add to your existing styles */
+        .scihub-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 1.25rem;
+            background-color: var(--primary, #4f46e5);
+            color: white !important;
+            border-radius: 0.5rem;
+            text-decoration: none !important;
+            transition: all 0.2s ease;
+            font-size: 1rem;
+            width: 100%;
+            box-sizing: border-box;
+            margin-top: 0.5rem;
+        }
+
+        .scihub-link:hover {
+            background-color: var(--primary-dark, #4338ca);
+            transform: translateY(-1px);
+            text-decoration: none !important;
+        }
+
+        .fa-spinner {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .paper-title {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--text, #1f2937);
+            font-size: 1.05rem;
+            line-height: 1.4;
+        }
+
+        .paper-doi {
+            font-size: 0.85rem;
+            color: var(--text-light, #6b7280);
+            font-family: monospace;
+            word-break: break-all;
+            background: var(--bg-secondary, #f8f9fa);
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            margin-top: 0.5rem;
+            overflow-wrap: break-word;
+        }
+        
+        @keyframes confettiRain {
+            0% {
+                opacity: 1;
+                margin-top: -100vh;
+                margin-left: -200px;
+            } 
+            100% {
+                opacity: 0.5;
+                margin-top: 100vh;
+                margin-left: 200px;
+            }
+        }
+    </style>
+    <script>
+        // VPN Modal functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const vpnBadge = document.getElementById('vpnBadge');
+            const vpnModal = document.getElementById('vpnModal');
+            const closeVpnModal = document.getElementById('closeVpnModal');
+            const gotItBtn = document.getElementById('gotItBtn');
+            
+            function showVpnModal() {
+                vpnModal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+            
+            function hideVpnModal() {
+                vpnModal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+            
+            vpnBadge.addEventListener('click', showVpnModal);
+            closeVpnModal.addEventListener('click', hideVpnModal);
+            gotItBtn.addEventListener('click', hideVpnModal);
+            
+            // Close modal when clicking outside
+            vpnModal.addEventListener('click', function(e) {
+                if (e.target === vpnModal) {
+                    hideVpnModal();
+                }
+            });
+            
+            // Close with Escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && vpnModal.classList.contains('active')) {
+                    hideVpnModal();
+                }
+            });
+        });
+        
+        // Theme toggle functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const themeToggle = document.getElementById('theme-toggle');
+            const sunIcon = themeToggle.querySelector('.fa-sun');
+            const moonIcon = themeToggle.querySelector('.fa-moon');
+
+            // Check for saved user preference, if any, on load
+            const currentTheme = localStorage.getItem('theme') || 
+                                (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            document.documentElement.setAttribute('data-theme', currentTheme);
+            updateIcons(currentTheme);
+
+            // Add event listener for theme toggle
+            themeToggle.addEventListener('click', (e) => {
+                const currentTheme = document.documentElement.getAttribute('data-theme');
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                
+                // Create ripple effect
+                createRippleEffect(e);
+                
+                // Slight delay to see the ripple before theme change
+                setTimeout(() => {
+                    document.documentElement.setAttribute('data-theme', newTheme);
+                    localStorage.setItem('theme', newTheme);
+                    updateIcons(newTheme);
+                }, 100);
+            });
+
+            function updateIcons(theme) {
+                if (theme === 'dark') {
+                    sunIcon.style.display = 'block';
+                    moonIcon.style.display = 'none';
+                } else {
+                    sunIcon.style.display = 'none';
+                    moonIcon.style.display = 'block';
+                }
+            }
+            
+            function createRippleEffect(e) {
+                const ripple = document.createElement('span');
+                ripple.className = 'ripple';
+                document.body.appendChild(ripple);
+                
+                // Position the ripple at the click location
+                const rect = themeToggle.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                ripple.style.left = `${x}px`;
+                ripple.style.top = `${y}px`;
+                
+                // Animate the ripple
+                ripple.style.animation = 'ripple 0.6s linear';
+                ripple.style.opacity = '0.2';
+                
+                // Remove the ripple after animation completes
+                ripple.addEventListener('animationend', () => {
+                    ripple.remove();
+                });
+            }
+        });
+
+        // Confetti function
+        function triggerConfetti() {
+            const duration = 3 * 1000;
+            const animationEnd = Date.now() + duration;
+            const defaults = { 
+                startVelocity: 25, 
+                spread: 360, 
+                ticks: 60, 
+                zIndex: 10000,
+                particleCount: 100,
+                origin: { y: 0.6 }
+            };
+
+            function randomInRange(min, max) {
+                return Math.random() * (max - min) + min;
+            }
+
+            const interval = setInterval(function() {
+                const timeLeft = animationEnd - Date.now();
+
+                if (timeLeft <= 0) {
+                    return clearInterval(interval);
+                }
+
+                const particleCount = 50 * (timeLeft / duration);
+                
+                // Launch from the left edge
+                confetti({
+                    ...defaults,
+                    particleCount,
+                    origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
+                    angle: randomInRange(55, 125),
+                });
+                
+                // Launch from the right edge
+                confetti({
+                    ...defaults,
+                    particleCount,
+                    origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
+                    angle: randomInRange(55, 125),
+                });
+            }, 250);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const doiInput = document.getElementById('doiInput');
+            const generateBtn = document.getElementById('generateBtn');
+            const clearBtn = document.getElementById('clearBtn');
+            const copyAllBtn = document.getElementById('copyAllBtn');
+            const resultsContainer = document.getElementById('resultsContainer');
+            const resultsBody = document.getElementById('resultsBody');
+            
+            // Function to fetch paper title from CrossRef (same as haha.html)
+            const CROSSREF_API_BASE = 'https://api.crossref.org/works';
+            const CONTACT_EMAIL = 'user@example.com'; // Consider adding your email here
+            const apiCache = new Map();
+
+            async function queryCrossRef(query, isDOI = false) {
+                const cacheKey = `${isDOI ? 'doi' : 'search'}:${query}`;
+                if (apiCache.has(cacheKey)) {
+                    return apiCache.get(cacheKey);
+                }
+                try {
+                    const params = new URLSearchParams();
+                    if (isDOI) {
+                        if (CONTACT_EMAIL) params.set('mailto', CONTACT_EMAIL);
+                    } else {
+                        params.set('query.bibliographic', query);
+                        params.set('rows', '1');
+                        if (CONTACT_EMAIL) params.set('mailto', CONTACT_EMAIL);
+                    }
+                    const queryString = params.toString();
+                    const url = isDOI ? `${CROSSREF_API_BASE}/${encodeURIComponent(query)}${queryString ? `?${queryString}` : ''}` : `${CROSSREF_API_BASE}?${queryString}`;
+                    
+                    const response = await fetch(url, {
+                        headers: {
+                            'Accept': 'application/json',
+                            'User-Agent': 'DOItoSciHub/1.0 (mailto:your-email@example.com)'
+                        }
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    let message = null;
+                    if (isDOI) {
+                        message = data.message || null;
+                    } else if (data.message.items && data.message.items.length > 0) {
+                        message = data.message.items[0];
+                    }
+                    
+                    apiCache.set(cacheKey, message);
+                    return message;
+                } catch (error) {
+                    console.error('Error querying CrossRef:', error);
+                    apiCache.set(cacheKey, null);
+                    return null;
+                }
+            }
+
+            async function fetchPaperTitle(doi) {
+                try {
+                    // Remove doi.org prefix if present
+                    const cleanDOI = doi.replace(/^https?:\/\/(dx\.)?doi\.org\//, "");
+                    const url = `https://api.crossref.org/works/${encodeURIComponent(cleanDOI)}`;
+                    
+                    console.log('Fetching title for DOI:', cleanDOI);
+                    const response = await fetch(url);
+
+                    if (!response.ok) {
+                        throw new Error(`Crossref error: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    console.log('API response for', cleanDOI, ':', data);
+                    
+                    return data.message.title?.[0] || "Title not found";
+                } catch (error) {
+                    console.error('Error fetching paper title for', doi, ':', error);
+                    return `Title not available (${error.message || 'error'})`;
+                }
+            }
+
+            // Generate Sci-Hub links with paper titles
+            generateBtn.addEventListener('click', async function() {
+                const doiText = doiInput.value.trim();
+                if (!doiText) {
+                    alert('Please enter at least one DOI');
+                    return;
+                }
+                
+                const doiLines = doiText.split('\n').filter(line => line.trim() !== '');
+                if (doiLines.length === 0) {
+                    alert('No valid DOIs found');
+                    return;
+                }
+                
+                // Show loading state
+                const originalBtnText = generateBtn.innerHTML;
+                generateBtn.disabled = true;
+                generateBtn.innerHTML = '<i class="fas fa-spinner"></i> <span>Processing...</span>';
+                
+                // Clear previous results
+                resultsBody.innerHTML = '';
+                resultsContainer.style.display = 'block';
+                
+                // Process DOIs one by one
+                for (let i = 0; i < doiLines.length; i++) {
+                    const line = doiLines[i];
+                    let doi = line.trim();
+                    
+                    // Clean up DOI
+                    if (doi.startsWith('https://doi.org/')) {
+                        doi = doi.replace('https://doi.org/', '');
+                    } else if (doi.toLowerCase().startsWith('doi:')) {
+                        doi = doi.substring(4).trim();
+                    } else if (doi.includes('doi.org/')) {
+                        doi = doi.split('doi.org/')[1];
+                    }
+                    
+                    doi = doi.split(/[?#]/)[0].trim();
+                    
+                    if (doi) {
+                        const scihubUrl = `https://sci-hub.se/${doi}`;
+                        
+                        // Add a loading row
+                        const loadingRow = document.createElement('tr');
+                        loadingRow.id = `row-${i}`;
+                        loadingRow.innerHTML = `
+                            <td>${i + 1}</td>
+                            <td>
+                                <div class="paper-title">Fetching title...</div>
+                                <div class="paper-doi">${doi}</div>
+                            </td>
+                            <td>
+                                <a href="${scihubUrl}" target="_blank" rel="noopener noreferrer" class="scihub-link">
+                                    Unlocking <i class="fas fa-external-link-alt" style="font-size: 0.75em; margin-left: 0.25em;"></i>
+                                </a>
+                            </td>
+                        `;
+                        resultsBody.appendChild(loadingRow);
+                        
+                        // Fetch title and update the row
+                        try {
+                            const title = await fetchPaperTitle(doi);
+                            loadingRow.innerHTML = `
+                                <td>${i + 1}</td>
+                                <td>
+                                    <div class="paper-title">${title}</div>
+                                    <div class="paper-doi">${doi}</div>
+                                </td>
+                                <td>
+                                    <a href="${scihubUrl}" target="_blank" rel="noopener noreferrer" class="scihub-link">
+                                        <i class="fa-solid fa-unlock"></i> ‎ Unlocked ‎ <i class="fas fa-external-link-alt" style="font-size: 0.75em; margin-left: 0.25em;"></i>
+                                    </a>
+                                </td>
+                            `;
+                        } catch (error) {
+                            console.error(`Error processing DOI ${doi}:`, error);
+                            loadingRow.innerHTML = `
+                                <td>${i + 1}</td>
+                                <td>
+                                    <div class="paper-title">Error fetching title</div>
+                                    <div class="paper-doi">${doi}</div>
+                                </td>
+                                <td>
+                                    <a href="${scihubUrl}" target="_blank" rel="noopener noreferrer" class="scihub-link">
+                                       <i class="fa-solid fa-unlock"></i> ‎ Open in Sci-Hub ‎ <i class="fas fa-external-link-alt" style="font-size: 0.75em; margin-left: 0.25em;"></i>
+                                    </a>
+                                </td>
+                            `;
+                        }
+                    }
+                    
+                    // Scroll to the latest result
+                    resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                }
+                
+                // Reset button state
+                generateBtn.disabled = false;
+                generateBtn.innerHTML = originalBtnText;
+                
+                // Show confetti when all processing is done
+                triggerConfetti();
+            });
+            
+            // Load sample DOIs
+            const loadSampleBtn = document.getElementById('loadSampleBtn');
+            loadSampleBtn.addEventListener('click', function() {
+                const sampleDOIs = `https://doi.org/10.1016/j.enpol.2017.10.012\nhttps://doi.org/10.1038/s41586-020-2180-5`;
+                
+                doiInput.value = sampleDOIs;
+                doiInput.focus();
+                
+                // Show a toast notification
+                showToast('Sample DOIs loaded!', 'success');
+            });
+            
+            // Clear input and results
+            clearBtn.addEventListener('click', function() {
+                doiInput.value = '';
+                resultsBody.innerHTML = '';
+                resultsContainer.style.display = 'none';
+            });
+            
+            // Copy all links to clipboard
+            copyAllBtn.addEventListener('click', function() {
+                const links = Array.from(document.querySelectorAll('#resultsBody a.scihub-link'))
+                    .map(a => a.href)
+                    .join('\n');
+                
+                if (!links) {
+                    alert('No links to copy. Generate links first.');
+                    return;
+                }
+                
+                navigator.clipboard.writeText(links)
+                    .then(() => {
+                        const originalText = copyAllBtn.innerHTML;
+                        copyAllBtn.innerHTML = '<i class="fas fa-check"></i> <span>Copied!</span>';
+                        setTimeout(() => {
+                            copyAllBtn.innerHTML = originalText;
+                        }, 2000);
+                    })
+                    .catch(err => {
+                        console.error('Failed to copy links: ', err);
+                        alert('Failed to copy links to clipboard. Please try again.');
+                    });
+            });
+            
+            // Handle paste event to clean up input
+            doiInput.addEventListener('paste', function(e) {
+                e.preventDefault();
+                const text = (e.clipboardData || window.clipboardData).getData('text');
+                const cleanedText = text.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '');
+                document.execCommand('insertText', false, cleanedText + (cleanedText.endsWith('\n') ? '' : '\n'));
+            });
+        });
+
+        // Add event listener for the close button in the disclaimer modal
+        document.getElementById('closeDisclaimer').addEventListener('click', function() {
+            document.getElementById('disclaimerModal').style.display = 'none';
+        });
+    </script>
+
+    <!-- Disclaimer Modal -->
+    <div id="disclaimerModal" class="disclaimer-modal">
+        <div class="disclaimer-content">
+            <h3>Disclaimer</h3>
+            <div class="scroll-indicator">
+                <i class="fas fa-chevron-down"></i> Please scroll to read the full disclaimer
+            </div>
+            <div class="disclaimer-text">
+                <p><strong>Educational Use Notice</strong></p>
+                
+                <p>Welcome! This tool is designed to assist with academic research and educational purposes. We support the principles of fair use and the right to access knowledge for educational advancement.</p>
+                
+                <p>1. <strong>Fair Use & Educational Purposes</strong><br>
+                This tool operates under the doctrine of fair use (Section 52 of the Indian Copyright Act) which permits limited use of copyrighted material without permission for purposes such as education, scholarship, and research.</p>
+                
+                <p>2. <strong>For Research & Education</strong><br>
+                • Intended for students, researchers, and educators<br>
+                • Supports non-commercial, educational use<br>
+                • Encourages proper citation and academic integrity</p>
+                
+                <p>3. <strong>Your Rights & Responsibilities</strong><br>
+                • You're responsible for how you use accessed materials<br>
+                • We recommend using institutional resources when available<br>
+                • Consider reaching out to authors for their work</p>
+                
+                <p>4. <strong>Privacy First</strong><br>
+                • We don't store your search history or personal data<br>
+                • Your privacy is important to us</p>
+                
+                <p>5. <strong>Supporting Authors & Publishers</strong><br>
+                We encourage supporting academic publishers through:<br>
+                • Institutional subscriptions<br>
+                • Open access publications<br>
+                • Direct author support when possible</p>
+                
+                <p>6. <strong>Disclaimer</strong><br>
+                This tool is provided for informational purposes only. We make no representations about the content it may access. Users should ensure their use complies with applicable laws and institutional policies.</p>
+                
+                <p>By using this tool, you acknowledge that you understand this notice and will use the service responsibly for educational and research purposes.</p>
+            </div>
+            <button id="closeDisclaimer" class="btn btn-primary">
+                <i class="fas fa-chevron-down"></i> I Understand
+            </button>
+        </div>
+    </div>
+
+    <style>
+        .disclaimer-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .disclaimer-modal.show {
+            opacity: 1;
+        }
+
+        .disclaimer-content {
+            background: rgba(255, 255, 255, 0.85);
+            padding: 2rem;
+            border-radius: 16px;
+            max-width: 700px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            transform: translateY(20px);
+            transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+            opacity: 0;
+        }
+
+        .disclaimer-modal.show .disclaimer-content {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .disclaimer-content h3 {
+            color: #4f46e5;
+            margin-bottom: 1.2rem;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .disclaimer-text {
+            margin-bottom: 1.5rem;
+            line-height: 1.5;
+            font-size: 0.9rem;
+            color: #333;
+        }
+
+        .disclaimer-text p {
+            margin-bottom: 0.8rem;
+        }
+
+        .disclaimer-text strong {
+            color: #4f46e5;
+            font-weight: 500;
+        }
+
+        #closeDisclaimer {
+            display: block;
+            margin: 1.5rem auto 0;
+            padding: 0.6rem 2rem;
+            background: #e0e0e0;
+            color: #a0a0a0;
+            border: none;
+            border-radius: 50px;
+            font-weight: 500;
+            cursor: not-allowed;
+            transition: all 0.3s ease;
+            pointer-events: none;
+            position: relative;
+        }
+
+        #closeDisclaimer.active {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c4dff 100%);
+            color: white;
+            cursor: pointer;
+            pointer-events: auto;
+            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
+        }
+
+        #closeDisclaimer.active:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
+        }
+
+        .scroll-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: #666;
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+            opacity: 1;
+            transition: opacity 0.3s ease;
+        }
+
+        .scroll-indicator.hidden {
+            opacity: 0;
+        }
+
+        .scroll-indicator i {
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+            40% {transform: translateY(-5px);}
+            60% {transform: translateY(-3px);}
+        }
+
+        /* Progress bar */
+        .progress-bar {
+            height: 4px;
+            background: rgba(79, 70, 229, 0.2);
+            width: 100%;
+            border-radius: 2px;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(90deg, #4f46e5, #7c4dff);
+            border-radius: 2px;
+            transform-origin: left;
+            transform: scaleX(1);
+            transition: transform 10s linear;
+        }
+    </style>
+
+    <script>
+        // Show disclaimer modal when page loads with animation
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('disclaimerModal');
+            const content = document.querySelector('.disclaimer-content');
+            const closeBtn = document.getElementById('closeDisclaimer');
+            const scrollIndicator = document.querySelector('.scroll-indicator');
+            
+            // Show modal with animation
+            modal.style.display = 'flex';
+            // Trigger reflow to enable transition
+            void modal.offsetWidth;
+            modal.classList.add('show');
+            
+            // Check if user has scrolled to bottom
+            function checkScroll() {
+                const isAtBottom = content.scrollHeight - content.scrollTop <= content.clientHeight + 1;
+                
+                if (isAtBottom) {
+                    closeBtn.classList.add('active');
+                    scrollIndicator.classList.add('hidden');
+                } else {
+                    closeBtn.classList.remove('active');
+                    scrollIndicator.classList.remove('hidden');
+                }
+            }
+            
+            // Add scroll event listener
+            content.addEventListener('scroll', checkScroll);
+            
+            // Close modal function
+            function closeModal() {
+                modal.classList.remove('show');
+                setTimeout(() => {
+                    modal.style.display = 'none';
+                }, 300);
+            }
+            
+            // Close on button click
+            closeBtn.addEventListener('click', closeModal);
+            
+            // Initial check in case content is already scrolled
+            checkScroll();
+        });
+    </script>
+</body>
+</html>
