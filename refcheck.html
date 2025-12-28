@@ -17,12 +17,160 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script>
+      // Enhanced confetti effect function
+      function triggerConfetti() {
+        // Define a vibrant color palette
+        const colors = [
+          '#4f46e5', '#7c3aed', '#8b5cf6', '#a78bfa', '#c4b5fd', '#e9d5ff', // Purples
+          '#3b82f6', '#60a5fa', '#93c5fd', '#bfdbfe', // Blues
+          '#10b981', '#34d399', '#6ee7b7', // Greens
+          '#f59e0b', '#fbbf24', '#fcd34d', // Yellows
+          '#ef4444', '#f87171', '#fca5a5', // Reds
+          '#ec4899', '#f472b6', '#f9a8d4'  // Pinks
+        ];
+
+        // Random confetti shapes
+        const shapes = ['square', 'circle', 'star'];
+        
+        // Create multiple bursts from different positions
+        const bursts = [
+          // Center burst
+          {
+            particleCount: 100,
+            angle: 90,
+            spread: 70,
+            startVelocity: 45,
+            origin: { x: 0.5, y: 0.6 },
+            colors: [...colors].sort(() => 0.5 - Math.random())
+          },
+          // Left side burst
+          {
+            particleCount: 80,
+            angle: 60,
+            spread: 80,
+            startVelocity: 40,
+            origin: { x: 0.2, y: 0.8 },
+            colors: [...colors].sort(() => 0.5 - Math.random())
+          },
+          // Right side burst
+          {
+            particleCount: 80,
+            angle: 120,
+            spread: 80,
+            startVelocity: 40,
+            origin: { x: 0.8, y: 0.8 },
+            colors: [...colors].sort(() => 0.5 - Math.random())
+          },
+          // Top burst
+          {
+            particleCount: 60,
+            angle: 270,
+            spread: 60,
+            startVelocity: 35,
+            origin: { x: 0.5, y: 0.2 },
+            colors: [...colors].sort(() => 0.5 - Math.random())
+          }
+        ];
+
+        // Fire all bursts
+        bursts.forEach((burst, index) => {
+          setTimeout(() => {
+            confetti({
+              ...burst,
+              shapes: [...shapes].sort(() => 0.5 - Math.random()).slice(0, 2),
+              gravity: 1 + Math.random() * 0.5,
+              ticks: 100 + Math.random() * 50,
+              scalar: 0.8 + Math.random() * 0.7,
+              drift: -0.5 + Math.random(),
+              decay: 0.9 + Math.random() * 0.1,
+              disableForReducedMotion: true
+            });
+          }, index * 200);
+        });
+
+        // Add some random floating confetti
+        for (let i = 0; i < 10; i++) {
+          setTimeout(() => {
+            confetti({
+              particleCount: 30,
+              angle: Math.random() * 360,
+              spread: 120,
+              startVelocity: 20 + Math.random() * 30,
+              origin: {
+                x: Math.random(),
+                y: Math.random() * 0.5 + 0.2
+              },
+              colors: [...colors].sort(() => 0.5 - Math.random()).slice(0, 3),
+              shapes: [...shapes].sort(() => 0.5 - Math.random()).slice(0, 1),
+              gravity: 0.5 + Math.random() * 0.5,
+              ticks: 150 + Math.random() * 100,
+              scalar: 0.5 + Math.random() * 0.8,
+              drift: -0.5 + Math.random(),
+              decay: 0.9 + Math.random() * 0.1
+            });
+          }, 1000 + i * 300);
+        }
+      }
+    </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link rel="stylesheet" href="ref-glassmorphic.css">
     <link rel="stylesheet" href="ref-styles.css">
     <style>
+      /* Lock/Unlock animation */
+      @keyframes lockBounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-2px); }
+      }
+      
+      @keyframes unlock {
+        0% { transform: rotate(0deg); }
+        20% { transform: rotate(-15deg); }
+        40% { transform: rotate(15deg); }
+        60% { transform: rotate(-10deg); }
+        80% { transform: rotate(10deg); }
+        100% { transform: rotate(0deg); }
+      }
+      
+      .ref-unlock-btn {
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+      }
+      
+      .ref-unlock-btn i {
+        transition: all 0.3s ease;
+        animation: lockBounce 2s infinite;
+      }
+      
+      .ref-unlock-btn:hover i {
+        color: var(--primary-color);
+        animation: none;
+      }
+      
+      .ref-unlock-btn:hover .lock-icon {
+        display: none;
+      }
+      
+      .ref-unlock-btn:hover .unlock-icon {
+        display: inline-block;
+        animation: unlock 0.8s ease-out;
+      }
+      
+      .unlock-icon {
+        display: none;
+      }
+      
+      .ref-unlock-btn:hover .btn-text {
+        background: linear-gradient(90deg, #4f46e5, #7c4dff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      
       /* Base styles for all interactive elements */
       button, .btn, .export-btn, [role="button"],
       a[href], input[type="text"], textarea,
@@ -121,6 +269,16 @@
             <span>RefCheck</span>
           </div>
           <div class="nav-actions" style="display: flex; align-items: center; gap: 0.75rem;">
+            <div class="ref-unlock-container" style="position: relative;">
+              <a href="refunlock.html" class="glass-button ref-unlock-btn" style="width: auto; height: 2.5rem; display: flex; align-items: center; justify-content: center; border: 2px solid var(--primary-color); border-radius: 2rem; background: var(--glass-bg); backdrop-filter: var(--glass-blur); color: var(--text); cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); padding: 0 1.25rem; text-decoration: none; font-size: 0.9375rem; font-weight: 600; box-shadow: 0 4px 20px rgba(79, 70, 229, 0.1);">
+                <i class="fas fa-lock lock-icon" style="margin-right: 0.5rem; font-size: 1rem;"></i>
+                <i class="fas fa-unlock unlock-icon" style="margin-right: 0.5rem; font-size: 1rem;"></i>
+                <span class="btn-text">RefUnlocker</span>
+              </a>
+              <div id="unlockpapers-float" style="position: absolute; left: 30%; transform: translateX(-40%); top: calc(100% - 5px); transition: opacity 0.3s ease, visibility 0.3s ease; opacity: 0; visibility: hidden; z-index: 1000;">
+                <img src="unlockpapers.svg" alt="Unlock Papers" style="width: 190px; height: auto; filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.15));">
+              </div>
+            </div>
             <button id="themeToggle" class="theme-toggle glass-button" aria-label="Toggle dark mode" style="width: 2.5rem; height: 2.5rem; display: flex; align-items: center; justify-content: center; border: none; border-radius: 0.5rem; background: var(--glass-bg); backdrop-filter: var(--glass-blur); color: var(--text); cursor: pointer; transition: all 0.2s ease;">
               <i class="fas fa-moon"></i>
               <i class="fas fa-sun"></i>
@@ -134,12 +292,12 @@
       <div class="container text-center">
         <div style="max-width: 48rem; margin: 0 auto;">
           <div style="display: inline-flex; align-items: center; padding: 0.5rem 1rem; border-radius: 9999px; background: var(--primary-light); color: var(--primary-hover); font-size: 0.875rem; font-weight: 500; margin-bottom: 1.5rem;">
-            <span style="width: 0.5rem; height: 0.5rem; border-radius: 50%; background: #33d333; margin-right: 0.5rem;"></span> Server Up
+            <span style="width: 0.5rem; height: 0.5rem; border-radius: 50%; background: #33d333; margin-right: 0.5rem;"></span> Server is Live!
           </div>
           <h1 style="font-size: 2.25rem; font-weight: 800; color: var(--text); margin-bottom: 1.5rem; line-height: 1.2;"> Validate & Format Academic References in Seconds </h1>
           <p style="font-size: 1.25rem; color: var(--text-light); margin-bottom: 2rem; max-width: 42rem; margin-left: auto; margin-right: auto; line-height: 1.6;"> Check references, format citations, and export results with our powerful reference checker. Perfect for researchers and students. </p>
           <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; margin-bottom: 2rem;">
-            <a href="#reference-checker" class="btn btn-primary" style="padding: 0.7rem 2rem; font-size: 1.125rem;"> Try It Now </a>
+            <a href="#reference-checker" class="btn btn-primary" style="border-radius: 14px; padding: 0.7rem 2rem; font-size: 1.125rem;"> Try It Now </a>
             <br>
             <div class="scroll-indicator" style="text-align: center; margin-top: 2rem; cursor: pointer; animation: fadeInUp 1s ease-out;">
               <div class="scroll-text" style="color: var(--text-light); font-size: 0.875rem; margin-bottom: 0.5rem; opacity: 0; animation: fadeIn 1s ease-out 0.5s forwards;">Scroll to explore</div>
@@ -242,22 +400,29 @@
           </div>
         </div>
         <div id="resultsSection" class="results-section" style="padding: 0 1rem;">
-          <div style="display: flex; flex-direction: column; margin: 2rem 0 1rem 0;">
-            <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 1.25rem;">
-              <h3 style="font-size: 1.25rem; font-weight: 600; color: var(--text);"> Results <span id="resultsCount" style="color: var(--text-lighter); font-size: 0.875rem;">(0 references)</span>
-              </h3>
-              <div style="display: flex; align-items: center; gap: 0.5rem;">
-                <label for="filterSelect" style="font-size: 0.875rem; color: var(--text-light); margin-right: 0.5rem;">Filter:</label>
-                <select id="filterSelect" style="padding: 0.375rem 0.75rem; border: 1px solid var(--border); border-radius: 0.375rem; background: var(--surface); color: var(--text); font-size: 0.875rem; cursor: pointer;">
-                  <option value="all">All References</option>
-                  <option value="found">Found</option>
-                  <option value="not-found">Not Found</option>
-                  <option value="error">Error</option>
-                </select>
-                <button id="clearResultsBtn" class="glass-button" style="padding: 0.5rem 1rem; border: 1px solid var(--border); border-radius: 0.5rem; background: var(--glass-bg); backdrop-filter: var(--glass-blur); color: var(--text); font-size: 0.875rem; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; transition: all 0.2s ease;">
-                  <i class="fas fa-trash-alt"></i>
-                  <span>Clear All</span>
-                </button>
+          <div style="display: flex; flex-direction: column; margin: 2rem 0 1rem 0; width: 100%;">
+            <h3 style="font-size: 1.25rem; font-weight: 600; color: var(--text); margin: 0 0 1rem 0;">
+              Results <span id="resultsCount" style="color: var(--text-lighter); font-size: 0.875rem; font-weight: 400;">(0 references)</span>
+            </h3>
+            <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; width: 100%;">
+              <div style="flex: 1; min-width: 0;">
+                <div style="display: flex; align-items: center; background: var(--surface); border: 1px solid var(--border); border-radius: 0.5rem; overflow: hidden; height: 40px;">
+                  <label for="filterSelect" style="font-size: 0.875rem; color: var(--text-light); padding: 0 0.75rem; white-space: nowrap; flex-shrink: 0;">Filter:</label>
+                  <select id="filterSelect" style="flex: 1; padding: 0 0.75rem; height: 100%; border: none; background: transparent; color: var(--text); font-size: 0.875rem; cursor: pointer; -webkit-appearance: none; -moz-appearance: none; appearance: none; min-width: 0; width: 100%;">
+                    <option value="all">All References</option>
+                    <option value="found">Found</option>
+                    <option value="not-found">Not Found</option>
+                    <option value="error">Error</option>
+                  </select>
+                  <div style="width: 2rem; height: 100%; display: flex; align-items: center; justify-content: center; pointer-events: none; color: var(--text-light);">
+                    <i class="fas fa-chevron-down" style="font-size: 0.75rem;"></i>
+                  </div>
+                </div>
+              </div>
+              <button id="clearResultsBtn" class="glass-button" style="padding: 0 1rem; border: 1px solid var(--border); border-radius: 0.5rem; background: var(--glass-bg); backdrop-filter: var(--glass-blur); color: var(--text); font-size: 0.875rem; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; height: 40px; min-width: 44px; white-space: nowrap; transition: all 0.2s ease; flex-shrink: 0;">
+                <i class="fas fa-trash-alt"></i>
+                <span>Clear All</span>
+              </button>
               </div>
             </div>
             <div class="desktop-results" style="display: none;">
@@ -389,7 +554,7 @@
         if (window.toastTimeout) clearTimeout(window.toastTimeout);
         window.toastTimeout = setTimeout(() => {
           hideToast();
-        }, 5000);
+        }, 8000); // Show toast for 8 seconds
       }
 
       function hideToast() {
@@ -661,6 +826,8 @@
           await new Promise(resolve => setTimeout(resolve, 200));
         }
         progressBar.style.width = '100%';
+        // Trigger enhanced confetti when progress completes
+        setTimeout(triggerConfetti, 100);
         resultsSection.style.display = 'block';
         exportTxtBtn.disabled = !results.some(r => r.status === 'found');
         exportCsvBtn.disabled = !results.some(r => r.status === 'found');
@@ -1210,8 +1377,56 @@ ER  -`;
           }
         });
       }
+      // Handle unlockpapers.svg floating behavior
+      let lastScrollTop = 0;
+      let isInResultsSection = false;
+      
+      function checkScrollAndSections() {
+        const unlockpapersFloat = document.getElementById('unlockpapers-float');
+        if (!unlockpapersFloat) return;
+        
+        // Check if we're in results or reference checker section
+        const resultsSection = document.getElementById('resultsSection');
+        const referenceChecker = document.getElementById('reference-checker');
+        
+        const resultsRect = resultsSection.getBoundingClientRect();
+        const referenceRect = referenceChecker.getBoundingClientRect();
+        
+        // Check if either section is in view
+        const isResultsInView = resultsRect.top < window.innerHeight && resultsRect.bottom > 0;
+        const isReferenceInView = referenceRect.top < window.innerHeight && referenceRect.bottom > 0;
+        
+        isInResultsSection = isResultsInView || isReferenceInView;
+        
+        // Handle scroll direction
+        const st = window.pageYOffset || document.documentElement.scrollTop;
+        
+        if (st > lastScrollTop) {
+          // Scrolling down
+          if (!isInResultsSection) {
+            unlockpapersFloat.style.opacity = '1';
+            unlockpapersFloat.style.visibility = 'visible';
+          } else {
+            unlockpapersFloat.style.opacity = '0';
+            unlockpapersFloat.style.visibility = 'hidden';
+          }
+        } else {
+          // Scrolling up
+          if (!isInResultsSection) {
+            unlockpapersFloat.style.opacity = '1';
+            unlockpapersFloat.style.visibility = 'visible';
+          }
+        }
+        
+        lastScrollTop = st <= 0 ? 0 : st;
+      }
+      
       // Initialize
       document.addEventListener('DOMContentLoaded', () => {
+        // Add scroll event listener
+        window.addEventListener('scroll', checkScrollAndSections, { passive: true });
+        // Initial check
+        checkScrollAndSections();
                 initTheme();
                 setTimeout(() => {
           showToast('Welcome to Advanced Reference Checker! Try the sample data or paste your own references.', 'info');
