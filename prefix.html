@@ -1,253 +1,1403 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
+<html lang="en" class="scroll-smooth" data-theme="light">
+  <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Infix to Prefix/Postfix Converter</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, minimum-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <meta name="theme-color" content="#4f46e5">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Advanced Reference Checker | Validate & Format Academic References</title>
+    <meta name="description" content="Check and validate academic references with our advanced reference checker. Supports DOI, BibTeX, and manual entry. Export results to multiple formats.">
+    <meta name="author" content="Rakshit Dogra">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔍</text></svg>">
+    <meta name="theme-color" content="#4f46e5">
+    <meta name="color-scheme" content="light dark">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="ref-glassmorphic.css">
+    <link rel="stylesheet" href="ref-styles.css">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 20px;
+      /* Base styles for all interactive elements */
+      button, .btn, .export-btn, [role="button"],
+      a[href], input[type="text"], textarea,
+      label[for], select, .reference-card,
+      .tab-button, .filter-btn, .action-btn,
+      .dropdown-toggle {
+        -webkit-tap-highlight-color: rgba(0,0,0,0);
+        -webkit-tap-highlight-color: transparent;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        touch-action: manipulation;
+        position: relative;
+        min-height: 44px;
+        min-width: 44px;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        cursor: pointer;
+        outline: none;
+      }
+      
+      /* Ensure form elements remain interactive */
+      input[type="text"], textarea, select {
+        user-select: text;
+        -webkit-user-select: text;
+        -moz-user-select: text;
+        -ms-user-select: text;
+        min-height: auto;
+        min-width: auto;
+      }
+      
+      /* Active state for touch devices */
+      .touch-active {
+        transform: scale(0.96) !important;
+        opacity: 0.8 !important;
+        transition: transform 0.1s ease, opacity 0.1s ease !important;
+      }
+      
+      /* Hover states for devices with hover support */
+      @media (hover: hover) and (pointer: fine) {
+        button:hover, .btn:hover, .export-btn:hover,
+        a[href]:hover, .reference-card:hover,
+        .tab-button:hover, .filter-btn:hover,
+        .action-btn:hover, .dropdown-toggle:hover {
+          opacity: 0.9;
+          transform: translateY(-1px);
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
-
-        .container {
-            max-width: 600px;
-            margin: auto;
-            padding: 20px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      
+      /* Focus states for better accessibility */
+      button:focus-visible, .btn:focus-visible,
+      .export-btn:focus-visible, a[href]:focus-visible,
+      input[type="text"]:focus-visible,
+      textarea:focus-visible, select:focus-visible {
+        outline: 2px solid var(--primary-color);
+        outline-offset: 2px;
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.3);
+      }
+      
+      /* Disabled state */
+      button:disabled, .btn:disabled, .export-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none !important;
+      }
+      
+      /* iOS specific fixes */
+      @supports (-webkit-touch-callout: none) {
+        input, textarea, select {
+          font-size: 16px; /* Prevent iOS zoom on focus */
         }
-
-        h1 {
-            text-align: center;
-            color: #333;
-        }
-
-        label {
-            margin-top: 10px;
-            display: block;
-            color: #555;
-        }
-
-        input[type="text"] {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-
-        .radio-group {
-            margin: 10px 0;
-        }
-
-        .radio-group label {
-            margin-right: 15px;
-        }
-
-        button {
-            width: 100%;
-            padding: 10px;
-            background-color: #5cb85c;
-            border: none;
-            border-radius: 4px;
-            color: white;
-            font-size: 16px;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background-color: #4cae4c;
-        }
-
-        .result {
-            margin-top: 20px;
-            padding: 10px;
-            background-color: #e9ecef;
-            border-radius: 4px;
-            font-weight: bold;
-            text-align: center;
-        }
-
-        .steps {
-            margin-top: 20px;
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: center;
-        }
-
-        th {
-            background-color: #f2f2f2;
-        }
-
-        .complexity {
-            margin-top: 20px;
-            font-weight: bold;
-            text-align: center;
-        }
+      }
+      
+      /* Prevent text selection on tap */
+      * {
+        -webkit-tap-highlight-color: transparent;
+        -webkit-touch-callout: none;
+      }
     </style>
-</head>
-<body>
-    <div class="container">
-        <h1>Infix to Prefix/Postfix Converter</h1>
-        <label for="infix">Enter Infix Expression:</label>
-        <input type="text" id="infix" placeholder="e.g., (A+(B^C))*((D+E)^F)">
-
-        <div class="radio-group">
-            <label>
-                <input type="radio" name="conversionType" value="prefix" checked>
-                Prefix
-            </label>
-            <label>
-                <input type="radio" name="conversionType" value="postfix">
-                Postfix
-            </label>
-        </div>
-
-        <button onclick="convertExpression()">Convert</button>
-
-        <div id="result" class="result"></div>
-        <div id="timeTaken" class="result"></div>
-        
-        <div class="steps">
-            <table id="stepsTable">
-                <thead>
-                    <tr>
-                        <th>Token</th>
-                        <th>Action</th>
-                        <th>Stack</th>
-                        <th>Output</th>
-                    </tr>
-                </thead>
-                <tbody id="stepsBody"></tbody>
-            </table>
-        </div>
-
-        <div id="complexity" class="complexity"></div>
+  </head>
+  <body>
+    <div class="background-blur">
+      <div class="blob blob-1"></div>
+      <div class="blob blob-2"></div>
     </div>
-
+    <nav>
+      <div class="container">
+        <div class="nav-inner" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 0;">
+          <div class="nav-logo" style="display: flex; align-items: center; gap: 0.75rem; font-size: 1.25rem; font-weight: 600; color: var(--text);">
+            <i class="fas fa-book-open" style="color: var(--primary-color);"></i>
+            <span>RefCheck</span>
+          </div>
+          <div class="nav-actions" style="display: flex; align-items: center; gap: 0.75rem;">
+            <button id="themeToggle" class="theme-toggle glass-button" aria-label="Toggle dark mode" style="width: 2.5rem; height: 2.5rem; display: flex; align-items: center; justify-content: center; border: none; border-radius: 0.5rem; background: var(--glass-bg); backdrop-filter: var(--glass-blur); color: var(--text); cursor: pointer; transition: all 0.2s ease;">
+              <i class="fas fa-moon"></i>
+              <i class="fas fa-sun"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </nav>
+    <header class="hero">
+      <br>
+      <div class="container text-center">
+        <div style="max-width: 48rem; margin: 0 auto;">
+          <div style="display: inline-flex; align-items: center; padding: 0.5rem 1rem; border-radius: 9999px; background: var(--primary-light); color: var(--primary-hover); font-size: 0.875rem; font-weight: 500; margin-bottom: 1.5rem;">
+            <span style="width: 0.5rem; height: 0.5rem; border-radius: 50%; background: #33d333; margin-right: 0.5rem;"></span> Server Up
+          </div>
+          <h1 style="font-size: 2.25rem; font-weight: 800; color: var(--text); margin-bottom: 1.5rem; line-height: 1.2;"> Validate & Format Academic References in Seconds </h1>
+          <p style="font-size: 1.25rem; color: var(--text-light); margin-bottom: 2rem; max-width: 42rem; margin-left: auto; margin-right: auto; line-height: 1.6;"> Check references, format citations, and export results with our powerful reference checker. Perfect for researchers and students. </p>
+          <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; margin-bottom: 2rem;">
+            <a href="#reference-checker" class="btn btn-primary" style="padding: 0.7rem 2rem; font-size: 1.125rem;"> Try It Now </a>
+            <br>
+            <div class="scroll-indicator" style="text-align: center; margin-top: 2rem; cursor: pointer; animation: fadeInUp 1s ease-out;">
+              <div class="scroll-text" style="color: var(--text-light); font-size: 0.875rem; margin-bottom: 0.5rem; opacity: 0; animation: fadeIn 1s ease-out 0.5s forwards;">Scroll to explore</div>
+              <div class="scroll-arrow" style="width: 30px; height: 48px; margin: 0 auto; border: 2px solid var(--primary-color); border-radius: 15px; position: relative;">
+                <div class="arrow" style="position: absolute; top: 8px; left: 50%; transform: translateX(-50%); width: 4px; height: 8px; background: var(--primary-color); border-radius: 2px; animation: bounce 2s infinite;"></div>
+              </div>
+            </div>
+            <script>
+              document.addEventListener('DOMContentLoaded', function() {
+                const scrollIndicator = document.querySelector('.scroll-indicator');
+                if (scrollIndicator) {
+                  scrollIndicator.addEventListener('click', function() {
+                    document.querySelector('#reference-checker').scrollIntoView({
+                      behavior: 'smooth'
+                    });
+                  });
+                }
+              });
+            </script>
+          </div>
+        </div>
+      </div>
+    </header>
+    <main class="container" style="padding: 1.5rem 0;">
+      <section id="reference-checker" style="margin-bottom: 2rem; padding: 0 1rem;">
+        <div class="glass-card fade-in" style="margin-top: 1.5rem; padding: 1.25rem;">
+          <div class="reference-checker-body">
+            <h2 style="font-size: clamp(1.5rem, 5vw, 1.75rem); font-weight: 700; color: var(--text); margin-bottom: 1.25rem; display: flex; align-items: center;">
+              <i class="fas fa-search" style="color: var(--primary-color); margin-right: 0.75rem;"></i>
+              <span>Check Your References</span>
+            </h2>
+            <div style="margin-bottom: 1.25rem;">
+              <label for="references" style="display: block; font-weight: 500; color: var(--text-light); margin-bottom: 0.5rem; font-size: 0.9375rem;"> Paste references (one per line) or upload a file: </label>
+              <div style="position: relative;">
+                <textarea id="references" rows="6" style="width: 100%; padding: 1rem; border: 1px solid var(--border); border-radius: 0.5rem; font-family: inherit; font-size: 0.9375rem; resize: vertical; min-height: 8rem; background: var(--surface); color: var(--text); -webkit-appearance: none; -moz-appearance: none; appearance: none;" placeholder="Paste your references here, one per line..."></textarea>
+                <div style="position: absolute; bottom: 0.75rem; right: 0.75rem; display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: flex-end;">
+                  <button id="clearBtn" class="glass-button" style="border: 1px solid var(--border); border-radius: 0.5rem; padding: 0.5rem 0.75rem; font-size: 0.8125rem; font-weight: 500; color: var(--text); cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; background: var(--glass-bg); backdrop-filter: var(--glass-blur); white-space: nowrap;">
+                    <i class="fas fa-times"></i>
+                    <span>Clear</span>
+                  </button>
+                  <button id="sampleBtn" class="glass-button" style="border: 1px solid var(--border); border-radius: 0.5rem; padding: 0.5rem 0.75rem; font-size: 0.8125rem; font-weight: 500; color: var(--text); cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; background: var(--glass-bg); backdrop-filter: var(--glass-blur); white-space: nowrap;">
+                    <i class="fas fa-magic"></i>
+                    <span>Sample</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div id="progressContainer" style="display: none; width: 100%; height: 0.375rem; background: var(--border); border-radius: 0.25rem; margin: 1.25rem 0; overflow: hidden;">
+              <div id="progressBar" style="height: 100%; width: 0%; background: linear-gradient(90deg, var(--primary-color), #7c3aed); transition: width 0.3s ease-in-out;"></div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr; gap: 1.25rem; margin-bottom: 1.5rem;">
+              <div class="glass-card" style="padding: 1.25rem; transition: all 0.3s ease; cursor: pointer; position: relative; overflow: hidden; border: 1px solid var(--border);" id="fileUploadLabel">
+                <div style="position: absolute; inset: 0; border: 2px dashed var(--border); margin: 7px; border-radius: 0.5rem; transition: all 0.3s ease; pointer-events: none;"></div>
+                <label for="fileUpload" style="display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; text-align: center; min-height: 140px; width: 100%; position: relative; z-index: 1; padding: 1rem;">
+                  <div class="upload-icon" style="width: 50px; height: 50px; background: var(--primary-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 0.75rem; transition: all 0.3s ease;">
+                    <i class="fas fa-cloud-upload-alt" style="color: var(--primary-color); font-size: 1.25rem;"></i>
+                  </div>
+                  <div class="upload-text">
+                    <h3 style="font-size: 1rem; font-weight: 600; color: var(--text); margin-bottom: 0.375rem;">Upload References</h3>
+                    <p style="color: var(--text-light); font-size: 0.875rem; margin-bottom: 0.75rem;">Drop files or tap to upload</p>
+                    <span style="font-size: 0.75rem; color: var(--text-tertiary); display: block;">.txt files only, one reference per line</span>
+                  </div>
+                  <input type="file" id="fileUpload" accept=".txt" style="position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;">
+                </label>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 0.75rem; width: 100%;">
+                <button id="checkBtn" class="btn btn-primary" style="display: flex; align-items: center; justify-content: center; padding: 1rem; font-weight: 500; font-size: 1rem; width: 100%; min-height: 3rem; border: none; border-radius: 0.5rem; background: var(--primary-color); color: white; cursor: pointer; transition: all 0.2s ease; -webkit-tap-highlight-color: transparent; touch-action: manipulation;">
+                  <i class="fas fa-check-circle" style="margin-right: 0.5rem; pointer-events: none;"></i>
+                  <span style="pointer-events: none;">Check References</span>
+                </button>
+              </div>
+              <p style="margin: 0.75rem 0 0.5rem; font-size: 0.875rem; color: var(--text-light);">Export Results</p>
+              <div class="btn-group" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; width: 100%;">
+                <button id="exportTxtBtn" class="export-btn" disabled style="padding: 0.5rem 0.25rem; min-height: 2.5rem; font-size: 0.75rem; border: 1px solid var(--border); background: var(--surface); border-radius: 0.5rem; cursor: pointer; transition: all 0.2s ease;">
+                  <i class="fas fa-file-alt"></i>
+                  <span class="btn-text">TXT</span>
+                </button>
+                <button id="exportCsvBtn" class="export-btn" disabled style="padding: 0.5rem 0.25rem; min-height: 2.5rem; font-size: 0.75rem; border: 1px solid var(--border); background: var(--surface); border-radius: 0.5rem; cursor: pointer; transition: all 0.2s ease;">
+                  <i class="fas fa-file-csv"></i>
+                  <span class="btn-text">CSV</span>
+                </button>
+                <button id="exportBibBtn" class="export-btn" disabled style="padding: 0.5rem 0.25rem; min-height: 2.5rem; font-size: 0.75rem; border: 1px solid var(--border); background: var(--surface); border-radius: 0.5rem; cursor: pointer; transition: all 0.2s ease;">
+                  <i class="fas fa-book"></i>
+                  <span class="btn-text">BibTeX</span>
+                </button>
+                <button id="exportRisBtn" class="export-btn" disabled style="padding: 0.5rem 0.25rem; min-height: 2.5rem; font-size: 0.75rem; border: 1px solid var(--border); background: var(--surface); border-radius: 0.5rem; cursor: pointer; transition: all 0.2s ease;">
+                  <i class="fas fa-file-export"></i>
+                  <span class="btn-text">RIS</span>
+                </button>
+                <button id="exportXlsBtn" class="export-btn" style="padding: 0.5rem 0.25rem; min-height: 2.5rem; font-size: 0.75rem; border: 1px solid var(--border); background: var(--surface); border-radius: 0.5rem; cursor: pointer; transition: all 0.2s ease;" title="Export to Excel">
+                  <i class="fas fa-file-excel"></i>
+                  <span class="btn-text">XLS</span>
+                </button>
+                <button id="exportPdfBtn" class="export-btn" style="padding: 0.5rem 0.25rem; min-height: 2.5rem; font-size: 0.75rem; border: 1px solid var(--primary-color); background: var(--primary-color); color: white; border-radius: 0.5rem; cursor: pointer; transition: all 0.2s ease;" title="Export to PDF">
+                  <i class="fas fa-file-pdf"></i>
+                  <span class="btn-text">PDF</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="resultsSection" class="results-section" style="padding: 0 1rem;">
+          <div style="display: flex; flex-direction: column; margin: 2rem 0 1rem 0; width: 100%;">
+            <h3 style="font-size: 1.25rem; font-weight: 600; color: var(--text); margin: 0 0 1rem 0;">
+              Results <span id="resultsCount" style="color: var(--text-lighter); font-size: 0.875rem; font-weight: 400;">(0 references)</span>
+            </h3>
+            <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; width: 100%;">
+              <div style="flex: 1; min-width: 0;">
+                <div style="display: flex; align-items: center; background: var(--surface); border: 1px solid var(--border); border-radius: 0.5rem; overflow: hidden; height: 40px;">
+                  <label for="filterSelect" style="font-size: 0.875rem; color: var(--text-light); padding: 0 0.75rem; white-space: nowrap; flex-shrink: 0;">Filter:</label>
+                  <select id="filterSelect" style="flex: 1; padding: 0 0.75rem; height: 100%; border: none; background: transparent; color: var(--text); font-size: 0.875rem; cursor: pointer; -webkit-appearance: none; -moz-appearance: none; appearance: none; min-width: 0; width: 100%;">
+                    <option value="all">All References</option>
+                    <option value="found">Found</option>
+                    <option value="not-found">Not Found</option>
+                    <option value="error">Error</option>
+                  </select>
+                  <div style="width: 2rem; height: 100%; display: flex; align-items: center; justify-content: center; pointer-events: none; color: var(--text-light);">
+                    <i class="fas fa-chevron-down" style="font-size: 0.75rem;"></i>
+                  </div>
+                </div>
+              </div>
+              <button id="clearResultsBtn" class="glass-button" style="padding: 0 1rem; border: 1px solid var(--border); border-radius: 0.5rem; background: var(--glass-bg); backdrop-filter: var(--glass-blur); color: var(--text); font-size: 0.875rem; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; height: 40px; min-width: 44px; white-space: nowrap; transition: all 0.2s ease; flex-shrink: 0;">
+                <i class="fas fa-trash-alt"></i>
+                <span>Clear All</span>
+              </button>
+              </div>
+            </div>
+            <div class="desktop-results" style="display: none;">
+              <div style="overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 12px; background: var(--glass-bg); backdrop-filter: var(--glass-blur); border: var(--glass-border); padding: 0.5rem;">
+                <table id="resultsTable" class="results-table" style="width: 100%; min-width: 800px; border-collapse: separate; border-spacing: 0; background: var(--bg-secondary);">
+                  <thead>
+                    <tr>
+                      <th style="padding: 0.75rem; text-align: left; font-weight: 600; color: var(--text); background: var(--glass-bg); position: sticky; left: 0; min-width: 2.5rem; max-width: 2.5rem;">#</th>
+                      <th style="padding: 0.75rem; text-align: left; font-weight: 600; color: var(--text); background: var(--glass-bg); min-width: 180px; max-width: 180px; font-size: 0.9rem;">Input</th>
+                      <th style="padding: 0.75rem; text-align: left; font-weight: 600; color: var(--text); background: var(--glass-bg); min-width: 7rem; max-width: 7rem; font-size: 0.9rem;">Status</th>
+                      <th style="padding: 0.75rem; text-align: left; font-weight: 600; color: var(--text); background: var(--glass-bg); min-width: 180px; font-size: 0.9rem;">Title</th>
+                      <th style="padding: 0.75rem; text-align: left; font-weight: 600; color: var(--text); background: var(--glass-bg); min-width: 180px; font-size: 0.9rem;">Journal/Source</th>
+                      <th style="padding: 0.75rem; text-align: left; font-weight: 600; color: var(--text); background: var(--glass-bg); min-width: 5rem; max-width: 5rem; font-size: 0.9rem;">Year</th>
+                      <th style="padding: 0.75rem; text-align: left; font-weight: 600; color: var(--text); background: var(--glass-bg); min-width: 9rem; font-size: 0.9rem;">DOI</th>
+                      <th style="padding: 0.75rem; text-align: left; font-weight: 600; color: var(--text); background: var(--glass-bg); min-width: 7rem; font-size: 0.9rem;">URL</th>
+                    </tr>
+                  </thead>
+                  <tbody id="resultsBody" style="font-size: 0.875rem;">
+                  </tbody>
+                </table>
+              </div>
+              <div style="text-align: center; margin-top: 0.5rem; font-size: 0.75rem; color: var(--text-lighter);">
+                <i class="fas fa-arrows-alt-h"></i> Scroll horizontally to view all columns
+              </div>
+            </div>
+            <div id="mobileResults" class="mobile-results" style="display: none;">
+            </div>
+          </div>
+          <div id="noResults" style="display: none; text-align: center; padding: 2rem; color: var(--text-lighter);">
+            <i class="fas fa-inbox text-4xl mb-2" style="opacity: 0.5;"></i>
+            <p>No results to display. Check some references to see them here.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+    <footer style="margin-top: auto; padding: 2rem 0;">
+      <div class="container">
+        <div class="glass-card" style="padding: 2rem; text-align: center;">
+          <div style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem; color: var(--text);"> RefCheck </div>
+          <p style="color: var(--text-lighter); max-width: 42rem; margin: 0 auto 1.5rem; line-height: 1.6;"> A powerful tool for researchers and students to validate, format, and manage academic references with ease. </p>
+          <div style="display: flex; justify-content: center; gap: 1rem; margin-bottom: 2rem;">
+            <a href="https://github.com/rakshitdogra" style="color: var(--text); background: var(--background); width: 2.5rem; height: 2.5rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.2s;" title="GitHub" target="_blank" rel="noopener noreferrer">
+              <i class="fab fa-github"></i>
+            </a>
+            <a href="https://in.linkedin.com/in/rakshitdogra" style="color: var(--text); background: var(--background); width: 2.5rem; height: 2.5rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.2s;" title="LinkedIn" target="_blank" rel="noopener noreferrer">
+              <i class="fab fa-linkedin-in"></i>
+            </a>
+          </div>
+        </div>
+        <div style="border-top: 1px solid var(--border); padding-top: 2rem; text-align: center;">
+          <p style="color: var(--text-lighter); font-size: 0.875rem;"> &copy; 2025 RefCheck. All rights reserved &copy; Rakshit Dogra. <br> Made with <span class="footer-heart">☕️</span> by Rakshit Dogra </p>
+        </div>
+      </div>
+    </footer>
+    <div id="toast" style="position: fixed; bottom: 2rem; right: 2rem; background: var(--surface); color: var(--text); padding: 1rem 1.5rem; border-radius: 0.5rem; box-shadow: var(--shadow-lg); display: none; align-items: center; z-index: 50; max-width: 24rem; transform: translateY(2rem); opacity: 0; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid var(--border);">
+      <i id="toastIcon" class="fas fa-info-circle mr-3" style="margin-right: 1rem;"></i>
+      <span id="toastMessage" style="flex: 1;">This is a notification message.</span>
+      <button id="closeToast" style="margin-left: 1rem; background: none; border: none; color: var(--text-lighter); cursor: pointer; padding: 0.25rem; margin-right: -0.5rem; transition: color 0.2s; border-radius: 0.25rem; width: 1.75rem; height: 1.75rem; display: flex; align-items: center; justify-content: center;" aria-label="Close notification">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
     <script>
-        function isOperator(c) {
-            return (c === '+' || c === '-' || c === '*' || c === '/' || c === '^');
+      const {
+        jsPDF
+      } = window.jspdf;
+      function showToast(message, type = 'info') {
+        const toast = document.getElementById('toast');
+        const toastMessage = document.getElementById('toastMessage');
+        const toastIcon = document.getElementById('toastIcon');
+        const closeBtn = document.getElementById('closeToast');
+        toastMessage.textContent = message;
+        let iconClass = 'fa-info-circle';
+        let bgColor, textColor, iconColor, borderColor;
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        const colors = {
+          success: {
+            bg: isDark ? 'rgba(34, 197, 94, 0.15)' : 'rgba(34, 197, 94, 0.1)',
+            text: isDark ? '#4ade80' : '#166534',
+            icon: '#22c55e',
+            border: isDark ? 'rgba(34, 197, 94, 0.3)' : 'rgba(34, 197, 94, 0.2)'
+          },
+          error: {
+            bg: isDark ? 'rgba(239, 68, 68, 0.15)' : 'rgba(239, 68, 68, 0.1)',
+            text: isDark ? '#f87171' : '#b91c1c',
+            icon: '#ef4444',
+            border: isDark ? 'rgba(239, 68, 68, 0.3)' : 'rgba(239, 68, 68, 0.2)'
+          },
+          warning: {
+            bg: isDark ? 'rgba(245, 158, 11, 0.15)' : 'rgba(245, 158, 11, 0.1)',
+            text: isDark ? '#fbbf24' : '#92400e',
+            icon: '#f59e0b',
+            border: isDark ? 'rgba(245, 158, 11, 0.3)' : 'rgba(245, 158, 11, 0.2)'
+          },
+          info: {
+            bg: isDark ? 'rgba(59, 130, 246, 0.15)' : 'rgba(59, 130, 246, 0.1)',
+            text: isDark ? '#93c5fd' : '#1e40af',
+            icon: '#3b82f6',
+            border: isDark ? 'rgba(59, 130, 246, 0.3)' : 'rgba(59, 130, 246, 0.2)'
+          }
+        };
+        const currentColors = colors[type] || colors.info;
+        toast.style.backgroundColor = currentColors.bg;
+        toast.style.borderColor = currentColors.border;
+        toast.style.color = currentColors.text;
+        toastIcon.style.color = currentColors.icon;
+        closeBtn.style.color = currentColors.text;
+        closeBtn.style.opacity = '0.7';
+        closeBtn.onmouseover = () => closeBtn.style.opacity = '1';
+        closeBtn.onmouseout = () => closeBtn.style.opacity = '0.7';
+        switch (type) {
+          case 'success':
+            iconClass = 'fa-check-circle';
+            break;
+          case 'error':
+            iconClass = 'fa-exclamation-circle';
+            break;
+          case 'warning':
+            iconClass = 'fa-exclamation-triangle';
+            break;
+          default:
+            iconClass = 'fa-info-circle';
         }
+        toastIcon.className = `fas ${iconClass} mr-3`;
+        toast.style.display = 'flex';
+        setTimeout(() => {
+          toast.style.transform = 'translateY(0)';
+          toast.style.opacity = '1';
+        }, 10);
+        if (window.toastTimeout) clearTimeout(window.toastTimeout);
+        window.toastTimeout = setTimeout(() => {
+          hideToast();
+        }, 5000);
+      }
 
-        function precedence(op) {
-            if (op === '^') return 3;
-            else if (op === '*' || op === '/') return 2;
-            else if (op === '+' || op === '-') return 1;
-            return 0;
-        }
+      function hideToast() {
+        const toast = document.getElementById('toast');
+        toast.style.transform = 'translateY(2rem)';
+        toast.style.opacity = '0';
+        setTimeout(() => {
+          toast.style.display = 'none';
+        }, 300);
+      }
+      const fileUploadLabel = document.getElementById('fileUploadLabel');
+      if (fileUploadLabel) {
+        const innerBorder = fileUploadLabel.querySelector('div');
+        fileUploadLabel.addEventListener('mouseenter', () => {
+          innerBorder.style.borderColor = 'var(--primary-color)';
+          innerBorder.style.boxShadow = '0 0 0 3px rgba(99, 102, 241, 0.1)';
+        });
+        fileUploadLabel.addEventListener('mouseleave', () => {
+          innerBorder.style.borderColor = 'var(--border)';
+          innerBorder.style.boxShadow = 'none';
+        });
+      }
+      document.getElementById('closeToast').addEventListener('click', hideToast);
+      const sampleReferences = ['Smith, J., Johnson, A. B., & Williams, C. (2020). The impact of climate change on biodiversity. Nature, 578(7794), 123-145. https://doi.org/10.1038/s41586-020-2180-5', '10.1126/science.abc5812', 'Doe, J. (2019). Machine learning in healthcare: A review. Journal of Medical Research, 15(3), 234-256.', 'Brown, M., & Davis, K. (2018). The future of renewable energy. Energy Policy, 112, 12-24. https://doi.org/10.1016/j.enpol.2017.10.012', 'LeCun, Y., Bengio, Y., & Hinton, G. (2015). Deep learning. Nature, 521(7553), 436-444.', 'This is an invalid reference that will show as not found'];
+      const CONTACT_EMAIL = 'rakshitdogra.work@gmail.com';
+      const CROSSREF_API_BASE = 'https://api.crossref.org/works';
+      const DATACITE_API_BASE = 'https://api.datacite.org/dois';
+      const apiCache = new Map();
+      const referencesTextarea = document.getElementById('references');
+      const fileUpload = document.getElementById('fileUpload');
+      const checkBtn = document.getElementById('checkBtn');
+      const exportCsvBtn = document.getElementById('exportCsvBtn');
+      const exportBibBtn = document.getElementById('exportBibBtn');
+      const exportRisBtn = document.getElementById('exportRisBtn');
+      const exportPdfBtn = document.getElementById('exportPdfBtn');
+      const clearBtn = document.getElementById('clearBtn');
+      const sampleBtn = document.getElementById('sampleBtn');
+      const filterSelect = document.getElementById('filterSelect');
+      const clearResultsBtn = document.getElementById('clearResultsBtn');
+      const resultsSection = document.getElementById('resultsSection');
+      const resultsBody = document.getElementById('resultsBody');
+      const noResults = document.getElementById('noResults');
+      const progressContainer = document.getElementById('progressContainer');
+      const progressBar = document.getElementById('progressBar');
+      const resultsCount = document.getElementById('resultsCount');
+      let results = [];
+      checkBtn.addEventListener('click', checkReferences);
+      clearBtn.addEventListener('click', clearForm);
+      sampleBtn.addEventListener('click', loadSampleData);
+      fileUpload.addEventListener('change', handleFileUpload);
+      filterSelect.addEventListener('change', filterResults);
+      clearResultsBtn.addEventListener('click', clearResults);
+      exportCsvBtn.addEventListener('click', exportToCsv);
+      exportTxtBtn.addEventListener('click', exportToTxt);
+      exportBibBtn.addEventListener('click', exportToBibtex);
+      exportRisBtn.addEventListener('click', exportToRis);
+      exportPdfBtn.addEventListener('click', generatePdfReport);
+      exportXlsBtn.addEventListener('click', exportToXls);
+      const dropZone = fileUpload.parentElement;
+      ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, preventDefaults, false);
+      });
 
-        function infixToPostfix(infix) {
-            let stack = [];
-            let postfix = "";
-            let steps = [];
+      function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, highlight, false);
+      });
+      ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, unhighlight, false);
+      });
 
-            for (let c of infix) {
-                let action = '';
-                let currentStack = stack.join(' ');
+      function highlight() {
+        dropZone.style.borderColor = '#4f46e5';
+        dropZone.style.backgroundColor = '#f0f9ff';
+      }
 
-                if (/\w/.test(c)) {  // Operand check
-                    postfix += c;
-                    action = 'Add to output';
-                    steps.push({ token: c, action, stack: currentStack, output: postfix });
-                } else if (c === '(') {
-                    stack.push(c);
-                    action = 'Push to stack';
-                    steps.push({ token: c, action, stack: currentStack, output: postfix });
-                } else if (c === ')') {
-                    while (stack.length && stack[stack.length - 1] !== '(') {
-                        postfix += stack.pop();
-                        action = 'Pop from stack';
-                        currentStack = stack.join(' ');
-                        steps.push({ token: '', action, stack: currentStack, output: postfix });
-                    }
-                    stack.pop(); // Remove '(' from the stack
-                    action = 'Pop from stack';
-                    currentStack = stack.join(' ');
-                    steps.push({ token: '', action, stack: currentStack, output: postfix });
-                } else if (isOperator(c)) {
-                    while (stack.length && precedence(stack[stack.length - 1]) >= precedence(c)) {
-                        postfix += stack.pop();
-                        action = 'Pop from stack';
-                        currentStack = stack.join(' ');
-                        steps.push({ token: '', action, stack: currentStack, output: postfix });
-                    }
-                    stack.push(c);
-                    action = 'Push to stack';
-                    currentStack = stack.join(' ');
-                    steps.push({ token: c, action, stack: currentStack, output: postfix });
-                }
+      function unhighlight() {
+        dropZone.style.borderColor = '#d1d5db';
+        dropZone.style.backgroundColor = '#f9fafb';
+      }
+      dropZone.addEventListener('drop', handleDrop, false);
+
+      function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        if (files.length) {
+          fileUpload.files = files;
+          handleFileUpload({
+            target: {
+              files
             }
-
-            while (stack.length) {
-                postfix += stack.pop();
-                let action = 'Pop from stack';
-                currentStack = stack.join(' ');
-                steps.push({ token: '', action, stack: currentStack, output: postfix });
+          });
+        }
+      }
+      async function queryCrossRef(query, isDOI = false) {
+        const cacheKey = `${isDOI ? 'doi' : 'search'}:${query}`;
+        if (apiCache.has(cacheKey)) {
+          return apiCache.get(cacheKey);
+        }
+        try {
+          const params = new URLSearchParams();
+          if (isDOI) {
+            if (CONTACT_EMAIL) params.set('mailto', CONTACT_EMAIL);
+          } else {
+            params.set('query.bibliographic', query);
+            params.set('rows', '1');
+            if (CONTACT_EMAIL) params.set('mailto', CONTACT_EMAIL);
+          }
+          const queryString = params.toString();
+          const url = isDOI ? `${CROSSREF_API_BASE}/${encodeURIComponent(query)}${queryString ? `?${queryString}` : ''}` : `${CROSSREF_API_BASE}?${queryString}`;
+          const response = await fetch(url, {
+            headers: {
+              'Accept': 'application/json'
             }
-
-            displaySteps(steps);
-            return postfix;
+          });
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          const data = await response.json();
+          let message = null;
+          if (isDOI) {
+            message = data.message || null;
+          } else if (data.message.items && data.message.items.length > 0) {
+            message = data.message.items[0];
+          }
+          apiCache.set(cacheKey, message);
+          return message;
+        } catch (error) {
+          console.error('Error querying CrossRef:', error);
+          apiCache.set(cacheKey, null);
+          return null;
         }
-
-        function infixToPrefix(infix) {
-            let reversed = infix.split('').reverse().join('');
-            reversed = reversed.replace(/\(/g, 'temp').replace(/\)/g, '(').replace(/temp/g, ')');
-
-            let postfix = infixToPostfix(reversed);
-            return postfix.split('').reverse().join('');
+      }
+      async function queryDataCite(doi) {
+        const cacheKey = `datacite:${doi}`;
+        if (apiCache.has(cacheKey)) {
+          return apiCache.get(cacheKey);
         }
-
-        function displaySteps(steps) {
-            const stepsBody = document.getElementById("stepsBody");
-            stepsBody.innerHTML = '';
-            steps.forEach(step => {
-                // Only add meaningful steps
-                if (step.token || step.action.includes('Pop')) {
-                    const row = `<tr>
-                        <td>${step.token || ''}</td>
-                        <td>${step.action}</td>
-                        <td>${step.stack}</td>
-                        <td>${step.output}</td>
-                    </tr>`;
-                    stepsBody.innerHTML += row;
-                }
-            });
+        try {
+          const response = await fetch(`${DATACITE_API_BASE}/${encodeURIComponent(doi)}`, {
+            headers: {
+              'Accept': 'application/vnd.api+json'
+            }
+          });
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          const data = await response.json();
+          if (data.data) {
+            const attr = data.data.attributes;
+            const normalized = {
+              title: attr.titles?.[0]?.title || 'Untitled',
+              authors: attr.creators?.map(c => c.name || `${(c.givenName || '').trim()} ${(c.familyName || '').trim()}`.trim()).filter(Boolean).join(', ') || 'Unknown',
+              journal: attr.publisher || 'Unknown',
+              year: attr.publicationYear || new Date().getFullYear(),
+              doi: attr.doi,
+              url: attr.url || `https://doi.org/${attr.doi}`,
+              type: attr.types?.resourceTypeGeneral || 'Article'
+            };
+            apiCache.set(cacheKey, normalized);
+            return normalized;
+          }
+          apiCache.set(cacheKey, null);
+          return null;
+        } catch (error) {
+          console.error('Error querying DataCite:', error);
+          apiCache.set(cacheKey, null);
+          return null;
         }
+      }
 
-        function convertExpression() {
-            const infix = document.getElementById("infix").value;
-            const conversionType = document.querySelector('input[name="conversionType"]:checked').value;
-            let result;
-            const startTime = performance.now();
+      function extractDOI(text) {
+        const doiRegex = /\b(10\.\d{4,}(?:[.\/#;]\S+)?\/\S+)\b/i;
+        const match = text.match(doiRegex);
+        return match ? match[1].trim() : null;
+      }
 
-            if (conversionType === "prefix") {
-                result = infixToPrefix(infix);
+      function parseReference(text) {
+        const titleMatch = text.match(/\(\d{4}\)\.\s*([^\.]+)\./i) || text.match(/[\"“]([^\"”]+)[\"”]/);
+        const yearMatch = text.match(/\((\d{4})\)/) || text.match(/(?:19|20)\d{2}/);
+        const journalMatch = text.match(/\.\s*([^\.,;]+?)(?:\s*\d+\s*[:\(])?/i);
+        return {
+          title: titleMatch ? titleMatch[1].trim() : null,
+          year: yearMatch ? yearMatch[1] || yearMatch[0] : null,
+          journal: journalMatch ? journalMatch[1].trim() : null
+        };
+      }
+      async function checkReferences() {
+        const referencesText = referencesTextarea.value.trim();
+        if (!referencesText) {
+          showToast('Please enter some references to check', 'error');
+          return;
+        }
+        const references = referencesText.split('\n').filter(ref => ref.trim() !== '');
+        if (references.length === 0) {
+          showToast('No valid references found', 'error');
+          return;
+        }
+        progressContainer.style.display = 'block';
+        progressBar.style.width = '0%';
+        results = [];
+        renderResults();
+        for (let i = 0; i < references.length; i++) {
+          const ref = references[i].trim();
+          if (!ref) continue;
+          const progress = ((i + 1) / references.length) * 100;
+          progressBar.style.width = `${progress}%`;
+          try {
+            const doi = extractDOI(ref);
+            let result = null;
+            if (doi) {
+              result = await queryCrossRef(doi, true);
+              if (!result) {
+                result = await queryDataCite(doi);
+              }
+            }
+            if (!result) {
+              const parsedRef = parseReference(ref);
+              if (parsedRef.title) {
+                result = await queryCrossRef(parsedRef.title);
+              }
+            }
+            if (result) {
+              const formattedResult = {
+                id: Date.now() + i,
+                input: ref,
+                status: 'found',
+                title: result.title?.[0] || result.title || 'Untitled',
+                journal: result['container-title']?.[0] || result.journal || 'Unknown',
+                year: result.created?.['date-parts']?.[0]?.[0] || result.year || '—',
+                doi: result.DOI || result.doi || '',
+                url: result.URL || result.url || (result.DOI ? `https://doi.org/${result.DOI}` : ''),
+                authors: result.author?.map(a => a.given ? `${a.given} ${a.family}`.trim() : a.name).join(', ') || 'Unknown'
+              };
+              results.push(formattedResult);
             } else {
-                result = infixToPostfix(infix);
+              const parsedRef = parseReference(ref);
+              results.push({
+                id: Date.now() + i,
+                input: ref,
+                status: 'not-found',
+                title: parsedRef.title || ref.substring(0, 100) + (ref.length > 100 ? '...' : ''),
+                journal: parsedRef.journal || '—',
+                year: parsedRef.year || '—',
+                doi: '',
+                url: '',
+                authors: '—'
+              });
             }
-
-            const endTime = performance.now();
-            const timeTaken = (endTime - startTime).toFixed(2);
-            
-            document.getElementById("result").innerText = `Result: ${result}`;
-            document.getElementById("timeTaken").innerText = `Time Taken: ${timeTaken} ms`;
-            document.getElementById("complexity").innerText = "Time Complexity: O(n) | Space Complexity: O(n)";
+            renderResults();
+          } catch (error) {
+            console.error('Error checking reference:', error);
+            results.push({
+              id: Date.now() + i,
+              input: ref,
+              status: 'error',
+              title: 'Error processing reference',
+              journal: '',
+              year: '',
+              doi: '',
+              url: '',
+              authors: ''
+            });
+            renderResults();
+          }
+          await new Promise(resolve => setTimeout(resolve, 200));
         }
+        progressBar.style.width = '100%';
+        resultsSection.style.display = 'block';
+        exportTxtBtn.disabled = !results.some(r => r.status === 'found');
+        exportCsvBtn.disabled = !results.some(r => r.status === 'found');
+        exportBibBtn.disabled = !results.some(r => r.status === 'found');
+        exportRisBtn.disabled = !results.some(r => r.status === 'found');
+        exportPdfBtn.disabled = !results.some(r => r.status === 'found');
+        exportXlsBtn.disabled = !results.some(r => r.status === 'found');
+        showToast(`Processed ${references.length} references (${results.filter(r => r.status === 'found').length} found)`, 'success');
+        setTimeout(() => {
+          document.getElementById('resultsSection').scrollIntoView({
+            behavior: 'smooth'
+          });
+        }, 300);
+      }
+
+      function getStatusBadge(status) {
+        switch (status) {
+          case 'found':
+            return ' <span class="status-badge status-found"> <i class="fas fa-check-circle mr-1"></i> Found </span>';
+          case 'not-found':
+            return ' <span class="status-badge status-not-found"> <i class="fas fa-times-circle mr-1"></i> Not Found </span>';
+          case 'error':
+            return ' <span class="status-badge status-error"> <i class="fas fa-exclamation-circle mr-1"></i> Error </span>';
+          default:
+            return '';
+        }
+      }
+
+      function renderResults() {
+        if (!results || results.length === 0) {
+          resultsBody.innerHTML = '';
+          document.getElementById('mobileResults').innerHTML = '';
+          noResults.style.display = 'block';
+          resultsCount.textContent = '(0 references)';
+          return;
+        }
+        noResults.style.display = 'none';
+        const filter = filterSelect.value;
+        const filteredResults = filter === 'all' ? results : results.filter(r => r.status === filter);
+        const foundCount = results.filter(r => r.status === 'found').length;
+        const notFoundCount = results.filter(r => r.status === 'not-found').length;
+        const errorCount = results.filter(r => r.status === 'error').length;
+        resultsCount.textContent = `(${results.length} references: ${foundCount} found, ${notFoundCount} not found, ${errorCount} errors)`;
+        resultsBody.innerHTML = filteredResults.map((result, index) => {
+          const statusBadge = getStatusBadge(result.status);
+          const titleDisplay = result.url ? `<a href="${result.url}" target="_blank" rel="noopener noreferrer" class="text-link">${result.title || 'Untitled'}</a>` : (result.title || '—');
+          return `
+            <tr data-status="${result.status}">
+              <td>${index + 1}</td>
+              <td class="truncate" title="${result.input.replace(/"/g, '&quot;')}">
+                ${result.input.length > 40 ? result.input.substring(0, 40) + '...' : result.input}
+              </td>
+              <td>${statusBadge}</td>
+              <td class="truncate">${titleDisplay}</td>
+              <td class="truncate" title="${(result.journal || '').replace(/"/g, '&quot;')}">
+                ${result.journal || '—'}
+              </td>
+              <td>${result.year || '—'}</td>
+              <td>${result.doi ? `<a href="https://doi.org/${result.doi}" target="_blank" rel="noopener noreferrer" class="text-link">${result.doi}</a>` : '—'}</td>
+              <td>${result.url ? `<a href="${result.url}" target="_blank" rel="noopener noreferrer" class="text-link" title="${result.url}">View</a>` : '—'}</td>
+            </tr>
+          `;
+        }).join('');
+        const mobileResults = document.getElementById('mobileResults');
+        mobileResults.innerHTML = filteredResults.map((result, index) => {
+          const statusBadge = getStatusBadge(result.status);
+          const titleDisplay = result.url ? `<a href="${result.url}" target="_blank" rel="noopener noreferrer" class="text-link">${result.title || 'Untitled'}</a>` : (result.title || 'Untitled');
+          return `
+            <div class="reference-card" data-status="${result.status}">
+              <div class="card-header">
+                <span class="card-index">${index + 1}.</span>
+                ${statusBadge}
+              </div>
+              <div class="card-body">
+                <div class="card-row">
+                  <span class="card-label">Title:</span>
+                  <div class="card-value">${titleDisplay}</div>
+                </div>
+                ${result.journal ? `
+                  <div class="card-row">
+                    <span class="card-label">Journal:</span>
+                    <div class="card-value">${result.journal}</div>
+                  </div>` : ''}
+                ${result.year ? `
+                  <div class="card-row">
+                    <span class="card-label">Year:</span>
+                    <div class="card-value">${result.year}</div>
+                  </div>` : ''}
+                ${result.doi ? `
+                  <div class="card-row">
+                    <span class="card-label">DOI:</span>
+                    <div class="card-value">
+                      <a href="https://doi.org/${result.doi}" target="_blank" rel="noopener noreferrer" class="text-link">${result.doi}</a>
+                    </div>
+                  </div>` : ''}
+                ${result.url ? `
+                  <div class="card-row">
+                    <span class="card-label">URL:</span>
+                    <div class="card-value">
+                      <a href="${result.url}" target="_blank" rel="noopener noreferrer" class="text-link">View Source</a>
+                    </div>
+                  </div>` : ''}
+                <div class="card-row">
+                  <span class="card-label">Input:</span>
+                  <div class="card-value card-input" title="${result.input.replace(/"/g, '&quot;')}">
+                    ${result.input.length > 60 ? result.input.substring(0, 60) + '...' : result.input}
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+        updateView();
+      }
+      function updateView() {
+        const desktopView = document.querySelector('.desktop-results');
+        const mobileView = document.getElementById('mobileResults');
+        if (window.innerWidth < 768) {
+          desktopView.style.display = 'none';
+          mobileView.style.display = 'block';
+        } else {
+          desktopView.style.display = 'block';
+          mobileView.style.display = 'none';
+        }
+      }
+      window.addEventListener('resize', updateView);
+
+      function filterResults() {
+        renderResults();
+      }
+
+      function clearForm() {
+        referencesTextarea.value = '';
+        fileUpload.value = '';
+      }
+
+      function clearResults() {
+        results = [];
+        renderResults();
+        resultsSection.style.display = 'none';
+        exportTxtBtn.disabled = true;
+        exportCsvBtn.disabled = true;
+        exportBibBtn.disabled = true;
+        exportRisBtn.disabled = true;
+        exportPdfBtn.disabled = true;
+        exportXlsBtn.disabled = true;
+      }
+
+      function loadSampleData() {
+        referencesTextarea.value = sampleReferences.join('\n\n');
+        showToast('Sample data loaded. Click "Check References" to see it in action!', 'info');
+      }
+      async function handleFileUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        if (!file.name.endsWith('.txt')) {
+          showToast('Please upload a .txt file', 'error');
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          try {
+            const content = e.target.result;
+            const lines = content.split(/\r?\n/).filter(line => line.trim() !== '');
+            if (lines.length === 0) {
+              showToast('The file is empty', 'warning');
+              return;
+            }
+            document.getElementById('references').value = lines.join('\n');
+            showToast(`Loaded ${lines.length} references from file`, 'success');
+          } catch (error) {
+            console.error('Error processing file:', error);
+            showToast('Error processing the file', 'error');
+          }
+        };
+        reader.onerror = function() {
+          showToast('Error reading the file', 'error');
+        };
+        reader.readAsText(file);
+      }
+
+      function readFileAsText(file) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = event => resolve(event.target.result);
+          reader.onerror = error => reject(error);
+          reader.readAsText(file);
+        });
+      }
+      function exportToCsv() {
+        const csvContent = ['ID,Input,Status,Title,Journal,Year,DOI', ...results.filter(r => r.status === 'found').map(r => `"${r.id}","${escapeCsv(r.input)}","Found","${escapeCsv(r.title)}","${escapeCsv(r.journal)}","${r.year}","${r.doi}"`)].join('\n');
+        downloadFile('references.csv', 'text/csv', csvContent);
+        showToast('Exported to CSV', 'success');
+      }
+
+      function exportToBibtex() {
+        const bibtexContent = results.filter(r => r.status === 'found' && r.doi).map((r, i) => {
+          const id = `ref${i + 1}`;
+          const title = r.title || 'Untitled';
+          const author = 'Author';
+          const journal = r.journal || 'Journal';
+          const year = r.year || '2023';
+          const doi = r.doi || '';
+          return `@article{${id},
+  title = {${title}},
+  author = {${author}},
+  journal = {${journal}},
+  year = {${year}},
+  doi = {${doi}}
+}`;
+        }).join('\n\n');
+        downloadFile('references.bib', 'application/x-bibtex', bibtexContent);
+        showToast('Exported to BibTeX', 'success');
+      }
+
+      function exportToRis() {
+        const risContent = results.filter(r => r.status === 'found').map(r => {
+          const title = r.title || 'Untitled';
+          const author = 'Author';
+          const journal = r.journal || 'Journal';
+          const year = r.year || '2023';
+          const doi = r.doi || '';
+          return `TY  - JOUR
+TI  - ${title}
+AU  - ${author}
+JO  - ${journal}
+PY  - ${year}
+DO  - ${doi}
+ER  -`;
+        }).join('\n\n');
+        downloadFile('references.ris', 'application/x-research-info-systems', risContent);
+        showToast('Exported to RIS', 'success');
+      }
+
+      function exportToTxt() {
+        if (!results || results.length === 0) {
+          showToast('No results to export', 'error');
+          return;
+        }
+        let txtContent = `Reference Checker Report\n`;
+        txtContent += `Generated on: ${new Date().toLocaleString()}\n\n`;
+        txtContent += '='.repeat(80) + '\n\n';
+        // Add summary
+        const foundCount = results.filter(r => r.status === 'found').length;
+        const notFoundCount = results.filter(r => r.status === 'not-found').length;
+        const errorCount = results.filter(r => r.status === 'error').length;
+        txtContent += 'SUMMARY\n';
+        txtContent += '='.repeat(80) + '\n';
+        txtContent += `Total References: ${results.length}\n`;
+        txtContent += `Found: ${foundCount}\n`;
+        txtContent += `Not Found: ${notFoundCount}\n`;
+        txtContent += `Errors: ${errorCount}\n\n`;
+        // Add references
+        txtContent += 'REFERENCES\n';
+        txtContent += '='.repeat(80) + '\n\n';
+        results.forEach((result, index) => {
+          txtContent += `[${index + 1}] ${result.title || 'No title available'}\n`;
+          if (result.authors) txtContent += `Authors: ${result.authors}\n`;
+          if (result.journal) txtContent += `Journal: ${result.journal}\n`;
+          if (result.year) txtContent += `Year: ${result.year}\n`;
+          if (result.volume) txtContent += `Volume: ${result.volume}\n`;
+          if (result.issue) txtContent += `Issue: ${result.issue}\n`;
+          if (result.pages) txtContent += `Pages: ${result.pages}\n`;
+          if (result.doi) txtContent += `DOI: ${result.doi}\n`;
+          if (result.url) txtContent += `URL: ${result.url}\n`;
+          // Status with emoji
+          let status = '';
+          switch (result.status) {
+            case 'found':
+              status = '✅ Found';
+              break;
+            case 'not-found':
+              status = '❌ Not Found';
+              break;
+            case 'error':
+              status = '⚠️ Error';
+              break;
+            default:
+              status = '❓ Unknown';
+          }
+          txtContent += `Status: ${status}\n`;
+          // Add original input
+          if (result.original) {
+            txtContent += `\nOriginal: ${result.original}\n`;
+          }
+          txtContent += '\n' + '─'.repeat(80) + '\n\n';
+        });
+        // Create and trigger download
+        const blob = new Blob([txtContent], {
+          type: 'text/plain;charset=utf-8'
+        });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `references-${new Date().toISOString().split('T')[0]}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast('Exported to TXT', 'success');
+      }
+
+      function exportToXls() {
+        if (!results || results.length === 0) {
+          showToast('No results to export', 'error');
+          return;
+        }
+        try {
+          // Prepare data for XLS
+          const headers = ['#', 'Status', 'Title', 'Authors', 'Journal', 'Year', 'DOI', 'URL'];
+          const data = results.map((result, index) => ({
+            '#': index + 1,
+            'Status': result.status.charAt(0).toUpperCase() + result.status.slice(1),
+            'Title': result.title || '',
+            'Authors': result.authors || '',
+            'Journal': result.journal || '',
+            'Year': result.year || '',
+            'DOI': result.doi || '',
+            'URL': result.url || ''
+          }));
+          // Create a new workbook
+          const wb = XLSX.utils.book_new();
+          const ws = XLSX.utils.json_to_sheet(data, {
+            header: headers
+          });
+          // Add the worksheet to the workbook
+          XLSX.utils.book_append_sheet(wb, ws, 'References');
+          // Generate XLS file
+          const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+          XLSX.writeFile(wb, `references-${timestamp}.xlsx`);
+          showToast('Exported to Excel', 'success');
+        } catch (error) {
+          console.error('Error exporting to XLS:', error);
+          showToast('Error exporting to Excel', 'error');
+        }
+      }
+
+      function generatePdfReport() {
+        if (!results || results.length === 0) {
+          showToast('No results to export', 'error');
+          return;
+        }
+        // Create a new PDF document with landscape orientation
+        const doc = new jsPDF('l');
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const pageHeight = doc.internal.pageSize.getHeight();
+        // Set default font
+        doc.setFont('helvetica');
+        // Add header with title and date
+        doc.setFontSize(18);
+        doc.setTextColor(31, 41, 55);
+        doc.text('Reference Checker Report', 20, 25);
+        doc.setFontSize(10);
+        doc.setTextColor(107, 114, 128);
+        doc.text(`Generated on ${new Date().toLocaleString()}`, 20, 32);
+        doc.circle(50, pageHeight - 80, 40, 'F');
+        // Add summary section
+        doc.setFontSize(12);
+        doc.setTextColor(31, 41, 55);
+        doc.text('Summary', 20, 45);
+        const foundCount = results.filter(r => r.status === 'found').length;
+        const notFoundCount = results.filter(r => r.status === 'not-found').length;
+        const errorCount = results.filter(r => r.status === 'error').length;
+        doc.setFontSize(10);
+        doc.setTextColor(55, 65, 81);
+        doc.text(`• Total References: ${results.length}`, 25, 55);
+        doc.text(`• Found: ${foundCount}`, 25, 62);
+        doc.text(`• Not Found: ${notFoundCount}`, 25, 69);
+        doc.text(`• Errors: ${errorCount}`, 25, 76);
+        // Add table headers
+        const headers = [{
+          header: '#',
+          dataKey: 'index'
+        }, {
+          header: 'Title',
+          dataKey: 'title'
+        }, {
+          header: 'Authors',
+          dataKey: 'authors'
+        }, {
+          header: 'Journal',
+          dataKey: 'journal'
+        }, {
+          header: 'Year',
+          dataKey: 'year'
+        }, {
+          header: 'Status',
+          dataKey: 'status'
+        }, {
+          header: 'DOI',
+          dataKey: 'doi'
+        }];
+        // Prepare table data
+        const tableData = results.map((result, index) => ({
+          index: (index + 1).toString(),
+          title: result.title ? result.title.substring(0, 60) + (result.title.length > 60 ? '...' : '') : '—',
+          authors: result.authors ? result.authors.substring(0, 40) + (result.authors.length > 40 ? '...' : '') : '—',
+          journal: result.journal ? result.journal.substring(0, 30) + (result.journal.length > 30 ? '...' : '') : '—',
+          year: result.year || '—',
+          status: result.status.charAt(0).toUpperCase() + result.status.slice(1),
+          doi: result.doi ? result.doi : '—'
+        }));
+        // Set up table styles
+        doc.autoTable({
+          head: [headers.map(h => h.header)],
+          body: tableData.map(row => headers.map(h => row[h.dataKey])),
+          startY: 85,
+          margin: {
+            left: 20,
+            right: 20
+          },
+          headStyles: {
+            fillColor: [243, 244, 246],
+            textColor: [31, 41, 55],
+            fontStyle: 'bold',
+            fontSize: 9,
+            cellPadding: 5,
+            lineWidth: 0.3,
+            lineColor: [209, 213, 219],
+            halign: 'left',
+            valign: 'middle'
+          },
+          bodyStyles: {
+            fillColor: [255, 255, 255],
+            textColor: [55, 65, 81],
+            fontSize: 9,
+            cellPadding: 4,
+            lineWidth: 0.1,
+            lineColor: [229, 231, 235],
+            valign: 'middle'
+          },
+          alternateRowStyles: {
+            fillColor: [249, 250, 251]
+          },
+          styles: {
+            fontSize: 9,
+            cellPadding: 4,
+            overflow: 'linebreak',
+            lineWidth: 0.1,
+            lineWidth: 0.1,
+            cellWidth: 'wrap',
+            minCellHeight: 10
+          },
+          columnStyles: {
+            0: {
+              cellWidth: 12,
+              halign: 'center'
+            },
+            1: {
+              cellWidth: 60
+            },
+            2: {
+              cellWidth: 45
+            },
+            3: {
+              cellWidth: 35
+            },
+            4: {
+              cellWidth: 15,
+              halign: 'center'
+            },
+            5: {
+              cellWidth: 20,
+              halign: 'center'
+            },
+            6: {
+              cellWidth: 25,
+              halign: 'center'
+            }
+          },
+          willDrawCell: function(data) {
+                        if (data.column.dataKey === 'status') {
+              if (data.cell.raw === 'Found') {
+                doc.setFillColor(220, 252, 231);
+                doc.setTextColor(22, 163, 74);
+              } else if (data.cell.raw === 'Not-found') {
+                doc.setFillColor(254, 226, 226);
+                doc.setTextColor(220, 38, 38);
+              } else if (data.cell.raw === 'Error') {
+                doc.setFillColor(254, 243, 199);
+                doc.setTextColor(202, 138, 4);
+              }
+            }
+                        if (data.column.dataKey === 'doi' && data.cell.raw !== '—') {
+              doc.setTextColor(59, 130, 246);
+              doc.setFont('helvetica', 'normal');
+            }
+          },
+          didDrawCell: function(data) {
+                        doc.setTextColor(31, 41, 55);
+            doc.setFont('helvetica', 'normal');
+          },
+          didDrawPage: function(data) {
+            const pageCount = doc.internal.getNumberOfPages();
+            const pageSize = doc.internal.pageSize;
+            const pageHeight = pageSize.height ? pageSize.height : pageSize.getHeight();
+                        doc.setFontSize(8);
+            doc.setTextColor(107, 114, 128);
+            doc.setFont('helvetica', 'normal');
+                        doc.setDrawColor(209, 213, 219);
+            doc.setLineWidth(0.3);
+            doc.line(20, pageHeight - 20, pageWidth - 20, pageHeight - 20);
+                        doc.text(`RefCheck • Page ${doc.internal.getCurrentPageInfo().pageNumber} of ${pageCount}`, pageWidth / 2, pageHeight - 10, {
+              align: 'center'
+            });
+          }
+        });
+                doc.save(`refcheck-report-${new Date().toISOString().slice(0, 10)}.pdf`);
+      }
+
+      function downloadFile(filename, type, content) {
+        const blob = new Blob([content], {
+          type
+        });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+
+      function escapeCsv(str) {
+        if (!str) return '';
+        return `"${str.toString().replace(/"/g, '""')}"`;
+      }
+      // Theme Toggle Functionality
+      function initTheme() {
+        const themeToggle = document.getElementById('themeToggle');
+        const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
+                const savedTheme = localStorage.getItem('theme');
+        const systemTheme = prefersDarkScheme.matches ? 'dark' : 'light';
+        const initialTheme = savedTheme || systemTheme;
+                document.documentElement.setAttribute('data-theme', initialTheme);
+                themeToggle.addEventListener('click', () => {
+          const currentTheme = document.documentElement.getAttribute('data-theme');
+          const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+          document.documentElement.setAttribute('data-theme', newTheme);
+          localStorage.setItem('theme', newTheme);
+        });
+                prefersDarkScheme.addEventListener('change', (e) => {
+          if (!localStorage.getItem('theme')) {
+            const newTheme = e.matches ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', newTheme);
+          }
+        });
+      }
+      // Initialize
+      document.addEventListener('DOMContentLoaded', () => {
+                initTheme();
+                setTimeout(() => {
+          showToast('Welcome to Advanced Reference Checker! Try the sample data or paste your own references.', 'info');
+        }, 1000);
+      });
     </script>
-</body>
+    <script>
+            document.addEventListener('DOMContentLoaded', function() {
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mobileMenu = document.getElementById('mobileMenu');
+        const menuIcon = document.querySelector('.menu-icon');
+        if (mobileMenuBtn && mobileMenu) {
+          mobileMenuBtn.addEventListener('click', function() {
+            const isExpanded = this.getAttribute('aria-expanded') === 'true';
+            this.setAttribute('aria-expanded', !isExpanded);
+            mobileMenu.classList.toggle('active');
+            menuIcon.classList.toggle('active');
+          });
+                    document.addEventListener('click', function(event) {
+            if (!mobileMenuBtn.contains(event.target) && !mobileMenu.contains(event.target)) {
+              mobileMenuBtn.setAttribute('aria-expanded', 'false');
+              mobileMenu.classList.remove('active');
+              menuIcon.classList.remove('active');
+            }
+          });
+                    document.querySelectorAll('.mobile-menu-link').forEach(link => {
+            link.addEventListener('click', () => {
+              mobileMenuBtn.setAttribute('aria-expanded', 'false');
+              mobileMenu.classList.remove('active');
+              menuIcon.classList.remove('active');
+            });
+          });
+        }
+                const buttons = document.querySelectorAll('button, a.btn, .export-btn');
+        buttons.forEach(button => {
+          button.addEventListener('touchstart', function() {
+            this.classList.add('touch-active');
+          }, {
+            passive: true
+          });
+          button.addEventListener('touchend', function() {
+            this.classList.remove('touch-active');
+          }, {
+            passive: true
+          });
+        });
+                const interactiveElements = document.querySelectorAll('button, input, textarea, select, a');
+        interactiveElements.forEach(el => {
+          el.addEventListener('touchend', function(e) {
+            if (e.target === this) {
+              e.preventDefault();
+              this.focus();
+            }
+          }, {
+            passive: false
+          });
+        });
+      });
+            function updateViewportHeight() {
+        const vh = window.innerHeight * 0.01;
+        document.documentElement.style.setProperty('--vh', `${vh}px`);
+      }
+            updateViewportHeight();
+      window.addEventListener('resize', updateViewportHeight);
+      window.addEventListener('orientationchange', updateViewportHeight);
+      
+      // Enhanced mobile touch handling
+      function setupMobileTouch() {
+        // Add touch class to body for touch device detection
+        document.body.classList.add('has-touch');
+        
+        // Function to handle touch start
+        function handleTouchStart(e) {
+          const target = e.currentTarget;
+          target.classList.add('touch-active');
+          // Prevent ghost click on iOS
+          e.preventDefault();
+        }
+        
+        // Function to handle touch end
+        function handleTouchEnd(e) {
+          const target = e.currentTarget;
+          target.classList.remove('touch-active');
+          
+          // Only trigger click if the touch didn't move too much
+          if (!target.getAttribute('data-moved')) {
+            target.click();
+          }
+          target.removeAttribute('data-moved');
+        }
+        
+        // Function to handle touch move
+        function handleTouchMove(e) {
+          const target = e.currentTarget;
+          if (!target.getAttribute('data-moved')) {
+            target.setAttribute('data-moved', 'true');
+          }
+        }
+        
+        // Get all interactive elements
+        const interactiveElements = [
+          'button', 
+          '.btn', 
+          '.export-btn', 
+          '[role="button"]', 
+          'a[href]', 
+          'input[type="text"]', 
+          'textarea',
+          'label[for]',
+          'select',
+          '.reference-card',
+          '.tab-button',
+          '.filter-btn',
+          '.action-btn',
+          '.dropdown-toggle'
+        ];
+        
+        // Add touch event listeners to all interactive elements
+        document.querySelectorAll(interactiveElements.join(',')).forEach(el => {
+          // Skip if already has touch listeners
+          if (el.hasAttribute('data-touch-handled')) return;
+          
+          // Add touch event listeners
+          el.addEventListener('touchstart', handleTouchStart, { passive: true });
+          el.addEventListener('touchend', handleTouchEnd, { passive: true });
+          el.addEventListener('touchcancel', handleTouchEnd, { passive: true });
+          el.addEventListener('touchmove', handleTouchMove, { passive: true });
+          
+          // Mark as handled
+          el.setAttribute('data-touch-handled', 'true');
+          
+          // Add CSS properties if not already set
+          if (window.getComputedStyle(el).getPropertyValue('cursor') === 'pointer') {
+            el.style.cursor = 'pointer';
+          }
+        });
+        
+        // Fix for iOS form elements
+        const formElements = document.querySelectorAll('input, select, textarea');
+        formElements.forEach(el => {
+          el.addEventListener('focus', function() {
+            // Scroll the element into view when focused (iOS fix)
+            setTimeout(() => {
+              this.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
+          });
+        });
+        
+        // Prevent zoom on double-tap for interactive elements
+        document.addEventListener('dblclick', function(e) {
+          if (e.target.matches(interactiveElements.join(','))) {
+            e.preventDefault();
+            e.stopPropagation();
+          }
+        }, { passive: false });
+        
+        // Prevent context menu on long press for interactive elements
+        document.addEventListener('contextmenu', function(e) {
+          if (e.target.matches(interactiveElements.join(','))) {
+            e.preventDefault();
+            return false;
+          }
+        }, { passive: false });
+      }
+      
+      // Initialize touch handling
+      document.addEventListener('DOMContentLoaded', setupMobileTouch);
+      
+      // Re-run setup when new content is added dynamically
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach(() => {
+          setupMobileTouch();
+        });
+      });
+      
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true
+      });
+    </script>
+  </body>
 </html>
