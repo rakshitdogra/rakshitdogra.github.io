@@ -2,7 +2,7 @@
 <html lang="en" class="scroll-smooth" data-theme="light">
   <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, minimum-scale=1.0, viewport-fit=cover, user-scalable=no">
     <meta name="theme-color" content="#4f46e5">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -22,6 +22,91 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link rel="stylesheet" href="ref-glassmorphic.css">
     <link rel="stylesheet" href="ref-styles.css">
+    <style>
+      /* Base styles for all interactive elements */
+      button, .btn, .export-btn, [role="button"],
+      a[href], input[type="text"], textarea,
+      label[for], select, .reference-card,
+      .tab-button, .filter-btn, .action-btn,
+      .dropdown-toggle {
+        -webkit-tap-highlight-color: rgba(0,0,0,0);
+        -webkit-tap-highlight-color: transparent;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        touch-action: manipulation;
+        position: relative;
+        min-height: 44px;
+        min-width: 44px;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        cursor: pointer;
+        outline: none;
+      }
+      
+      /* Ensure form elements remain interactive */
+      input[type="text"], textarea, select {
+        user-select: text;
+        -webkit-user-select: text;
+        -moz-user-select: text;
+        -ms-user-select: text;
+        min-height: auto;
+        min-width: auto;
+      }
+      
+      /* Active state for touch devices */
+      .touch-active {
+        transform: scale(0.96) !important;
+        opacity: 0.8 !important;
+        transition: transform 0.1s ease, opacity 0.1s ease !important;
+      }
+      
+      /* Hover states for devices with hover support */
+      @media (hover: hover) and (pointer: fine) {
+        button:hover, .btn:hover, .export-btn:hover,
+        a[href]:hover, .reference-card:hover,
+        .tab-button:hover, .filter-btn:hover,
+        .action-btn:hover, .dropdown-toggle:hover {
+          opacity: 0.9;
+          transform: translateY(-1px);
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+      }
+      
+      /* Focus states for better accessibility */
+      button:focus-visible, .btn:focus-visible,
+      .export-btn:focus-visible, a[href]:focus-visible,
+      input[type="text"]:focus-visible,
+      textarea:focus-visible, select:focus-visible {
+        outline: 2px solid var(--primary-color);
+        outline-offset: 2px;
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.3);
+      }
+      
+      /* Disabled state */
+      button:disabled, .btn:disabled, .export-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none !important;
+      }
+      
+      /* iOS specific fixes */
+      @supports (-webkit-touch-callout: none) {
+        input, textarea, select {
+          font-size: 16px; /* Prevent iOS zoom on focus */
+        }
+      }
+      
+      /* Prevent text selection on tap */
+      * {
+        -webkit-tap-highlight-color: transparent;
+        -webkit-touch-callout: none;
+      }
+    </style>
   </head>
   <body>
     <div class="background-blur">
@@ -721,6 +806,7 @@
         exportBibBtn.disabled = true;
         exportRisBtn.disabled = true;
         exportPdfBtn.disabled = true;
+        exportXlsBtn.disabled = true;
       }
 
       function loadSampleData() {
@@ -1189,8 +1275,122 @@ ER  -`;
         document.documentElement.style.setProperty('--vh', `${vh}px`);
       }
             updateViewportHeight();
-            window.addEventListener('resize', updateViewportHeight);
+      window.addEventListener('resize', updateViewportHeight);
       window.addEventListener('orientationchange', updateViewportHeight);
+      
+      // Enhanced mobile touch handling
+      function setupMobileTouch() {
+        // Add touch class to body for touch device detection
+        document.body.classList.add('has-touch');
+        
+        // Function to handle touch start
+        function handleTouchStart(e) {
+          const target = e.currentTarget;
+          target.classList.add('touch-active');
+          // Prevent ghost click on iOS
+          e.preventDefault();
+        }
+        
+        // Function to handle touch end
+        function handleTouchEnd(e) {
+          const target = e.currentTarget;
+          target.classList.remove('touch-active');
+          
+          // Only trigger click if the touch didn't move too much
+          if (!target.getAttribute('data-moved')) {
+            target.click();
+          }
+          target.removeAttribute('data-moved');
+        }
+        
+        // Function to handle touch move
+        function handleTouchMove(e) {
+          const target = e.currentTarget;
+          if (!target.getAttribute('data-moved')) {
+            target.setAttribute('data-moved', 'true');
+          }
+        }
+        
+        // Get all interactive elements
+        const interactiveElements = [
+          'button', 
+          '.btn', 
+          '.export-btn', 
+          '[role="button"]', 
+          'a[href]', 
+          'input[type="text"]', 
+          'textarea',
+          'label[for]',
+          'select',
+          '.reference-card',
+          '.tab-button',
+          '.filter-btn',
+          '.action-btn',
+          '.dropdown-toggle'
+        ];
+        
+        // Add touch event listeners to all interactive elements
+        document.querySelectorAll(interactiveElements.join(',')).forEach(el => {
+          // Skip if already has touch listeners
+          if (el.hasAttribute('data-touch-handled')) return;
+          
+          // Add touch event listeners
+          el.addEventListener('touchstart', handleTouchStart, { passive: true });
+          el.addEventListener('touchend', handleTouchEnd, { passive: true });
+          el.addEventListener('touchcancel', handleTouchEnd, { passive: true });
+          el.addEventListener('touchmove', handleTouchMove, { passive: true });
+          
+          // Mark as handled
+          el.setAttribute('data-touch-handled', 'true');
+          
+          // Add CSS properties if not already set
+          if (window.getComputedStyle(el).getPropertyValue('cursor') === 'pointer') {
+            el.style.cursor = 'pointer';
+          }
+        });
+        
+        // Fix for iOS form elements
+        const formElements = document.querySelectorAll('input, select, textarea');
+        formElements.forEach(el => {
+          el.addEventListener('focus', function() {
+            // Scroll the element into view when focused (iOS fix)
+            setTimeout(() => {
+              this.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
+          });
+        });
+        
+        // Prevent zoom on double-tap for interactive elements
+        document.addEventListener('dblclick', function(e) {
+          if (e.target.matches(interactiveElements.join(','))) {
+            e.preventDefault();
+            e.stopPropagation();
+          }
+        }, { passive: false });
+        
+        // Prevent context menu on long press for interactive elements
+        document.addEventListener('contextmenu', function(e) {
+          if (e.target.matches(interactiveElements.join(','))) {
+            e.preventDefault();
+            return false;
+          }
+        }, { passive: false });
+      }
+      
+      // Initialize touch handling
+      document.addEventListener('DOMContentLoaded', setupMobileTouch);
+      
+      // Re-run setup when new content is added dynamically
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach(() => {
+          setupMobileTouch();
+        });
+      });
+      
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true
+      });
     </script>
   </body>
 </html>
