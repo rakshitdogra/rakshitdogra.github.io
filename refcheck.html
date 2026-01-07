@@ -732,17 +732,50 @@
       function extractDOI(text) {
         const doiRegex = /\b(10\.\d{4,}(?:[.\/#;]\S+)?\/\S+)\b/i;
         const match = text.match(doiRegex);
-        return match ? match[1].trim() : null;
+        return match ? match[0].trim() : null;  // Return the full match including 'doi:' if present
       }
 
       function parseReference(text) {
-        const titleMatch = text.match(/\(\d{4}\)\.\s*([^\.]+)\./i) || text.match(/[\"“]([^\"”]+)[\"”]/);
-        const yearMatch = text.match(/\((\d{4})\)/) || text.match(/(?:19|20)\d{2}/);
-        const journalMatch = text.match(/\.\s*([^\.,;]+?)(?:\s*\d+\s*[:\(])?/i);
+        // First try to extract DOI if present
+        const doi = extractDOI(text);
+        if (doi) {
+          return { 
+            doi: doi,
+            raw: text
+          };
+        }
+
+        // Try to parse standard citation format: Author(s). (Year). Title. Journal, Volume(Issue), Pages.
+        const citationRegex = /^(?<authors>.+?)\s*\((?<year>\d{4})\)\s*[.:]\s*(?<title>[^\.]+)\.\s*(?<journal>[^,]+),\s*(?<volume>\d+)(?:\((?<issue>[^)]+)\))?\s*,\s*(?<pages>[\d-]+)\.?/i;
+        const match = text.match(citationRegex);
+        
+        if (match && match.groups) {
+          return {
+            title: match.groups.title.trim(),
+            year: match.groups.year,
+            journal: match.groups.journal.trim(),
+            volume: match.groups.volume,
+            issue: match.groups.issue || null,
+            pages: match.groups.pages,
+            raw: text
+          };
+        }
+
+        // Fallback to simpler parsing
+        const titleMatch = text.match(/[\"\"]([^\"\"]+)[\"\"]]/) || 
+                          text.match(/(?<=[.?!])\s*([^.!?]+?)(?=\.\s+[A-Z]|$)/) ||
+                          text.match(/\.\s*([^,;]+?)(?=\s*(?:,|;|$))/i);
+        
+        const yearMatch = text.match(/\((\d{4})\)/) || 
+                         text.match(/(?:19|20)\d{2}(?=[^0-9]|$)/);
+        
+        const journalMatch = text.match(/(?<=\.\s*)[A-Z][^.,;]+?(?=,\s*\d|$)/i);
+
         return {
           title: titleMatch ? titleMatch[1].trim() : null,
           year: yearMatch ? yearMatch[1] || yearMatch[0] : null,
-          journal: journalMatch ? journalMatch[1].trim() : null
+          journal: journalMatch ? journalMatch[0].trim() : null,
+          raw: text
         };
       }
       async function checkReferences() {
@@ -776,8 +809,23 @@
             }
             if (!result) {
               const parsedRef = parseReference(ref);
-              if (parsedRef.title) {
-                result = await queryCrossRef(parsedRef.title);
+              if (parsedRef.doi) {
+                // If we found a DOI in the reference, try to look it up directly
+                result = await queryCrossRef(parsedRef.doi, true);
+                if (!result) {
+                  result = await queryDataCite(parsedRef.doi);
+                }
+              }
+              // If no DOI or DOI lookup failed, try searching with title and other metadata
+              if (!result && parsedRef.title) {
+                let searchQuery = parsedRef.title;
+                if (parsedRef.journal) {
+                  searchQuery += ` ${parsedRef.journal}`;
+                }
+                if (parsedRef.year) {
+                  searchQuery += ` ${parsedRef.year}`;
+                }
+                result = await queryCrossRef(searchQuery);
               }
             }
             if (result) {
