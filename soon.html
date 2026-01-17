@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Coming Soon — Rakshit Dogra</title>
+  <meta name="description" content="Something new is being built."/>
+
+  <!-- Font Awesome -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+  />
+
+  <!-- Font -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;600;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <style>
+    :root {
+      --bg: #0b0b0c;
+      --fg: #eaeaea;
+      --muted: #9ca3af;
+      --card: #151518;
+      --border: #262626;
+      --gulabo: #ff63a2;
+    }
+
+    html.light {
+      --bg: #ffffff;
+      --fg: #111827;
+      --muted: #6b7280;
+      --card: #f3f4f6;
+      --border: #e5e7eb;
+      --gulabo: #ff63a2;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Atkinson Hyperlegible", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1.5rem 7rem;
+    }
+
+    main {
+      text-align: center;
+      max-width: 520px;
+      width: 100%;
+    }
+
+    h1 {
+      font-size: 2rem;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.5rem;
+    }
+
+    p {
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 1.5rem;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.35rem 0.75rem;
+      font-size: 0.75rem;
+      border-radius: 999px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      margin-bottom: 1.25rem;
+    }
+
+    .pulse {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background: var(--gulabo);
+      border-radius: 50%;
+      margin-right: 0.5rem;
+      animation: pulse 1.6s infinite ease-in-out;
+    }
+
+    @keyframes pulse {
+      0% { opacity: .4; }
+      50% { opacity: 1; }
+      100% { opacity: .4; }
+    }
+
+    /* DOCK */
+    nav.dock {
+      position: fixed;
+      bottom: 1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: .5rem;
+      padding: .6rem .8rem;
+      background: color-mix(in srgb, var(--bg) 25%, transparent);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      backdrop-filter: blur(10px);
+      transition: transform .2s ease;
+    }
+
+    nav.dock:hover {
+      transform: translateX(-50%) translateY(-4px);
+    }
+
+    .dock-item {
+      width: 48px;
+      height: 48px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: transparent;
+      border: none;
+      color: var(--fg);
+      cursor: pointer;
+      font-size: 1.05rem;
+      transform: scale(var(--scale,1));
+      transition: transform .08s ease-out, background .15s ease;
+    }
+
+    .dock-item:hover {
+      background: var(--card);
+    }
+  </style>
+</head>
+
+<body>
+
+<main>
+  <div class="badge">
+    <span class="pulse"></span>
+    work in progress
+  </div>
+
+  <h1>Coming soon</h1>
+  <p>Locked In <i style="padding-left: 5px;" class="fa-solid fa-lock"></i> </p>
+
+  <p style="color: var(--gulabo); font-size: .9rem;">
+    ~ rakshit dogra
+  </p>
+</main>
+
+<!-- DOCK -->
+<nav class="dock">
+  <a class="dock-item" href="/index.html"><i class="fa-solid fa-home"></i></a>
+  <a class="dock-item" href="/blogs/blog.html"><i class="fa-solid fa-book"></i></a>
+  <a class="dock-item" href="https://github.com/rakshitdogra">
+    <i class="fa-brands fa-github"></i>
+  </a>
+  <a class="dock-item" href="https://linkedin.com/in/rakshitdogra">
+    <i class="fa-brands fa-linkedin"></i>
+  </a>
+  <button class="dock-item" id="themeToggle">
+    <i class="fa-solid fa-moon" id="themeIcon"></i>
+  </button>
+</nav>
+
+<!-- THEME -->
+<script>
+  const root = document.documentElement;
+  const toggle = document.getElementById("themeToggle");
+  const icon = document.getElementById("themeIcon");
+
+  const saved = localStorage.getItem("theme");
+  if (saved === "light") root.classList.add("light");
+
+  updateIcon();
+
+  toggle.onclick = () => {
+    root.classList.toggle("light");
+    localStorage.setItem(
+      "theme",
+      root.classList.contains("light") ? "light" : "dark"
+    );
+    updateIcon();
+  };
+
+  function updateIcon() {
+    icon.className = root.classList.contains("light")
+      ? "fa-solid fa-sun"
+      : "fa-solid fa-moon";
+  }
+</script>
+
+<!-- DOCK MAGNIFICATION -->
+<script>
+  const dock = document.querySelector(".dock");
+  const items = [...dock.querySelectorAll(".dock-item")];
+  const R = 140;
+
+  dock.addEventListener("mousemove", e => {
+    items.forEach(item => {
+      const r = item.getBoundingClientRect();
+      const d = Math.abs(e.clientX - (r.left + r.width / 2));
+      const s = d < R ? 1 + (1 - d / R) * 0.4 : 1;
+      item.style.setProperty("--scale", s.toFixed(3));
+    });
+  });
+
+  dock.addEventListener("mouseleave", () =>
+    items.forEach(i => i.style.setProperty("--scale", 1))
+  );
+</script>
+
+</body>
+</html>
