@@ -128,7 +128,7 @@
 
     .card:hover {
       transform: translateY(-1px);
-      box-shadow: 0 10px 30px rgba(163,163,163,.25);
+      box-shadow: 0 5px 15px rgba(163,163,163,.25);
     }
 
     .logo {
@@ -171,10 +171,10 @@
       border-radius: 999px;
       background: linear-gradient(
         135deg,
-        rgba(255,255,255,.18),
+        rgba(255, 255, 255, 0.217),
         rgba(255,255,255,.05)
       );
-      border: 1px solid rgba(255,255,255,.25);
+      border: 1px solid rgba(167, 167, 167, 0.382);
       backdrop-filter: blur(16px) saturate(160%);
       transition: transform .15s ease;
     }
@@ -233,6 +233,33 @@
       opacity: 1;
       transform: translateY(0);
     }
+
+        .badge {
+      display: inline-block;
+      padding: 0.35rem 0.75rem;
+      font-size: 0.75rem;
+      border-radius: 999px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      margin-bottom: 1.25rem;
+    }
+
+    .pulse {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background: rgb(71, 243, 71);
+      border-radius: 50%;
+      margin-right: 0.5rem;
+      animation: pulse 1.6s infinite ease-in-out;
+    }
+
+    @keyframes pulse {
+      0% { opacity: .4; }
+      50% { opacity: 1; }
+      100% { opacity: .4; }
+    }
+
   </style>
 </head>
 
@@ -247,7 +274,10 @@
 </header>
 
 <main>
-
+<div class="badge">
+      <span class="pulse"></span>
+      Online
+</div>
 <section class="reveal">
   <h2>about</h2>
   <p>try around and find-out!</p>
@@ -386,11 +416,6 @@
     entries.forEach(e => e.isIntersecting && e.target.classList.add("visible"))
   );
   document.querySelectorAll(".reveal").forEach(el => observer.observe(el));
-
-  function handleSubscribe(e) {
-    e.preventDefault();
-    alert("Thanks! Newsletter coming soon.");
-  }
 </script>
 <script>
   const dock = document.querySelector(".dock");
@@ -446,4 +471,3 @@
 
 </body>
 </html>
-
