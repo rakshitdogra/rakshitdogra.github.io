@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Why I like to automate my daily tasks</title>
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            background: "var(--bg)",
+            muted: "var(--muted)",
+            card: "var(--card)",
+            border: "var(--border)",
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Font Awesome -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+  />
+
+  <style>
+    /* THEME VARIABLES */
+    :root {
+      --bg: #ffffff;
+      --fg: #0b0b0c;
+      --muted: #6b7280;
+      --card: #f5f5f5;
+      --border: #e5e7eb;
+    }
+
+    html.dark {
+      --bg: #0b0b0c;
+      --fg: #eaeaea;
+      --muted: #9ca3af;
+      --card: #151518;
+      --border: #262626;
+    }
+
+    /* Dock */
+    nav.dock {
+      position: fixed;
+      bottom: 1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 0.5rem;
+      padding: 0.6rem 0.8rem;
+
+      background: color-mix(in srgb, var(--bg) 25%, transparent);
+      border: 0.5px solid var(--border);
+      border-radius: 999px;
+      backdrop-filter: blur(10px);
+
+      transition: transform 0.2s ease;
+    }
+
+    nav.dock:hover {
+      transform: translateX(-50%) translateY(-4px);
+    }
+
+    .dock-item {
+      width: 48px;
+      height: 48px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: transparent;
+      border: none;
+      color: var(--fg);
+      cursor: pointer;
+      font-size: 1.05rem;
+
+      transform: scale(var(--scale, 1));
+      transition: transform 0.08s ease-out, background-color 0.15s ease;
+    }
+
+    .dock-item:hover {
+      background: var(--card);
+    }
+  </style>
+</head>
+
+<body
+  class="font-sans antialiased max-w-3xl mx-auto px-6 py-16 pb-32"
+  style="background: var(--bg); color: var(--fg);"
+>
+
+<!-- Reading Progress Bar -->
+<div
+  id="reading-progress"
+  class="fixed top-0 left-0 z-50"
+  style="width:0%; height:2.5px; background: var(--fg); transition: width 0.15s ease-out;"
+></div>
+
+<main class="space-y-8">
+
+
+<!-- ARTICLE -->
+<article class="space-y-4">
+  <h1 class="text-3xl font-bold leading-tight"> Why I like to automate my daily tasks </h1>
+  <p class="text-sm text-muted">Jan 17, 2026</p>
+  <!-- CONTENT -->
+  <div class="prose prose-invert text-sm space-y-4">
+    <p> I like coding small apps and scripts because I like to automate my daily mundane tasks. </p>
+    <p> Most daily work isn’t “creative problem-solving.” It’s orchestration. Running the same commands in the right order. Checking whether something silently failed. Remembering which config goes with which environment. Making sure I didn’t forget the one step that breaks everything. </p>
+    <p> Humans are terrible at this. Computers are not. </p>
+    <p> So I automate. </p>
+    <p> I write scripts that bootstrap projects with the same structure every time. Tools that sanity-check environments before I waste an hour debugging the wrong issue. Small programs that watch logs, extract signals, and tell me when something is actually wrong instead of flooding me with noise. </p>
+    <p> Jobs that run in the background, clean up state, rotate backups, and keep things boring, which is exactly what infrastructure should be. </p>
+    <p> These aren’t apps you show off. They’re systems you stop thinking about. They run quietly in the background. </p>
+    <p> The real benefit isn’t speed, it’s efficiency. Automation replaces <em>“did I remember to do this?”</em> with <em>“this is handled.”</em>
+    </p>
+    <p> Fewer moving parts in my head means more room for real work: designing systems, writing code that matters, and solving problems that don’t have an obvious script yet. </p>
+    <p> Most of my tools are built for me, undocumented, and deeply opinionated. They work on my machine, for my workflows, and that’s the point. </p>
+    <p> I automate not because I’m lazy, but because I want my attention spent on decisions, not procedures. </p>
+    <p> If something is repeatable, it’s a bug. And bugs get fixed. </p>
+    <p class="pt-4 text-muted"> ~ rakshit dogra </p>
+  </div>
+</article>
+
+</main>
+
+<!-- DOCK -->
+<nav class="dock">
+  <a class="dock-item" href="/index.html"><i class="fa-solid fa-home"></i></a>
+  <a class="dock-item" href="/blogs/blog.html"><i class="fa-solid fa-book"></i></a>
+  <a class="dock-item" href="https://github.com/rakshitdogra" target="_blank">
+    <i class="fa-brands fa-github"></i>
+  </a>
+  <a class="dock-item" href="https://linkedin.com/in/rakshitdogra" target="_blank">
+    <i class="fa-brands fa-linkedin"></i>
+  </a>
+  <a class="dock-item" href="mailto:rakshitdogra.work@gmail.com">
+    <i class="fa-solid fa-envelope"></i>
+  </a>
+  <button class="dock-item" id="themeToggle">
+    <i class="fa-solid fa-moon" id="themeIcon"></i>
+  </button>
+</nav>
+
+<!-- Reading progress -->
+<script>
+  const bar = document.getElementById("reading-progress");
+  window.addEventListener("scroll", () => {
+    const h =
+      document.documentElement.scrollHeight -
+      document.documentElement.clientHeight;
+    bar.style.width = h
+      ? `${(window.scrollY / h) * 100}%`
+      : "0%";
+  }, { passive: true });
+</script>
+
+<!-- Dock magnification -->
+<script>
+  const dock = document.querySelector(".dock");
+  const items = [...dock.querySelectorAll(".dock-item")];
+  const MAX = 1.4;
+  const RADIUS = 140;
+
+  dock.addEventListener("mousemove", e => {
+    items.forEach(item => {
+      const r = item.getBoundingClientRect();
+      const d = Math.abs(e.clientX - (r.left + r.width / 2));
+      const s = d < RADIUS ? 1 + (1 - d / RADIUS) * 0.4 : 1;
+      item.style.setProperty("--scale", s.toFixed(3));
+    });
+  });
+
+  dock.addEventListener("mouseleave", () =>
+    items.forEach(i => i.style.setProperty("--scale", 1))
+  );
+</script>
+
+<!-- THEME TOGGLE (FINAL) -->
+<script>
+  const root = document.documentElement;
+  const toggle = document.getElementById("themeToggle");
+  const icon = document.getElementById("themeIcon");
+
+  const saved = localStorage.getItem("theme");
+  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+  if (saved === "dark" || (!saved && prefersDark)) {
+    root.classList.add("dark");
+  }
+
+  updateIcon();
+
+  toggle.onclick = () => {
+    root.classList.toggle("dark");
+    localStorage.setItem(
+      "theme",
+      root.classList.contains("dark") ? "dark" : "light"
+    );
+    updateIcon();
+  };
+
+  function updateIcon() {
+    icon.className = root.classList.contains("dark")
+      ? "fa-solid fa-moon"
+      : "fa-solid fa-sun";
+  }
+</script>
+
+</body>
+</html>
