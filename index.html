@@ -1,476 +1,919 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Rakshit Dogra</title>
-  <meta name="description" content="Rakshit dogra"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rakshit Dogra — CS Student & Researcher</title>
 
-  <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
-    crossorigin="anonymous"
-    referrerpolicy="no-referrer"
-  />
-  <link
-    rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;600;700&display=swap"
-  >
-
-  <style>
-    :root {
-      --bg: #0b0b0c;
-      --fg: #eaeaea;
-      --muted: #9ca3af;
-      --card: #151518;
-      --border: #262626;
-      --gulabo: #ff63a2;
-    }
-
-    .gulabo { --c: #ff63a2; }
-    .black  { --c: #0b0b0c; }
-    .muted  { --c: #9ca3af; }
-    .white  { --c: #eaeaea; }
-
-    .light {
-      --bg: #ffffff;
-      --fg: #111827;
-      --muted: #6b7280;
-      --card: #f3f4f6;
-      --border: #e5e7eb;
-      --gulabo: #ff63a2;
-    }
-
-    * { box-sizing: border-box; }
-
-    html { scroll-behavior: smooth; }
-
-    body {
-      margin: 0;
-      font-family:
-        "Atkinson Hyperlegible",
-        system-ui,
-        -apple-system,
-        BlinkMacSystemFont,
-        "Segoe UI",
-        sans-serif;
-
-      background: var(--bg);
-      color: var(--fg);
-      max-width: 720px;
-      padding: 3rem 1.5rem 7rem;
-      margin-inline: auto;
-    }
-
-    h1, h2 {
-      font-weight: 700;
-      letter-spacing: -0.02em;
-    }
-
-    h1 { font-size: 2rem; }
-    h2 {
-      font-size: 1.25rem;
-      margin-bottom: 0.75rem;
-    }
-
-    section { margin-bottom: 3rem; }
-
-    p {
-      color: var(--muted);
-      font-size: 1rem;
-      line-height: 1.55;
-    }
-
-    a {
-      color: var(--gulabo);
-      text-decoration: none;
-    }
-
-    a:hover { text-decoration: underline; }
-
-    /* HERO */
-    header.hero {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 1rem;
-    }
-
-    .avatar {
-      width: 112px;
-      height: 112px;
-      border-radius: 50%;
-      border: 1px solid var(--border);
-      background-size: cover;
-      overflow: hidden;          
-      background-position: center;
-    }
-    .avatar img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;         /* keeps face centered */
-      display: block;
-    }
-    /* CARDS */
-    .card {
-      display: flex;
-      gap: 1rem;
-      padding: 1rem;
-      margin-top: 15px;
-      background: var(--card);
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      transition: transform .2s ease, box-shadow .2s ease;
-    }
-
-    .card:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 5px 15px rgba(163,163,163,.25);
-    }
-
-    .logo {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      border: 1px solid var(--border);
-      display: grid;
-      place-items: center;
-      flex-shrink: 0;
-    }
-
-    .card-title {
-      font-size: .95rem;
-      font-weight: 700;
-    }
-
-    .card-sub {
-      font-size: .8rem;
-      color: var(--muted);
-    }
-
-    .period {
-      font-size: .75rem;
-      color: var(--muted);
-      margin-left: auto;
-      white-space: nowrap;
-    }
-
-    /* TAGS */
-    .tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: .5rem;
-    }
-
-    .tag {
-      font-size: .75rem;
-      padding: .3rem .7rem;
-      border-radius: 999px;
-      background: linear-gradient(
-        135deg,
-        rgba(255, 255, 255, 0.217),
-        rgba(255,255,255,.05)
-      );
-      border: 1px solid rgba(167, 167, 167, 0.382);
-      backdrop-filter: blur(16px) saturate(160%);
-      transition: transform .15s ease;
-    }
-
-    .tag:hover {
-      transform: translateY(-1px) scale(1.05);
-    }
-
-    /* DOCK */
-    nav.dock {
-      position: fixed;
-      bottom: 1rem;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      gap: .5rem;
-      padding: .6rem .8rem;
-      background: color-mix(in srgb, var(--bg) 25%, transparent);
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      backdrop-filter: blur(10px);
-      transition: transform .2s ease;
-    }
-
-    nav.dock:hover {
-      transform: translateX(-50%) translateY(-4px);
-    }
-
-    .dock-item {
-      width: 48px;
-      height: 48px;
-      display: grid;
-      place-items: center;
-      border-radius: 50%;
-      background: transparent;
-      border: none;
-      color: var(--fg);
-      cursor: pointer;
-      font-size: 1.05rem;
-      transform: scale(var(--scale,1));
-      transition: transform .08s ease-out, background .15s ease;
-    }
-
-    .dock-item:hover {
-      background: var(--card);
-    }
-
-    /* REVEAL */
-    .reveal {
-      opacity: 0;
-      transform: translateY(10px);
-      transition: all .6s ease;
-    }
-
-    .reveal.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-        .badge {
-      display: inline-block;
-      padding: 0.35rem 0.75rem;
-      font-size: 0.75rem;
-      border-radius: 999px;
-      background: var(--card);
-      border: 1px solid var(--border);
-      margin-bottom: 1.25rem;
-    }
-
-    .pulse {
-      display: inline-block;
-      width: 8px;
-      height: 8px;
-      background: rgb(71, 243, 71);
-      border-radius: 50%;
-      margin-right: 0.5rem;
-      animation: pulse 1.6s infinite ease-in-out;
-    }
-
-    @keyframes pulse {
-      0% { opacity: .4; }
-      50% { opacity: 1; }
-      100% { opacity: .4; }
-    }
-
-  </style>
-</head>
-
-
-<body class="paper-noise-strong">
-<header class="hero reveal">
-  <div>
-    <h1>rakshit dogra</h1>
-    <p>been here for <span id="age"></span> years</p>
-  </div>
-  <div class="avatar" aria-hidden="true"><img src="pfp.jpeg" width="100px" height="100px"></div>
-</header>
-
-<main>
-<div class="badge">
-      <span class="pulse"></span>
-      Online
-</div>
-<section class="reveal">
-  <h2>about</h2>
-  <p>try around and find-out!</p>
-  <p>i like computers and science and coffee <i class="fa-solid fa-coffee"></i></p>
-  <p>like to code and make apps/scripts for automations in my daily life.</p>
-  <p>if you want to know more ? <a href="/blogs/blog.html">check out my blog here</a>.</p>
-</section>
-
-<section class="reveal">
-  <h2>cool new projects I am working on rn</h2>
-
-  <a class="card" href="https://rakshitdogra.github.io/refcheck" target="_blank" rel="noopener noreferrer">
-    <div class="logo"><i class="fa-solid fa-search"></i></div>
-    <div>
-      <div class="card-title">Refcheck</div>
-      <div class="card-sub">fast and reliable reference checker for researchers and students</div>
-    </div>
-    <div class="period">2026</div>
-  </a>
-
-  <a class="card" href="https://rakshitdogra.github.io/refunlock" target="_blank" rel="noopener noreferrer">
-    <div class="logo"><i class="fa-solid fa-unlock"></i></div>
-    <div>
-      <div class="card-title">Refunlocker</div>
-      <div class="card-sub">unlock research papers behind the paywalls</div>
-    </div>
-    <div class="period">2026</div>
-  </a>
-
-  <a class="card" href="https://rakshitdogra.github.io/soon.html" target="_blank" rel="noopener noreferrer">
-    <div class="logo"><i class="fa-solid fa-file"></i></div>
-    <div>
-      <div class="card-title">Paper summary studio</div>
-      <div class="card-sub">get insights for your literature review papers</div>
-    </div>
-    <div class="period">2026</div>
-  </a>
-
-</section>
-
-<section class="reveal">
-  <h2>education</h2>
-  <div class="card">
-    <div class="logo"><i class="fa-solid fa-building-columns"></i></div>
-    <div>
-      <div class="card-title">Guru Gobind Singh Indraprastha University</div>
-      <div class="card-sub">Computer Science Engineering</div>
-    </div>
-    <div class="period">2023 – 2027</div>
-  </div>
-</section>
-
-<section class="reveal">
-  <h2>stay updated</h2>
-  <p>follow me on <a href="https://linkedin.com/in/rakshitdogra">LinkedIn</a></p>
-</section>
-
-<section class="reveal">
-  <h2>skills</h2>
-  <div class="tags">
-    <div class="tag">web dev</div>
-    <div class="tag">python</div>
-    <div class="tag">design</div>
-    <div class="tag">research</div>
-    <div class="tag">ai/ml</div>
-    <div class="tag">problem solving</div>
-    <div class="tag">creating solutions</div>
-  </div>
-</section>
-
-<section class="reveal">
-  <p style="text-align:center">
-    say hello on <a href="https://linkedin.com/in/rakshitdogra" target="_blank" rel="noopener noreferrer">
-      <i style="margin: 4px; color: var(--muted);" class="fa-brands fa-linkedin"></i>
-    </a>
-  </p>
-
-  <p style="text-align:center">
-    check-out <a href="https://github.com/rakshitdogra" target="_blank" rel="noopener noreferrer">
-      <i style="margin: 4px; color: var(--muted);" class="fa-brands fa-github"></i>
-    </a>
-  </p>
-</section>
-
-<p style="text-align:center; color: var(--gulabo);">
-  ~ rakshit dogra ~
-</p>
-
-
-
-</main>
-
-<nav class="dock">
-  <a class="dock-item" href="/index.html"><i class="fa-solid fa-home"></i></a>
-  <a class="dock-item" href="/blogs/blog.html"><i class="fa-solid fa-book"></i></a>
-  <a class="dock-item" href="https://github.com/rakshitdogra"><i class="fa-brands fa-github"></i></a>
-  <a class="dock-item" href="https://linkedin.com/in/rakshitdogra">
-    <i class="fa-brands fa-linkedin"></i>
-  </a>
-  <a class="dock-item" href="mailto:rakshitdogra.work@gmail.com">
-    <i class="fa-solid fa-envelope"></i>
-  </a>
-  <button class="dock-item" id="themeToggle">
-    <i class="fa-solid fa-moon" id="themeIcon"></i>
-  </button>
-</nav>
-
-
+<!-- Set theme before first paint so there's no flash of the wrong mode.
+     Falls back to the OS preference; the toggle below overrides it for the session. -->
 <script>
-  /* AGE COUNTER */
-  const birth = new Date("2005-09-11T00:00:00Z").getTime();
-  const ageEl = document.getElementById("age");
-  const yearMs = 1000 * 60 * 60 * 24 * 365.2425; // accurate year length
+  (function(){
+    try{
+      var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+    }catch(e){}
+  })();
+</script>
 
-  function animateAge() {
-    const now = Date.now();
-    const age = (now - birth) / yearMs;
-    ageEl.textContent = age.toFixed(9);
-    requestAnimationFrame(animateAge);
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Public+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Playfair+Display:ital@0;1&family=Space+Mono&family=Caveat:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#faf9f6;
+  --ink:#1c1c1a;
+  --mute:#039145;
+  --rule:#e6e3da;
+  --highlight-bg:#dbe6ee;
+  --highlight-ink:#4a6f95;
+  --coral:#067087;
+  --card:#ffffff;
+  --body-ink:#3c3c38;
+  --nav-bg:rgba(250,249,246,.85);
+}
+
+html[data-theme="dark"]{
+  --paper:#1e1d19;
+  --ink:#f1efe8;
+  --mute:#4fae7a;
+  --rule:#38352c;
+  --highlight-bg:#25344a;
+  --highlight-ink:#9cc2ec;
+  --coral:#ff8a63;
+  --card:#27251f;
+  --body-ink:#d3d0c6;
+  --nav-bg:rgba(30,29,25,.85);
+}
+
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  margin:0;
+  background:var(--paper);
+  color:var(--ink);
+  font-family:'Inter',sans-serif;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+  transition:background .3s ease, color .3s ease;
+}
+
+::selection{ background:var(--highlight-bg); color:var(--highlight-ink); }
+
+body::before{
+  content:"";
+  position:fixed; inset:0;
+  pointer-events:none;
+  opacity:.4;
+  background-image:radial-gradient(rgba(0,0,0,0.035) 1px, transparent 1px);
+  background-size:3px 3px;
+  z-index:0;
+}
+html[data-theme="dark"] body::before{
+  background-image:radial-gradient(rgba(255,255,255,0.035) 1px, transparent 1px);
+}
+
+a{ color:inherit; }
+
+.wrap{
+  max-width:680px;
+  margin:0 auto;
+  padding:0 28px;
+  position:relative;
+  z-index:1;
+}
+
+/* -------- NAV -------- */
+nav{
+  position:sticky; top:0;
+  background:var(--nav-bg);
+  backdrop-filter:blur(6px);
+  z-index:20;
+  border-bottom:1px solid transparent;
+  transition:border-color .3s ease, background .3s ease;
+}
+nav.scrolled{ border-color:var(--rule); }
+nav .wrap{
+  display:flex; align-items:center; justify-content:space-between;
+  height:56px;
+  max-width:680px;
+}
+.nav-mark{
+  font-family:'JetBrains Mono',monospace;
+  font-size:13px;
+  letter-spacing:.02em;
+  display:flex; align-items:center; gap:8px;
+  color:var(--ink);
+}
+.nav-mark .dot{
+  width:7px;height:7px;border-radius:50%;
+  background:var(--coral);
+  animation:blink 2.4s ease-in-out infinite;
+  flex-shrink:0;
+}
+@keyframes blink{ 0%,100%{opacity:1;} 50%{opacity:.25;} }
+.nav-links{ display:flex; align-items:center; gap:22px; font-size:13px; color:var(--mute); }
+.nav-links a{ text-decoration:none; transition:color .2s ease; }
+.nav-links a:hover{ color:var(--ink); }
+
+.theme-toggle{
+  width:28px; height:28px;
+  border-radius:50%;
+  border:1px solid var(--rule);
+  background:var(--card);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer;
+  color:var(--ink);
+  padding:0;
+  transition:background .2s ease, border-color .2s ease, transform .15s ease;
+}
+.theme-toggle:hover{ background:var(--paper); transform:translateY(-1px); }
+.theme-toggle svg{ width:14px; height:14px; }
+.theme-toggle .icon-moon{ display:none; }
+html[data-theme="dark"] .theme-toggle .icon-sun{ display:none; }
+html[data-theme="dark"] .theme-toggle .icon-moon{ display:block; }
+
+/* -------- HERO -------- */
+.hero{ padding:64px 0 40px; }
+
+.avatar-row{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  margin-bottom:34px;
+}
+
+.avatar{
+  width:64px; height:64px;
+  border-radius:16px;
+  background:linear-gradient(135deg,#2a2a28,#4a4a44);
+  position:relative;
+  box-shadow:0 6px 16px rgba(0,0,0,.12);
+  overflow:hidden;
+}
+html[data-theme="dark"] .avatar{
+  background:linear-gradient(135deg,#3a3a35,#57564e);
+  box-shadow:0 6px 16px rgba(0,0,0,.35);
+}
+.avatar::after{
+  content:"";
+  position:absolute; inset:0;
+  background:linear-gradient(120deg, transparent 40%, rgba(255,255,255,.15) 50%, transparent 60%);
+}
+.avatar .lens{
+  position:absolute; bottom:9px; left:9px;
+  width:18px; height:18px; border-radius:50%;
+  background:#151513;
+  border:2px solid #55554e;
+}
+
+.doc-line{
+  font-family:'Fraunces', serif;
+  font-weight:400;
+  font-size:clamp(26px, 4.4vw, 34px);
+  line-height:1.5;
+  letter-spacing:-0.01em;
+}
+.doc-line + .doc-line{ margin-top:2px; }
+
+.hl{
+  background:var(--highlight-bg);
+  color:var(--highlight-ink);
+  padding:2px 10px;
+  border-radius:7px;
+  font-style:normal;
+  cursor:pointer;
+  transition:transform .15s ease, box-shadow .15s ease;
+  display:inline-block;
+}
+.hl:hover{ transform:translateY(-1px); box-shadow:0 3px 10px rgba(74,111,149,.18); }
+html[data-theme="dark"] .hl:hover{ box-shadow:0 3px 10px rgba(0,0,0,.35); }
+
+.underline-dotted{
+  text-decoration:underline;
+  text-decoration-style:dotted;
+  text-decoration-color:var(--mute);
+  text-underline-offset:4px;
+}
+
+.muted{ color:var(--mute); }
+.link-blue{
+  color:var(--highlight-ink);
+  font-weight:500;
+  text-decoration:underline;
+  text-decoration-color:rgba(74,111,149,.35);
+  text-underline-offset:3px;
+}
+html[data-theme="dark"] .link-blue{
+  text-decoration-color:rgba(156,194,236,.4);
+}
+
+.caret{
+  display:inline-block;
+  width:2px; height:1em;
+  background:var(--coral);
+  vertical-align:-3px;
+  margin-left:2px;
+  animation:caret-blink 1s steps(1) infinite;
+}
+@keyframes caret-blink{ 50%{ opacity:0; } }
+
+/* -------- SECTIONS -------- */
+section{ padding:52px 0; position:relative; }
+.rule{ border:none; border-top:1px solid var(--rule); margin:0; }
+
+.eyebrow{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11.5px;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  color:var(--mute);
+  margin:0 0 18px;
+}
+
+.body-text{
+  font-size:17px;
+  line-height:1.75;
+  color:var(--body-ink);
+}
+.body-text + .body-text{ margin-top:16px; }
+
+/* research */
+.research-item{
+  padding:22px 0;
+  border-bottom:1px solid var(--rule);
+}
+.research-item:first-of-type{ border-top:1px solid var(--rule); }
+.research-title{
+  font-family:'Fraunces', serif;
+  font-weight:500;
+  font-size:18px;
+  line-height:1.45;
+  margin-bottom:8px;
+  color:var(--ink);
+}
+.research-venue{
+  font-size:13.5px;
+  color:var(--body-ink);
+  margin-bottom:8px;
+  line-height:1.5;
+}
+.research-meta{
+  font-family:'JetBrains Mono',monospace;
+  font-size:12px;
+  color:var(--mute);
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-bottom:8px;
+}
+.research-meta .dot-sep{ opacity:.6; }
+.research-doi{
+  color:var(--highlight-ink);
+  text-decoration:underline;
+  text-decoration-color:rgba(74,111,149,.35);
+  text-underline-offset:3px;
+}
+.research-doi:hover{ text-decoration-color:var(--highlight-ink); }
+html[data-theme="dark"] .research-doi{
+  text-decoration-color:rgba(156,194,236,.4);
+}
+.research-contributors{
+  font-size:12.5px;
+  color:var(--mute);
+}
+
+/* interests / skills */
+.chip-cloud{
+  display:flex; flex-wrap:wrap;
+  gap:8px;
+  margin-top:18px;
+}
+.topic-chip{
+  font-size:13px;
+  padding:7px 13px;
+  border-radius:999px;
+  background:var(--card);
+  border:1px solid var(--rule);
+  color:var(--body-ink);
+  transition:background .15s ease, border-color .15s ease, color .15s ease;
+}
+.topic-chip:hover{
+  background:var(--highlight-bg);
+  color:var(--highlight-ink);
+  border-color:transparent;
+}
+
+/* about */
+.about-list{
+  list-style:none;
+  margin:0; padding:0;
+  display:flex; flex-direction:column;
+  gap:12px;
+}
+.about-list li{
+  font-size:17px;
+  line-height:1.65;
+  color:var(--body-ink);
+  padding-left:20px;
+  position:relative;
+}
+.about-list li::before{
+  content:"—";
+  position:absolute;
+  left:0; top:0;
+  color:var(--coral);
+}
+
+/* project links */
+.project-link{
+  font-family:'JetBrains Mono',monospace;
+  font-size:12px;
+  color:var(--highlight-ink);
+  text-decoration:underline;
+  text-decoration-color:rgba(74,111,149,.35);
+  text-underline-offset:3px;
+  white-space:nowrap;
+}
+.project-link:hover{ text-decoration-color:var(--highlight-ink); }
+html[data-theme="dark"] .project-link{
+  text-decoration-color:rgba(156,194,236,.4);
+}
+.project-link.muted-link{
+  color:var(--mute);
+  text-decoration-color:rgba(154,151,142,.4);
+}
+.soon-badge{
+  font-family:'JetBrains Mono',monospace;
+  font-size:8.5px;
+  text-transform:uppercase;
+  letter-spacing:.04em;
+  color:var(--mute);
+  border:1px solid var(--rule);
+  border-radius:999px;
+  padding:2px 7px;
+  margin-left:8px;
+  vertical-align:left;
+  width: 20%;
+}
+
+/* work / project / education list */
+.work-item{
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+  gap:16px;
+  padding:20px 0;
+  border-bottom:1px solid var(--rule);
+  cursor:pointer;
+  transition:padding-left .2s ease;
+}
+.work-item:hover{ padding-left:6px; }
+.work-item:first-of-type{ border-top:1px solid var(--rule); }
+.work-title{
+  font-family:'Fraunces', serif;
+  font-size:20px;
+  font-weight:500;
+  color:var(--ink);
+}
+.work-meta{
+  font-family:'JetBrains Mono',monospace;
+  font-size:12px;
+  color:var(--mute);
+  white-space:nowrap;
+}
+.work-tags{ font-size:13px; color:var(--mute); margin-top:4px; }
+
+/* contact */
+.contact-line{
+  font-family:'Fraunces', serif;
+  font-size:clamp(24px,4vw,30px);
+  line-height:1.5;
+}
+.icon-row{
+  display:flex; gap:10px; margin-top:26px; flex-wrap:wrap;
+}
+.icon-pill{
+  display:flex; align-items:center; gap:8px;
+  padding:9px 15px;
+  border:1px solid var(--rule);
+  border-radius:999px;
+  font-size:13px;
+  text-decoration:none;
+  color:var(--ink);
+  transition:background .15s ease, border-color .15s ease, transform .15s ease;
+}
+.icon-pill:hover{
+  background:var(--card);
+  border-color:var(--ink);
+  transform:translateY(-1px);
+}
+
+/* footer */
+footer{
+  padding:36px 0 60px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:11.5px;
+  color:var(--mute);
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+}
+.footer-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:10px;
+}
+.footer-row-secondary{
+  padding-top:14px;
+  border-top:1px dashed var(--rule);
+}
+.footer-status{
+  display:flex;
+  align-items:center;
+  gap:7px;
+}
+.status-dot{
+  width:6px; height:6px;
+  border-radius:50%;
+  background:var(--coral);
+  flex-shrink:0;
+  animation:blink 2.4s ease-in-out infinite;
+}
+#statusText{
+  display:inline-block;
+  transition:opacity .35s ease, transform .35s ease;
+}
+#statusText.fading{
+  opacity:0;
+  transform:translateY(3px);
+}
+.footer-location{
+  display:inline-flex;
+  align-items:center;
+}
+.footer-clock{
+  margin-left:8px;
+  color:var(--ink);
+  font-variant-numeric:tabular-nums;
+  display:inline-flex;
+  align-items:center;
+}
+.footer-clock::before{
+  content:"·";
+  margin-right:8px;
+  color:var(--mute);
+}
+.back-to-top{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11.5px;
+  color:var(--mute);
+  text-decoration:none;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  transition:color .2s ease, transform .2s ease;
+}
+.back-to-top:hover{
+  color:var(--coral);
+  transform:translateY(-2px);
+}
+.back-to-top .arrow{
+  display:inline-block;
+  animation:float-arrow 1.6s ease-in-out infinite;
+}
+@keyframes float-arrow{
+  0%,100%{ transform:translateY(0); }
+  50%{ transform:translateY(-2px); }
+}
+
+@media (prefers-reduced-motion: reduce){
+  *{ animation-duration:.001ms !important; transition-duration:.001ms !important; }
+}
+
+/* ================= CUSTOM CURSOR =================
+   Only enabled for devices that actually have a fine-pointer mouse.
+   On touch/coarse-pointer devices this whole block is inert, so the
+   native cursor/touch behavior is left completely alone. */
+@media (hover:hover) and (pointer:fine){
+  html.has-cursor *{ cursor:none; }
+
+  .cursor-dot,
+  .cursor-ring{
+    position:fixed;
+    top:0;
+    left:0;
+    pointer-events:none;
+    z-index:99999;
+    opacity:0;
+    transition:opacity .2s ease;
+  }
+  html.cursor-active .cursor-dot,
+  html.cursor-active .cursor-ring{
+    opacity:1;
   }
 
-  animateAge();
+  .cursor-dot{
+    width:8px;
+    height:8px;
+    border-radius:50%;
+    background:var(--ink);
+  }
 
-  /* THEME */
-  const root = document.documentElement;
-  const saved = localStorage.getItem("theme");
-  if (saved === "light") root.classList.add("light");
+  .cursor-ring{
+    width:34px;
+    height:34px;
+    border:2px solid var(--ink);
+    border-radius:50%;
+    transition:width .25s, height .25s, border-color .25s, background .25s, opacity .2s ease;
+  }
 
-  document.getElementById("themeToggle").onclick = () => {
-    root.classList.toggle("light");
-    localStorage.setItem("theme", root.classList.contains("light") ? "light" : "dark");
-  };
+  .cursor-ring.hover{
+    width:58px;
+    height:58px;
+    background:rgba(0,0,0,.05);
+  }
 
-  /* REVEAL */
-  const observer = new IntersectionObserver(entries =>
-    entries.forEach(e => e.isIntersecting && e.target.classList.add("visible"))
-  );
-  document.querySelectorAll(".reveal").forEach(el => observer.observe(el));
-</script>
+  html[data-theme="dark"] .cursor-dot{ background:#fff; }
+  html[data-theme="dark"] .cursor-ring{ border-color:#fff; }
+  html[data-theme="dark"] .cursor-ring.hover{ background:rgba(255,255,255,.08); }
+}
+
+/* -------- theme-switch circle reveal -------- */
+::view-transition-old(root),
+::view-transition-new(root){
+  animation:none;
+  mix-blend-mode:normal;
+}
+::view-transition-old(root){ z-index:1; }
+::view-transition-new(root){ z-index:2; }
+</style>
+</head>
+<body>
+<div class="cursor-dot"></div>
+<div class="cursor-ring"></div>
+
+<nav id="nav">
+  <div class="wrap">
+    <div class="nav-mark">rakshit.dogra</div>
+    <div class="nav-links">
+      <a href="#research">Research</a>
+      <a href="#projects">Projects</a>
+      <a href="#skills">Skills</a>
+      <a href="#interests">Interests</a>
+      <a href="#contact">Contact</a>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Toggle dark mode">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="currentColor"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79Z"/></svg>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<div class="wrap">
+  <section class="hero">
+    <div class="avatar-row">
+    </div>
+
+    <p class="doc-line">
+      Hey,
+    </p>
+    <p class="doc-line">
+      I'm <span class="underline-dotted">Rakshit Dogra</span>, a
+      <span class="hl">CS Student &amp; Researcher</span>
+      based in <span class="underline-dotted">New Delhi</span>.
+    </p>
+    <p class="doc-line" style="margin-top:22px;">
+      I'm into <span class="muted">computers</span>, science, and 
+      <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="currentColor" class="bi bi-cup-hot-fill" viewBox="0 0 16 16">
+  <path fill-rule="evenodd" d="M.5 6a.5.5 0 0 0-.488.608l1.652 7.434A2.5 2.5 0 0 0 4.104 16h5.792a2.5 2.5 0 0 0 2.44-1.958l.131-.59a3 3 0 0 0 1.3-5.854l.221-.99A.5.5 0 0 0 13.5 6zM13 12.5a2 2 0 0 1-.316-.025l.867-3.898A2.001 2.001 0 0 1 13 12.5"/>
+  <path d="m4.4.8-.003.004-.014.019a4 4 0 0 0-.204.31 2 2 0 0 0-.141.267c-.026.06-.034.092-.037.103v.004a.6.6 0 0 0 .091.248c.075.133.178.272.308.445l.01.012c.118.158.26.347.37.543.112.2.22.455.22.745 0 .188-.065.368-.119.494a3 3 0 0 1-.202.388 5 5 0 0 1-.253.382l-.018.025-.005.008-.002.002A.5.5 0 0 1 3.6 4.2l.003-.004.014-.019a4 4 0 0 0 .204-.31 2 2 0 0 0 .141-.267c.026-.06.034-.092.037-.103a.6.6 0 0 0-.09-.252A4 4 0 0 0 3.6 2.8l-.01-.012a5 5 0 0 1-.37-.543A1.53 1.53 0 0 1 3 1.5c0-.188.065-.368.119-.494.059-.138.134-.274.202-.388a6 6 0 0 1 .253-.382l.025-.035A.5.5 0 0 1 4.4.8m3 0-.003.004-.014.019a4 4 0 0 0-.204.31 2 2 0 0 0-.141.267c-.026.06-.034.092-.037.103v.004a.6.6 0 0 0 .091.248c.075.133.178.272.308.445l.01.012c.118.158.26.347.37.543.112.2.22.455.22.745 0 .188-.065.368-.119.494a3 3 0 0 1-.202.388 5 5 0 0 1-.253.382l-.018.025-.005.008-.002.002A.5.5 0 0 1 6.6 4.2l.003-.004.014-.019a4 4 0 0 0 .204-.31 2 2 0 0 0 .141-.267c.026-.06.034-.092.037-.103a.6.6 0 0 0-.09-.252A4 4 0 0 0 6.6 2.8l-.01-.012a5 5 0 0 1-.37-.543A1.53 1.53 0 0 1 6 1.5c0-.188.065-.368.119-.494.059-.138.134-.274.202-.388a6 6 0 0 1 .253-.382l.025-.035A.5.5 0 0 1 7.4.8m3 0-.003.004-.014.019a4 4 0 0 0-.204.31 2 2 0 0 0-.141.267c-.026.06-.034.092-.037.103v.004a.6.6 0 0 0 .091.248c.075.133.178.272.308.445l.01.012c.118.158.26.347.37.543.112.2.22.455.22.745 0 .188-.065.368-.119.494a3 3 0 0 1-.202.388 5 5 0 0 1-.252.382l-.019.025-.005.008-.002.002A.5.5 0 0 1 9.6 4.2l.003-.004.014-.019a4 4 0 0 0 .204-.31 2 2 0 0 0 .141-.267c.026-.06.034-.092.037-.103a.6.6 0 0 0-.09-.252A4 4 0 0 0 9.6 2.8l-.01-.012a5 5 0 0 1-.37-.543A1.53 1.53 0 0 1 9 1.5c0-.188.065-.368.119-.494.059-.138.134-.274.202-.388a6 6 0 0 1 .253-.382l.025-.035A.5.5 0 0 1 10.4.8"/>
+</svg>
+ <br> I like
+      <span class="link-blue">building tools</span> 
+       that automate the boring parts
+      of my everyday <span class="muted">work ✦</span><span class="caret"></span>
+    </p>
+  </section>
+
+  <hr class="rule">
+
+  <section id="about">
+    <p class="eyebrow">// about</p>
+    <ul class="about-list">
+      <li>Been here for <span id="ageCounter">--</span> years.</li>
+      <li>Enjoys coding and building apps/scripts to automate daily tasks.</li>
+    </ul>
+  </section>
+
+  <hr class="rule">
+
+  <section id="research">
+    <p class="eyebrow">// research</p>
+
+    <div class="research-item">
+      <div class="research-title">Exploring Macroeconomic Impact of Agentic AI on Industries, Labour and Economic Growth</div>
+      <div class="research-venue">2026 Eighth International Conference on Computational Intelligence and Communication Technologies (CCICT) · Conference paper</div>
+      <div class="research-meta">
+        <span>June 2026</span>
+        <span class="dot-sep">·</span>
+        <a class="research-doi" href="https://doi.org/10.23919/ccictcps00010.2026.00042" target="_blank" rel="noopener">DOI 10.23919/ccictcps00010.2026.00042 ↗</a>
+      </div>
+    </div>
+
+    <div class="research-item">
+      <div class="research-title">SEAL vs. SFW: A Systematic Robustness Comparison of Semantic and Fourier-Domain Watermarking</div>
+      <div class="research-venue">2026 Eighth International Conference on Computational Intelligence and Communication Technologies (CCICT) · Conference paper</div>
+      <div class="research-meta">
+        <span>June 2026</span>
+        <span class="dot-sep">·</span>
+        <a class="research-doi" href="https://doi.org/10.23919/ccictcps00010.2026.00127" target="_blank" rel="noopener">DOI 10.23919/ccictcps00010.2026.00127 ↗</a>
+      </div>
+    </div>
+
+    <div class="research-item">
+      <div class="research-title">Analysis of Discord-Based Remote Access Threats: Detection and Prevention</div>
+      <div class="research-venue">2026 1st International Conference on Advancing Sustainable Solutions through Technologies (ICASST) · Conference paper</div>
+      <div class="research-meta">
+        <span>Feb 2026</span>
+        <span class="dot-sep">·</span>
+        <a class="research-doi" href="https://doi.org/10.1109/icasst68917.2026.11484111" target="_blank" rel="noopener">DOI 10.1109/icasst68917.2026.11484111 ↗</a>
+      </div>
+    <!--<div class="research-contributors">Rakshit Dogra · Sonika Vasesi · Harish Kumar Mittal · Swati Juneja</div>-->
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <section id="projects">
+    <p class="eyebrow">// projects (2026)</p>
+    <div class="work-item">
+      <div>
+        <div class="work-title">RALV</div>
+        <div class="work-tags">One platform for researchers to manage references, access papers, and visualize data.</div>
+      </div>
+      <a class="project-link" href="https://ralv.vercel.app" target="_blank" rel="noopener">visit ↗</a>
+    </div>
+    <div class="work-item">
+      <div>
+        <div class="work-title">🐱 MeowLang</div>
+        <div class="work-tags">A complete, expressive programming language with its own IDE where MEOW is the center of all output.</div>
+      </div>
+      <a class="project-link" href="https://meowlang.vercel.app/" target="_blank" rel="noopener">visit ↗</a>
+    </div>
+    <div class="work-item">
+      <div>
+        <div class="work-title">Stl View</div>
+        <div class="work-tags">Online Stl viewer in browser with three.js engine.</div>
+      </div>
+      <a class="project-link" href="https://ralv-stlview.vercel.app" target="_blank" rel="noopener">visit ↗</a>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <section id="education">
+    <p class="eyebrow">// education</p>
+    <div class="work-item">
+      <div>
+        <div class="work-title">Guru Gobind Singh Indraprastha University</div>
+        <div class="work-tags">B.Tech, Computer Science Engineering</div>
+        <div class="soon-badge work-tags">GPA: 9.7</div>
+
+      </div>
+      <div class="work-meta">2023 – 2027</div>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <section id="skills">
+    <p class="eyebrow">// skills</p>
+    <div class="chip-cloud">
+      <span class="topic-chip">Web Development</span>
+      <span class="topic-chip">Python</span>
+      <span class="topic-chip">Design</span>
+      <span class="topic-chip">Research</span>
+      <span class="topic-chip">AI / ML</span>
+      <span class="topic-chip">Data Science</span>
+      <span class="topic-chip">Problem Solving</span>
+      <span class="topic-chip">React</span>
+      <span class="topic-chip">NextJs</span>
+      <span class="topic-chip">Git</span>
+
+
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <section id="interests">
+    <p class="eyebrow">// topics I find interesting</p>
+    <p class="body-text">
+      Mostly the space where systems meet people — how intelligent agents reshape
+      work, how you prove an image or model output is trustworthy, and how the same
+      curiosity applies to keeping systems secure.
+    </p>
+    <div class="chip-cloud">
+      <span class="topic-chip">agentic AI &amp; economics</span>
+      <span class="topic-chip">watermarking &amp; provenance</span>
+      <span class="topic-chip">applied cybersecurity</span>
+      <span class="topic-chip">human–computer interaction</span>
+      <span class="topic-chip">generative design tools</span>
+      <span class="topic-chip">labour &amp; automation</span>
+      <span class="topic-chip">trust &amp; safety in AI</span>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <section id="contact">
+    <p class="eyebrow">// contact</p>
+    <p class="contact-line">
+      Got something worth <span class="hl">building</span> together?
+    </p>
+    <div class="icon-row">
+      <a class="icon-pill" href="mailto:rakshitdogra.work@gmail.com"><i class="fa-solid fa-envelope"></i> email</a>
+      <a class="icon-pill" href="https://linkedin.com/in/rakshitdogra" target="_blank" rel="noopener"><i class="fa-brands fa-linkedin"></i> linkedin</a>
+      <a class="icon-pill" href="https://github.com/rakshitdogra" target="_blank" rel="noopener"><i class="fa-brands fa-github"></i> github</a>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-row">
+      <span>© 2026 Rakshit Dogra</span>
+      <span class="footer-status">
+        <span class="status-dot"></span>
+        <span id="statusText">probably debugging something</span>
+      </span>
+      <span class="footer-location">Delhi, India — 28.6139° N<span class="footer-clock" id="footerClock">--:--</span></span>
+    </div>
+    <div class="footer-row footer-row-secondary">
+      <span>crafted with 
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-cup-hot-fill" viewBox="0 0 16 16">
+  <path fill-rule="evenodd" d="M.5 6a.5.5 0 0 0-.488.608l1.652 7.434A2.5 2.5 0 0 0 4.104 16h5.792a2.5 2.5 0 0 0 2.44-1.958l.131-.59a3 3 0 0 0 1.3-5.854l.221-.99A.5.5 0 0 0 13.5 6zM13 12.5a2 2 0 0 1-.316-.025l.867-3.898A2.001 2.001 0 0 1 13 12.5"/>
+  <path d="m4.4.8-.003.004-.014.019a4 4 0 0 0-.204.31 2 2 0 0 0-.141.267c-.026.06-.034.092-.037.103v.004a.6.6 0 0 0 .091.248c.075.133.178.272.308.445l.01.012c.118.158.26.347.37.543.112.2.22.455.22.745 0 .188-.065.368-.119.494a3 3 0 0 1-.202.388 5 5 0 0 1-.253.382l-.018.025-.005.008-.002.002A.5.5 0 0 1 3.6 4.2l.003-.004.014-.019a4 4 0 0 0 .204-.31 2 2 0 0 0 .141-.267c.026-.06.034-.092.037-.103a.6.6 0 0 0-.09-.252A4 4 0 0 0 3.6 2.8l-.01-.012a5 5 0 0 1-.37-.543A1.53 1.53 0 0 1 3 1.5c0-.188.065-.368.119-.494.059-.138.134-.274.202-.388a6 6 0 0 1 .253-.382l.025-.035A.5.5 0 0 1 4.4.8m3 0-.003.004-.014.019a4 4 0 0 0-.204.31 2 2 0 0 0-.141.267c-.026.06-.034.092-.037.103v.004a.6.6 0 0 0 .091.248c.075.133.178.272.308.445l.01.012c.118.158.26.347.37.543.112.2.22.455.22.745 0 .188-.065.368-.119.494a3 3 0 0 1-.202.388 5 5 0 0 1-.253.382l-.018.025-.005.008-.002.002A.5.5 0 0 1 6.6 4.2l.003-.004.014-.019a4 4 0 0 0 .204-.31 2 2 0 0 0 .141-.267c.026-.06.034-.092.037-.103a.6.6 0 0 0-.09-.252A4 4 0 0 0 6.6 2.8l-.01-.012a5 5 0 0 1-.37-.543A1.53 1.53 0 0 1 6 1.5c0-.188.065-.368.119-.494.059-.138.134-.274.202-.388a6 6 0 0 1 .253-.382l.025-.035A.5.5 0 0 1 7.4.8m3 0-.003.004-.014.019a4 4 0 0 0-.204.31 2 2 0 0 0-.141.267c-.026.06-.034.092-.037.103v.004a.6.6 0 0 0 .091.248c.075.133.178.272.308.445l.01.012c.118.158.26.347.37.543.112.2.22.455.22.745 0 .188-.065.368-.119.494a3 3 0 0 1-.202.388 5 5 0 0 1-.252.382l-.019.025-.005.008-.002.002A.5.5 0 0 1 9.6 4.2l.003-.004.014-.019a4 4 0 0 0 .204-.31 2 2 0 0 0 .141-.267c.026-.06.034-.092.037-.103a.6.6 0 0 0-.09-.252A4 4 0 0 0 9.6 2.8l-.01-.012a5 5 0 0 1-.37-.543A1.53 1.53 0 0 1 9 1.5c0-.188.065-.368.119-.494.059-.138.134-.274.202-.388a6 6 0 0 1 .253-.382l.025-.035A.5.5 0 0 1 10.4.8"/>
+</svg>
+      , curiosity, and one too many browser tabs</span>
+      <a class="back-to-top" id="backToTop" href="#nav">back to top <span class="arrow">↑</span></a>
+    </div>
+  </footer>
+</div>
+
 <script>
-  const dock = document.querySelector(".dock");
-  const items = [...dock.querySelectorAll(".dock-item")];
+  // ----- nav border on scroll -----
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 4);
+  });
 
-  const MAX_SCALE = 1.4;      // size of hovered icon
-  const MIN_SCALE = 1;        // resting size
-  const EFFECT_RADIUS = 140;  // px influence radius
+  // ----- dynamic "been here for X years" counter -----
+  // Update BIRTH_YEAR below to the real birth year — everything else recalculates itself.
+  const BIRTH_YEAR = 2005;
+  const ageEl = document.getElementById('ageCounter');
+  if (ageEl) ageEl.textContent = new Date().getFullYear() - BIRTH_YEAR;
 
-  dock.addEventListener("mousemove", (e) => {
-    const dockRect = dock.getBoundingClientRect();
-    const mouseX = e.clientX;
+  // ----- theme toggle (light / dark) with circular reveal -----
+  const themeToggle = document.getElementById('themeToggle');
+  const rootEl = document.documentElement;
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    items.forEach(item => {
-      const rect = item.getBoundingClientRect();
-      const itemCenter = rect.left + rect.width / 2;
+  themeToggle.addEventListener('click', () => {
+    const isDark = rootEl.getAttribute('data-theme') === 'dark';
+    const nextTheme = isDark ? 'light' : 'dark';
 
-      const distance = Math.abs(mouseX - itemCenter);
+    if (!document.startViewTransition || prefersReducedMotion) {
+      rootEl.setAttribute('data-theme', nextTheme);
+      return;
+    }
 
-      let scale = MIN_SCALE;
+    const rect = themeToggle.getBoundingClientRect();
+    const x = rect.left + rect.width / 2;
+    const y = rect.top + rect.height / 2;
+    const endRadius = Math.hypot(
+      Math.max(x, window.innerWidth - x),
+      Math.max(y, window.innerHeight - y)
+    );
 
-      if (distance < EFFECT_RADIUS) {
-        const influence = 1 - distance / EFFECT_RADIUS;
-        scale = MIN_SCALE + influence * (MAX_SCALE - MIN_SCALE);
+    const transition = document.startViewTransition(() => {
+      rootEl.setAttribute('data-theme', nextTheme);
+    });
+
+    transition.ready.then(() => {
+      document.documentElement.animate(
+        { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${endRadius}px at ${x}px ${y}px)`] },
+        { duration: 550, easing: 'ease-in-out', pseudoElement: '::view-transition-new(root)' }
+      );
+    });
+  });
+
+  // ----- footer: rotating status chip -----
+  const statuses = [
+    'probably debugging something',
+    'fueled by coffee ☕',
+    'reading one more paper',
+    'refactoring at 3:30 am',
+    'somewhere between two side projects',
+    'open to interesting problems'
+  ];
+  const statusEl = document.getElementById('statusText');
+  let statusIndex = 0;
+  if (statusEl){
+    setInterval(() => {
+      statusEl.classList.add('fading');
+      setTimeout(() => {
+        statusIndex = (statusIndex + 1) % statuses.length;
+        statusEl.textContent = statuses[statusIndex];
+        statusEl.classList.remove('fading');
+      }, 350);
+    }, 4200);
+  }
+
+  // ----- footer: live Delhi clock -----
+  const clockEl = document.getElementById('footerClock');
+  function updateClock(){
+    if (!clockEl) return;
+    const now = new Date().toLocaleTimeString('en-GB', {
+      timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', second: '2-digit'
+    });
+    clockEl.textContent = now + ' IST';
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  // ----- footer: smooth back-to-top -----
+  const backToTop = document.getElementById('backToTop');
+  if (backToTop){
+    backToTop.addEventListener('click', (e) => {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+
+  // ================= CUSTOM CURSOR =================
+  // Only runs on devices that report a fine pointer (i.e. an actual mouse).
+  // Touch devices skip this entirely so nothing gets stuck on-screen.
+  const hasFinePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+  if (hasFinePointer) {
+    document.documentElement.classList.add('has-cursor');
+
+    class Cursor {
+      constructor(){
+        this.dot = document.querySelector('.cursor-dot');
+        this.ring = document.querySelector('.cursor-ring');
+
+        this.mouse = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+        this.ringPos = { x: this.mouse.x, y: this.mouse.y };
+        this.scale = 1;
+        this.targetScale = 1;
+        this.speed = 0.42;
+
+        this.bind();
+        this.animate();
       }
 
-      item.style.setProperty("--scale", scale.toFixed(3));
-    });
-  });
+      bind(){
+        window.addEventListener('mousemove', (e) => {
+          this.mouse.x = e.clientX;
+          this.mouse.y = e.clientY;
+          this.dot.style.transform = `translate3d(${this.mouse.x}px, ${this.mouse.y}px, 0) translate(-50%, -50%)`;
+          document.documentElement.classList.add('cursor-active');
+        });
 
-  dock.addEventListener("mouseleave", () => {
-    items.forEach(item => {
-      item.style.setProperty("--scale", 1);
-    });
-  });
+        document.querySelectorAll('a, button, .hl, .topic-chip, .work-item, .icon-pill, .theme-toggle')
+          .forEach((el) => {
+            el.addEventListener('mouseenter', () => this.ring.classList.add('hover'));
+            el.addEventListener('mouseleave', () => this.ring.classList.remove('hover'));
+          });
+
+        window.addEventListener('mousedown', () => { this.targetScale = 0.8; });
+        window.addEventListener('mouseup', () => { this.targetScale = 1; });
+
+        // Hide the custom cursor if the pointer leaves the viewport
+        document.addEventListener('mouseleave', () => {
+          document.documentElement.classList.remove('cursor-active');
+        });
+      }
+
+      animate(){
+        this.ringPos.x += (this.mouse.x - this.ringPos.x) * this.speed;
+        this.ringPos.y += (this.mouse.y - this.ringPos.y) * this.speed;
+        this.scale += (this.targetScale - this.scale) * 0.25;
+
+        this.ring.style.transform =
+          `translate3d(${this.ringPos.x}px, ${this.ringPos.y}px, 0) translate(-50%, -50%) scale(${this.scale})`;
+
+        requestAnimationFrame(() => this.animate());
+      }
+    }
+
+    new Cursor();
+  }
 </script>
-<script>
-  const r=document.documentElement,
-        i=document.getElementById("themeIcon"),
-        b=document.getElementById("themeToggle"),
-        set=()=>i.className="fa-solid fa-"+(r.classList.contains("light")?"sun":"moon");
-
-  localStorage.getItem("theme")==="light"&&r.classList.add("light");
-  set();
-
-  b.onclick=()=>{
-    r.classList.toggle("light");
-    localStorage.setItem("theme",r.classList.contains("light")?"light":"dark");
-    set();
-  };
-</script>
-
-
 </body>
 </html>
-
-
-
