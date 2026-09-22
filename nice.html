@@ -1,0 +1,2204 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Forecasting Vulnerability Surges</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&amp;display=swap">
+<style>
+:root{
+  --bg:#f7f7f4;
+  --card:#ffffff;
+  --soft:#f0f0ec;
+  --ink:#191917;
+  --mut:#73736c;
+  --line:#deded8;
+  --line-strong:#c9c9c1;
+  --accent:#5b57d8;
+  --accent-soft:#efefff;
+  --green:#3c8668;
+  --orange:#c98335;
+  --red:#c85a5a;
+  --purple:#8067b7;
+  --grid:#d7d7d0;
+  /* visualization palette */
+  --a:#5d67d8; /* train / primary */
+  --b:#3f8f72; /* test / positive */
+  --c:#c58a3a; /* purge / warning */
+  --d:#c85d63; /* surge / alert */
+  --p:#8068b5; /* final test */
+  --g:#d5d5ce; /* unused / baseline */
+}
+
+:root[data-theme="dark"]{
+  --bg:#11110f;
+  --card:#191917;
+  --soft:#23231f;
+  --ink:#f2f2ed;
+  --mut:#a3a39a;
+  --line:#30302b;
+  --line-strong:#44443d;
+  --accent:#8f8cf6;
+  --accent-soft:#29284a;
+  --green:#65aa8a;
+  --orange:#d49a5d;
+  --red:#df7b7b;
+  --purple:#aa97dc;
+  --grid:#393933;
+  /* visualization palette */
+  --a:#8e96f1;
+  --b:#62aa8b;
+  --c:#d3a262;
+  --d:#df7b82;
+  --p:#ad98dc;
+  --g:#3a3a34;
+}
+
+*,
+*::before,
+*::after{box-sizing:border-box}
+
+html{
+  scroll-behavior:smooth;
+  scroll-padding-top:74px;
+}
+
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--ink);
+  font:15px/1.65 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+
+a{color:inherit}
+
+nav{
+  position:sticky;
+  top:0;
+  z-index:20;
+  display:flex;
+  align-items:center;
+  gap:2px;
+  min-height:56px;
+  padding:8px max(14px,calc((100vw - 1080px)/2));
+  background:color-mix(in srgb,var(--bg) 90%,transparent);
+  backdrop-filter:blur(16px);
+  border-bottom:1px solid color-mix(in srgb,var(--line) 85%,transparent);
+  overflow-x:auto;
+}
+
+nav a{
+  color:var(--mut);
+  text-decoration:none;
+  font-size:12px;
+  font-weight:600;
+  padding:6px 9px;
+  border-radius:7px;
+  white-space:nowrap;
+  transition:.16s ease;
+}
+
+nav a:hover{
+  color:var(--ink);
+  background:var(--soft);
+}
+
+nav button{
+  margin-left:auto;
+  flex:none;
+}
+
+button{
+  appearance:none;
+  font:inherit;
+  cursor:pointer;
+  color:var(--ink);
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:8px;
+  padding:7px 11px;
+  transition:background .16s ease,border-color .16s ease,color .16s ease,transform .16s ease;
+}
+
+button:hover{
+  background:var(--soft);
+  border-color:var(--line-strong);
+}
+
+button:active{transform:translateY(1px)}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+summary:focus-visible{
+  outline:2px solid var(--accent);
+  outline-offset:2px;
+}
+
+.hero{
+  padding:88px 20px 74px;
+  text-align:center;
+  border-bottom:1px solid var(--line);
+  background:
+    radial-gradient(circle at 50% 0,color-mix(in srgb,var(--accent) 8%,transparent),transparent 34%),
+    var(--bg);
+}
+
+.hero h1{
+  max-width:900px;
+  margin:14px auto 18px;
+  font-size:clamp(38px,6vw,66px);
+  line-height:1.02;
+  letter-spacing:-.055em;
+  font-weight:800;
+  color:var(--ink);
+}
+
+.hero p{
+  max-width:700px;
+  margin:0 auto;
+  color:var(--mut);
+  font-size:17px;
+  line-height:1.7;
+}
+
+.tag{
+  color:var(--accent);
+  font-size:10px;
+  line-height:1.2;
+  font-weight:800;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+}
+
+.chips{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:7px;
+  margin-top:27px;
+}
+
+.chips span{
+  color:var(--mut);
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:999px;
+  padding:5px 10px;
+  font-size:11px;
+}
+
+.chips b{
+  color:var(--ink);
+  font-weight:700;
+}
+
+main{
+  width:min(1040px,100%);
+  margin:auto;
+  padding:0 20px 72px;
+}
+
+section{padding:64px 0 0}
+
+section+section{
+  border-top:1px solid var(--line);
+  margin-top:64px;
+}
+
+h2{
+  margin:7px 0 10px;
+  font-size:clamp(26px,4vw,36px);
+  line-height:1.12;
+  letter-spacing:-.04em;
+  font-weight:750;
+}
+
+.lead{
+  max-width:740px;
+  margin:0;
+  color:var(--mut);
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:10px;
+  margin-top:24px;
+}
+
+.card{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:18px;
+  box-shadow:0 1px 2px rgba(0,0,0,.025);
+}
+
+.card h3{
+  margin:0 0 7px;
+  font-size:15px;
+  line-height:1.35;
+  letter-spacing:-.01em;
+}
+
+.card p{
+  margin:0;
+  color:var(--mut);
+  font-size:14px;
+  line-height:1.65;
+}
+
+.ctl{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:18px;
+  margin:0 0 18px;
+}
+
+.ctl label{
+  color:var(--mut);
+  font-size:12px;
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+}
+
+.ctl b{
+  color:var(--ink);
+  font-size:13px;
+}
+
+input[type=range]{
+  width:100%;
+  margin:1px 0 0;
+  accent-color:var(--accent);
+  cursor:pointer;
+}
+
+svg{
+  width:100%;
+  height:auto;
+  display:block;
+  overflow:visible;
+}
+.card:has(svg){
+  overflow:hidden;
+}
+.card:has(svg) svg{
+  margin-top:4px;
+}
+
+
+.txt{
+  fill:var(--mut);
+  font-size:10px;
+}
+
+.read{
+  margin-top:12px;
+  padding:10px 12px;
+  border-left:2px solid var(--accent);
+  border-radius:0 7px 7px 0;
+  background:var(--accent-soft);
+  color:var(--mut);
+  font-size:12px;
+}
+
+.read b{color:var(--ink)}
+
+.cells{
+  display:grid;
+  grid-template-columns:repeat(36,1fr);
+  gap:3px;
+  margin:17px 0 12px;
+}
+
+.cells i{
+  aspect-ratio:1;
+  border-radius:2px;
+  background:var(--grid);
+}
+
+.leg{
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px 15px;
+  color:var(--mut);
+  font-size:11px;
+}
+
+.leg i{
+  display:inline-block;
+  width:9px;
+  height:9px;
+  border-radius:2px;
+  margin-right:5px;
+  vertical-align:-1px;
+}
+
+.steps{
+  display:flex;
+  flex-wrap:wrap;
+  gap:4px;
+  margin:20px 0 12px;
+}
+
+.steps button{
+  padding:6px 9px;
+  border-color:transparent;
+  color:var(--mut);
+  background:transparent;
+  font-size:12px;
+}
+
+.steps button.on{
+  color:var(--ink);
+  background:var(--soft);
+  border-color:var(--line);
+}
+
+details{
+  border-top:1px solid var(--line);
+  padding:16px 0;
+}
+
+details:last-child{
+  border-bottom:1px solid var(--line);
+}
+
+summary{
+  cursor:pointer;
+  font-size:14px;
+  font-weight:650;
+}
+
+details p{
+  max-width:760px;
+  margin:8px 0 0 20px;
+  color:var(--mut);
+  font-size:14px;
+}
+
+.gantt{
+  display:grid;
+  grid-template-columns:repeat(12,1fr);
+  gap:5px;
+  margin-top:22px;
+}
+
+.gantt div{
+  min-height:68px;
+  border-radius:7px;
+  padding:9px 10px;
+  font-size:11px;
+  color:#fff;
+  font-weight:700;
+}
+
+.gantt small{
+  display:block;
+  margin-top:4px;
+  font-weight:400;
+  line-height:1.4;
+  opacity:.9;
+}
+
+footer{
+  width:min(1040px,100%);
+  margin:auto;
+  border-top:1px solid var(--line);
+  text-align:left;
+  color:var(--mut);
+  font-size:11px;
+  padding:20px 20px 42px;
+}
+
+@media (max-width:760px){
+  nav{padding:8px 10px}
+  nav a{font-size:11px;padding:6px 7px}
+  .hero{padding:68px 18px 58px}
+  .hero h1{letter-spacing:-.045em}
+  .hero p{font-size:15px}
+  main{padding-inline:16px}
+  section{padding-top:52px}
+  section+section{margin-top:52px}
+  .grid{grid-template-columns:1fr}
+  .ctl{grid-template-columns:1fr}
+  .card{padding:16px}
+  .gantt{grid-template-columns:1fr 1fr}
+  .gantt div{grid-column:auto!important}
+  .cells{gap:2px}
+}
+
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{transition:none!important}
+}
+</style>
+</head>
+<body>
+<nav>
+<a href="#why">Overview</a><a href="#surge">Surge label</a><a href="#split">Leakage</a><a href="#method">Method</a><a href="#cost">Cost</a><a href="#rq">Questions</a><a href="#plan">Plan</a><a href="#titles">Titles</a>
+<button id="theme" aria-label="Toggle light and dark theme" title="Toggle theme">◐</button>
+</nav>
+
+<header class="hero">
+<div class="tag">Research proposal · AI/ML × Cybersecurity</div>
+<h1>Forecasting Vulnerability Surges in Open-Source Packages</h1>
+<p>Which packages will see a burst of high or critical advisories in the next 30–180 days, and can we explain why, without fooling ourselves with data leakage?</p>
+<div class="chips"><span><b>4</b> research questions</span><span><b>7</b> baselines</span><span><b>3</b> horizons</span><span><b>12</b> weeks</span></div>
+</header>
+
+<main>
+<section id="why">
+<div class="tag">The idea</div><h2>Why package-level surges matter</h2>
+<p class="lead">Disclosures cluster in time. A burst forces downstream teams into repeated triage, patching and testing. Existing tools score single CVEs or forecast ecosystem totals; package-level burst forecasting under leakage-controlled, cost-aware evaluation looks under-studied (literature check pending).</p>
+<div class="grid">
+<div class="card"><h3>🎯 The task</h3><p>For package <i>i</i> at date <i>t</i>, estimate the probability of a surge in (t, t+h], using only information public at <i>t</i>.</p></div>
+<div class="card"><h3>⚠️ The caveat</h3><p>We forecast <b>disclosure</b> surges, not true vulnerability density. Audits, fuzzing or policy changes can also trigger bursts.</p></div>
+<div class="card"><h3>🧪 The paper type</h3><p>Empirical study plus benchmark: leakage audit, budget-aware cost analysis, and explanation stability.</p></div>
+</div>
+</section>
+
+<section id="surge">
+<div class="tag">Try it · illustrative synthetic data</div><h2>What counts as a surge?</h2>
+<p class="lead">A window is a surge if it holds at least <b>m</b> advisories <i>and</i> at least <b>k×</b> the package's trailing 12-month rate. Move the sliders and watch how fragile the base rate is.</p>
+<div class="card">
+<div class="ctl">
+<label>Horizon h: <b id="hv">3 mo</b><input id="h" type="range" min="1" max="6" value="3"></label>
+<label>Multiplier k: <b id="kv">3×</b><input id="k" type="range" min="1" max="6" value="3" step=".5"></label>
+<label>Minimum count m: <b id="mv">2</b><input id="m" type="range" min="1" max="4" value="2"></label>
+</div>
+<svg id="sg" viewBox="0 0 720 190" role="img" aria-label="Monthly advisory counts with surge windows highlighted"><rect x="20" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="34.4" y="84" width="11.4" height="26" rx="3" fill="var(--g)"></rect><rect x="48.8" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="63.2" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="77.6" y="84" width="11.4" height="26" rx="3" fill="var(--g)"></rect><rect x="92" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="106.4" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="120.8" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="135.2" y="84" width="11.4" height="26" rx="3" fill="var(--g)"></rect><rect x="149.6" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="164" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="178.4" y="84" width="11.4" height="26" rx="3" fill="var(--g)"></rect><rect x="192.8" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="207.20000000000002" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="221.6" y="84" width="11.4" height="26" rx="3" fill="var(--g)"></rect><rect x="236" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="250.4" y="110" width="11.4" height="2" rx="3" fill="var(--c)"></rect><rect x="264.8" y="110" width="11.4" height="2" rx="3" fill="var(--c)"></rect><rect x="279.2" y="32" width="11.4" height="78" rx="3" fill="var(--c)"></rect><rect x="293.6" y="58" width="11.4" height="52" rx="3" fill="var(--c)"></rect><rect x="308" y="110" width="11.4" height="2" rx="3" fill="var(--c)"></rect><rect x="322.40000000000003" y="84" width="11.4" height="26" rx="3" fill="var(--g)"></rect><rect x="336.8" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="351.2" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="365.6" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="380" y="84" width="11.4" height="26" rx="3" fill="var(--g)"></rect><rect x="394.40000000000003" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="408.8" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="423.2" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="437.6" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="452" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="466.40000000000003" y="84" width="11.4" height="26" rx="3" fill="var(--g)"></rect><rect x="480.8" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="495.2" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="509.6" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="524" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="538.4" y="110" width="11.4" height="2" rx="3" fill="var(--c)"></rect><rect x="552.8000000000001" y="110" width="11.4" height="2" rx="3" fill="var(--c)"></rect><rect x="567.2" y="6" width="11.4" height="104" rx="3" fill="var(--c)"></rect><rect x="581.6" y="32" width="11.4" height="78" rx="3" fill="var(--c)"></rect><rect x="596" y="84" width="11.4" height="26" rx="3" fill="var(--c)"></rect><rect x="610.4" y="110" width="11.4" height="2" rx="3" fill="var(--c)"></rect><rect x="624.8000000000001" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="639.2" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="653.6" y="84" width="11.4" height="26" rx="3" fill="var(--g)"></rect><rect x="668" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="682.4" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="696.8000000000001" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="192.8" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="207.20000000000002" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="221.6" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="236" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="250.4" y="128" width="11.4" height="22" rx="3" fill="var(--d)" opacity="1"></rect><rect x="264.8" y="128" width="11.4" height="22" rx="3" fill="var(--d)" opacity="1"></rect><rect x="279.2" y="128" width="11.4" height="22" rx="3" fill="var(--d)" opacity="1"></rect><rect x="293.6" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="308" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="322.40000000000003" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="336.8" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="351.2" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="365.6" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="380" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="394.40000000000003" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="408.8" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="423.2" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="437.6" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="452" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="466.40000000000003" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="480.8" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="495.2" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="509.6" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="524" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="538.4" y="128" width="11.4" height="22" rx="3" fill="var(--d)" opacity="1"></rect><rect x="552.8000000000001" y="128" width="11.4" height="22" rx="3" fill="var(--d)" opacity="1"></rect><rect x="567.2" y="128" width="11.4" height="22" rx="3" fill="var(--d)" opacity="1"></rect><rect x="581.6" y="128" width="11.4" height="22" rx="3" fill="var(--d)" opacity="1"></rect><rect x="596" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="610.4" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="624.8000000000001" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="639.2" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="653.6" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="668" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><text class="txt" x="20" y="172">month 0</text><text class="txt" x="666.8000000000001" y="172">month 47</text><text class="txt" x="20" y="186">row 2: origins t = 12…45 (trailing 12 months required)</text></svg>
+<div class="leg"><span><i style="background:var(--g)"></i>advisories per month</span><span><i style="background:var(--c)"></i>month inside a surge window</span><span><i style="background:var(--d)"></i>forecast origin labelled surge</span></div>
+<div class="read" id="sr"><b>7</b> of 34 forecast origins are surges (<b>21%</b>). A workable prevalence for a rare-event study.</div>
+</div>
+</section>
+
+<section id="split">
+<div class="tag">Try it · leakage</div><h2>Random splits leak; purged splits don't</h2>
+<p class="lead">Neighbouring months share label windows, so a random split lets the model see the answer's neighbours. A purge gap of at least h removes the overlap.</p>
+<div class="card">
+<div class="ctl">
+<label>Horizon h: <b id="shv">3 mo</b><input id="sh" type="range" min="1" max="6" value="3"></label>
+<label>Rolling fold: <b id="sfv">2</b><input id="sf" type="range" min="1" max="5" value="2"></label>
+<label>Protocol<button id="sm" data-m="t">Purged rolling-origin ⇄ Random</button></label>
+</div>
+<div class="cells" id="cells"><i style="background:var(--a)"></i><i style="background:var(--a)"></i><i style="background:var(--a)"></i><i style="background:var(--a)"></i><i style="background:var(--a)"></i><i style="background:var(--a)"></i><i style="background:var(--a)"></i><i style="background:var(--a)"></i><i style="background:var(--a)"></i><i style="background:var(--a)"></i><i style="background:var(--a)"></i><i style="background:var(--a)"></i><i style="background:var(--c)"></i><i style="background:var(--c)"></i><i style="background:var(--b)"></i><i style="background:var(--b)"></i><i style="background:var(--b)"></i><i style="background:var(--g)"></i><i style="background:var(--g)"></i><i style="background:var(--g)"></i><i style="background:var(--g)"></i><i style="background:var(--g)"></i><i style="background:var(--g)"></i><i style="background:var(--g)"></i><i style="background:var(--g)"></i><i style="background:var(--g)"></i><i style="background:var(--g)"></i><i style="background:var(--g)"></i><i style="background:var(--g)"></i><i style="background:var(--g)"></i><i style="background:var(--p)"></i><i style="background:var(--p)"></i><i style="background:var(--p)"></i><i style="background:var(--p)"></i><i style="background:var(--p)"></i><i style="background:var(--p)"></i></div>
+<div class="leg"><span><i style="background:var(--a)"></i>train</span><span><i style="background:var(--c)"></i>purge gap</span><span><i style="background:var(--b)"></i>test</span><span><i style="background:var(--p)"></i>final test (used once)</span><span><i style="background:var(--g)"></i>unused</span></div>
+<div class="read" id="sl"><b>0</b> of 12 training rows (<b>0%</b>) share a label window with a test row. The purge gap removes that overlap by construction.</div>
+</div>
+</section>
+
+<section id="method">
+<div class="tag">Pipeline</div><h2>From raw advisories to explained forecasts</h2>
+<div class="steps" id="steps"><button data-i="0" class="on">1 · As-of data</button><button data-i="1">2 · Features</button><button data-i="2">3 · Models</button><button data-i="3">4 · Calibration</button><button data-i="4">5 · Cost &amp; budget</button><button data-i="5">6 · Explanations</button></div>
+<div class="card"><h3 id="st">1 · As-of data</h3><p id="sd">Advisories from GitHub Advisory DB, OSV and NVD are rebuilt as they were on each forecast date, using publication timestamps and git history, with alias de-duplication.</p></div>
+</section>
+
+<section id="cost">
+<div class="tag">Try it · simulated calibrated scores</div><h2>Missing a surge costs more than a false alarm</h2>
+<p class="lead">Set how much worse a missed surge is (c) and how many packages analysts can review (k). The curve shows expected cost; the star marks the best k.</p>
+<div class="card">
+<div class="ctl">
+<label>Miss : false-alarm cost c = <b id="cv">10:1</b><input id="c" type="range" min="0" max="100" value="50"></label>
+<label>Packages reviewed k = <b id="kkv">60</b><input id="kk" type="range" min="0" max="300" value="60"></label>
+</div>
+<svg id="cg" viewBox="0 0 720 230" role="img" aria-label="Expected cost versus review budget"><path d="M30,30L32.2,33.69565217391303L34.4,37.39130434782609L36.6,37.02173913043478L38.8,36.65217391304347L41,40.34782608695653L43.2,39.97826086956522L45.400000000000006,43.67391304347825L47.6,43.30434782608697L49.8,47L52,46.63043478260869L54.2,50.32608695652175L56.400000000000006,49.95652173913044L58.6,49.586956521739125L60.800000000000004,49.217391304347814L63,48.84782608695653L65.2,48.47826086956522L67.4,48.10869565217391L69.6,51.80434782608697L71.80000000000001,55.5L74,59.19565217391303L76.2,58.82608695652175L78.4,62.52173913043478L80.6,66.21739130434781L82.80000000000001,65.84782608695653L85,65.47826086956522L87.2,65.1086956521739L89.4,68.80434782608697L91.60000000000001,68.43478260869566L93.80000000000001,68.06521739130434L96,67.69565217391303L98.2,67.32608695652175L100.4,66.95652173913044L102.60000000000001,70.65217391304347L104.80000000000001,70.28260869565219L107,73.97826086956522L109.2,73.6086956521739L111.4,77.30434782608695L113.60000000000001,76.93478260869566L115.80000000000001,76.56521739130434L118,76.19565217391305L120.2,75.82608695652173L122.4,79.52173913043478L124.60000000000001,83.21739130434783L126.80000000000001,82.84782608695652L129,82.47826086956522L131.2,82.1086956521739L133.4,85.80434782608695L135.60000000000002,85.43478260869566L137.8,85.06521739130434L140,84.69565217391305L142.2,84.32608695652173L144.4,83.95652173913044L146.60000000000002,83.58695652173913L148.8,83.21739130434783L151,82.84782608695652L153.20000000000002,82.47826086956522L155.4,82.1086956521739L157.60000000000002,81.73913043478261L159.8,81.3695652173913L162,81L164.20000000000002,80.6304347826087L166.4,80.26086956521739L168.60000000000002,79.8913043478261L170.8,79.52173913043478L173,79.15217391304348L175.20000000000002,78.78260869565217L177.4,78.41304347826087L179.60000000000002,78.04347826086956L181.8,81.73913043478261L184,81.3695652173913L186.20000000000002,81L188.4,84.69565217391305L190.60000000000002,84.32608695652173L192.8,88.02173913043478L195,91.71739130434783L197.20000000000002,91.34782608695652L199.4,90.97826086956522L201.60000000000002,94.67391304347827L203.8,94.30434782608695L206,93.93478260869566L208.20000000000002,93.56521739130434L210.4,93.19565217391305L212.60000000000002,92.82608695652173L214.8,92.45652173913044L217.00000000000003,92.08695652173913L219.20000000000002,91.71739130434783L221.4,91.34782608695652L223.60000000000002,90.97826086956522L225.8,90.6086956521739L228.00000000000003,90.23913043478261L230.20000000000002,89.8695652173913L232.4,89.5L234.60000000000002,89.1304347826087L236.8,88.76086956521739L239.00000000000003,88.3913043478261L241.20000000000002,92.08695652173913L243.4,91.71739130434783L245.60000000000002,91.34782608695652L247.8,95.04347826086956L250.00000000000003,94.67391304347827L252.20000000000002,94.30434782608695L254.4,93.93478260869566L256.6,93.56521739130434L258.8,93.19565217391305L261,92.82608695652173L263.20000000000005,92.45652173913044L265.4,92.08695652173913L267.6,91.71739130434783L269.8,91.34782608695652L272,90.97826086956522L274.20000000000005,90.6086956521739L276.40000000000003,90.23913043478261L278.6,89.8695652173913L280.8,89.5L283,89.1304347826087L285.20000000000005,88.76086956521739L287.40000000000003,88.3913043478261L289.6,88.02173913043478L291.8,87.65217391304348L294,87.28260869565217L296.20000000000005,86.91304347826087L298.40000000000003,86.54347826086956L300.6,86.17391304347827L302.8,85.80434782608695L305,89.5L307.20000000000005,89.1304347826087L309.40000000000003,88.76086956521739L311.6,88.3913043478261L313.8,88.02173913043478L316,87.65217391304348L318.20000000000005,87.28260869565217L320.40000000000003,86.91304347826087L322.6,86.54347826086956L324.8,86.17391304347827L327,85.80434782608695L329.20000000000005,85.43478260869566L331.40000000000003,85.06521739130434L333.6,84.69565217391305L335.8,84.32608695652173L338,83.95652173913044L340.20000000000005,83.58695652173913L342.40000000000003,83.21739130434783L344.6,86.91304347826087L346.8,86.54347826086956L349,86.17391304347827L351.20000000000005,85.80434782608695L353.40000000000003,85.43478260869566L355.6,89.1304347826087L357.8,88.76086956521739L360,88.3913043478261L362.20000000000005,92.08695652173913L364.40000000000003,91.71739130434783L366.6,91.34782608695652L368.8,90.97826086956522L371,90.6086956521739L373.20000000000005,90.23913043478261L375.40000000000003,89.8695652173913L377.6,93.56521739130434L379.8,97.26086956521739L382,96.8913043478261L384.20000000000005,96.52173913043478L386.40000000000003,96.15217391304348L388.6,95.78260869565217L390.8,99.47826086956522L393.00000000000006,99.1086956521739L395.20000000000005,98.73913043478261L397.40000000000003,98.3695652173913L399.6,98L401.8,97.6304347826087L404.00000000000006,97.26086956521739L406.20000000000005,96.8913043478261L408.40000000000003,96.52173913043478L410.6,96.15217391304348L412.8,95.78260869565217L415.00000000000006,95.41304347826087L417.20000000000005,99.1086956521739L419.40000000000003,98.73913043478261L421.6,98.3695652173913L423.8,98L426.00000000000006,101.69565217391305L428.20000000000005,105.3913043478261L430.40000000000003,105.02173913043478L432.6,104.65217391304348L434.8,104.28260869565217L437.00000000000006,103.91304347826087L439.20000000000005,103.54347826086956L441.40000000000003,103.17391304347827L443.6,102.80434782608695L445.8,102.43478260869566L448.00000000000006,102.06521739130434L450.20000000000005,101.69565217391305L452.40000000000003,105.3913043478261L454.6,105.02173913043478L456.8,108.71739130434783L459.00000000000006,108.34782608695652L461.20000000000005,107.97826086956522L463.40000000000003,107.6086956521739L465.6,107.23913043478261L467.8,106.8695652173913L470.00000000000006,106.5L472.20000000000005,106.1304347826087L474.40000000000003,105.76086956521739L476.6,105.3913043478261L478.8,105.02173913043478L481.00000000000006,104.65217391304348L483.20000000000005,104.28260869565217L485.40000000000003,103.91304347826087L487.6,103.54347826086956L489.8,103.17391304347827L492.00000000000006,102.80434782608695L494.20000000000005,102.43478260869566L496.40000000000003,102.06521739130434L498.6,101.69565217391305L500.8,101.32608695652173L503.00000000000006,100.95652173913044L505.20000000000005,100.58695652173913L507.40000000000003,100.21739130434783L509.6,99.84782608695652L511.8,99.47826086956522L514,99.1086956521739L516.2,98.73913043478261L518.4000000000001,98.3695652173913L520.6,98L522.8000000000001,97.6304347826087L525,97.26086956521739L527.2,96.8913043478261L529.4000000000001,96.52173913043478L531.6,96.15217391304348L533.8000000000001,95.78260869565217L536,95.41304347826087L538.2,95.04347826086956L540.4000000000001,94.67391304347827L542.6,94.30434782608695L544.8000000000001,93.93478260869566L547,93.56521739130434L549.2,93.19565217391305L551.4000000000001,92.82608695652173L553.6,92.45652173913044L555.8000000000001,92.08695652173913L558,91.71739130434783L560.2,91.34782608695652L562.4000000000001,90.97826086956522L564.6,90.6086956521739L566.8000000000001,90.23913043478261L569,89.8695652173913L571.2,89.5L573.4000000000001,89.1304347826087L575.6,88.76086956521739L577.8000000000001,88.3913043478261L580,88.02173913043478L582.2,87.65217391304348L584.4000000000001,87.28260869565217L586.6,86.91304347826087L588.8000000000001,86.54347826086956L591,86.17391304347827L593.2,89.8695652173913L595.4000000000001,89.5L597.6,89.1304347826087L599.8000000000001,88.76086956521739L602,88.3913043478261L604.2,88.02173913043478L606.4000000000001,87.65217391304348L608.6,87.28260869565217L610.8000000000001,86.91304347826087L613,86.54347826086956L615.2,86.17391304347827L617.4000000000001,85.80434782608695L619.6,89.5L621.8000000000001,89.1304347826087L624,88.76086956521739L626.2,88.3913043478261L628.4000000000001,92.08695652173913L630.6,91.71739130434783L632.8000000000001,91.34782608695652L635,90.97826086956522L637.2,90.6086956521739L639.4000000000001,90.23913043478261L641.6,89.8695652173913L643.8000000000001,89.5L646,89.1304347826087L648.2,88.76086956521739L650.4000000000001,88.3913043478261L652.6,88.02173913043478L654.8000000000001,87.65217391304348L657,87.28260869565217L659.2,86.91304347826087L661.4000000000001,86.54347826086956L663.6,86.17391304347827L665.8000000000001,85.80434782608695L668,85.43478260869566L670.2,89.1304347826087L672.4000000000001,88.76086956521739L674.6,88.3913043478261L676.8000000000001,88.02173913043478L679,87.65217391304348L681.2,87.28260869565217L683.4000000000001,86.91304347826087L685.6,86.54347826086956L687.8000000000001,86.17391304347827L690,85.80434782608695" fill="none" stroke="var(--a)" stroke-width="2.5"></path><line x1="162" x2="162" y1="20" y2="200" stroke="var(--d)" stroke-dasharray="4"></line><circle cx="162" cy="81" r="6" fill="var(--d)"></circle><text x="456.8" y="113.71739130434783" text-anchor="middle" font-size="20" fill="var(--c)">★</text><text class="txt" x="30" y="222">packages reviewed (k) →</text><text class="txt" x="30" y="14">expected cost ↓</text></svg>
+<div class="read" id="cr">Flagging <b>60</b> of 600 package-months (46 true surges): precision <b>30%</b>, recall <b>39%</b>, misses <b>28</b>, false alarms <b>42</b>, cost <b>322</b>. Best k = <b>194</b> (★). For calibrated scores the ideal cut-off is p &gt; 1/(1+c) = <b>0.091</b>.</div>
+</div>
+</section>
+
+<section id="rq">
+<div class="tag">Hypotheses</div><h2>Four research questions</h2>
+<details open=""><summary>RQ1 · How much do naive evaluations overstate performance?</summary><p><b>Hypothesis:</b> random splits and today's metadata inflate results. <b>Falsified if</b> there is no meaningful gap. <b>Analysis:</b> same models under each protocol, PR-AUC gap with confidence intervals.</p></details>
+<details><summary>RQ2 · What signal actually predicts surges?</summary><p><b>Hypothesis:</b> history dominates, but activity and dependency features add value at longer horizons. <b>Falsified if</b> nothing beats a history-only model. <b>Analysis:</b> feature-family ablations, paired block bootstrap.</p></details>
+<details><summary>RQ3 · Does cost-sensitive decision-making help?</summary><p><b>Hypothesis:</b> thresholding calibrated probabilities matches or beats class weights, focal loss and resampling at a fixed review budget. <b>Analysis:</b> expected cost across ratios, precision@k and recall@k.</p></details>
+<details><summary>RQ4 · Are explanations stable?</summary><p><b>Hypothesis:</b> rankings shift across time and cost settings, most around ecosystem-wide events. <b>Analysis:</b> rank correlation, top-k overlap, deletion-test faithfulness, explanation drift, case studies.</p></details>
+</section>
+
+<section id="plan">
+<div class="tag">Roadmap</div><h2>Twelve weeks, four gates</h2>
+<div class="gantt">
+<div style="grid-column:1/3;background:var(--a)">Wk 1–2<small>Literature · data audit · base rate · go/no-go</small></div>
+<div style="grid-column:3/6;background:var(--p)">Wk 3–5<small>As-of dataset · leakage tests</small></div>
+<div style="grid-column:6/9;background:var(--b)">Wk 6–8<small>Baselines · models · cost analysis</small></div>
+<div style="grid-column:9/11;background:var(--c)">Wk 9–10<small>Final test · explainability · cases</small></div>
+<div style="grid-column:11/13;background:var(--d)">Wk 11–12<small>Writing · code release</small></div>
+</div>
+<p class="lead" style="margin-top:14px">Main risks: too few positives (fallback: recurrence population or longer horizons), missing historical dependency data (drop that family), or an unbeatable history-only baseline (reframe as a predictability study).</p>
+</section>
+
+<section id="titles">
+<div class="tag">Four framings</div><h2>Title options</h2>
+<div class="steps" id="tt"><button data-i="0" class="on">A · Predictability &amp; rigor</button><button data-i="1">B · Budget-aware</button><button data-i="2">C · Explanation stability</button><button data-i="3">D · Supply-chain warning</button></div>
+<div class="card"><h3 id="tn">How Predictable Are Vulnerability Surges? A Leakage-Aware, Cost-Sensitive Study of Open-Source Packages</h3><p id="td">Recommended default. Stays publishable whether models succeed or fail. Suits empirical software engineering venues.</p></div>
+</section>
+</main>
+<footer>Draft proposal · all charts use synthetic illustrative data, not results · full plan in the Word document</footer>
+
+<script>
+const $=s=>document.querySelector(s),sum=a=>a.reduce((x,y)=>x+y,0);
+function rng(s){return()=>{s|=0;s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const root=document.documentElement;
+$('#theme').onclick=()=>{const d=root.dataset.theme==='dark'||(!root.dataset.theme&&matchMedia('(prefers-color-scheme:dark)').matches);root.dataset.theme=d?'light':'dark'};
+
+/* Surge explorer */
+const C=[0,1,0,0,1,0,0,0,1,0,0,1,0,0,1,0,0,0,3,2,0,1,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,4,3,1,0,0,0,1,0,0,0];
+function surge(){
+ const h=+$('#h').value,k=+$('#k').value,m=+$('#m').value;
+ $('#hv').textContent=h+' mo';$('#kv').textContent=k+'×';$('#mv').textContent=m;
+ let n=0,N=0,win=new Set(),ys=[];
+ for(let t=12;t+h<=48;t++){const r=sum(C.slice(t-12,t))*h/12,A=sum(C.slice(t,t+h)),y=A>=m&&A>=k*r;N++;ys.push([t,y]);if(y){n++;for(let i=t;i<t+h;i++)win.add(i)}}
+ let s='';const w=14.4;
+ C.forEach((c,i)=>{const H=c*26;s+=`<rect x="${20+i*w}" y="${110-H}" width="${w-3}" height="${Math.max(H,2)}" rx="3" fill="${win.has(i)?'var(--c)':'var(--g)'}"/>`});
+ ys.forEach(([t,y])=>s+=`<rect x="${20+t*w}" y="128" width="${w-3}" height="22" rx="3" fill="${y?'var(--d)':'var(--g)'}" opacity="${y?1:.45}"/>`);
+ s+=`<text class="txt" x="20" y="172">month 0</text><text class="txt" x="${20+47*w-30}" y="172">month 47</text><text class="txt" x="20" y="186">row 2: origins t = 12…${48-h} (trailing 12 months required)</text>`;
+ $('#sg').innerHTML=s;const p=N?100*n/N:0;
+ $('#sr').innerHTML=`<b>${n}</b> of ${N} forecast origins are surges (<b>${p.toFixed(0)}%</b>). `+(p<3?'Very sparse: stable evaluation would need pooling many packages, or a longer horizon.':p>35?'Very common: this may be too loose to count as a "surge".':'A workable prevalence for a rare-event study.');
+}
+['h','k','m'].forEach(i=>$('#'+i).oninput=surge);
+
+/* Split visualiser */
+function split(){
+ const h=+$('#sh').value,f=+$('#sf').value,t=$('#sm').dataset.m==='t';
+ $('#shv').textContent=h+' mo';$('#sfv').textContent=f;
+ const cl=Array(36).fill('var(--g)');let tr=[],te=[];
+ for(let i=30;i<36;i++)cl[i]='var(--p)';
+ if(t){const ts=10+(f-1)*4;for(let i=0;i<30;i++){if(i<ts&&i+h<=ts){cl[i]='var(--a)';tr.push(i)}else if(i<ts)cl[i]='var(--c)';else if(i<ts+3){cl[i]='var(--b)';te.push(i)}}}
+ else{const R=rng(f*11+3);for(let i=0;i<30;i++){if(R()<.3){cl[i]='var(--b)';te.push(i)}else{cl[i]='var(--a)';tr.push(i)}}}
+ $('#cells').innerHTML=cl.map(c=>`<i style="background:${c}"></i>`).join('');
+ const leak=tr.filter(i=>te.some(j=>Math.abs(i-j)<h)).length,pc=tr.length?100*leak/tr.length:0;
+ $('#sl').innerHTML=`<b>${leak}</b> of ${tr.length} training rows (<b>${pc.toFixed(0)}%</b>) share a label window with a test row. `+(t?'The purge gap removes that overlap by construction.':'Their labels overlap in time, so scores look better than they are.');
+}
+['sh','sf'].forEach(i=>$('#'+i).oninput=split);
+$('#sm').onclick=e=>{const b=e.currentTarget;b.dataset.m=b.dataset.m==='t'?'r':'t';b.textContent=b.dataset.m==='t'?'Purged rolling-origin ⇄ Random':'Random ⇄ Purged rolling-origin';split()};
+
+/* Pipeline */
+const S=[['1 · As-of data','Advisories from GitHub Advisory DB, OSV and NVD are rebuilt as they were on each forecast date, using publication timestamps and git history, with alias de-duplication.'],
+['2 · Features','Four families: vulnerability history, development activity, dependency context and ecosystem context, all dated on or before t.'],
+['3 · Models','Baselines B0–B6 (persistence, trailing rate, logistic, negative binomial, Hawkes-style, ecosystem rate, CVSS/EPSS heuristic) against gradient boosting M1–M4 and an optional sequence model.'],
+['4 · Calibration','Probabilities are calibrated (isotonic or Platt) on a later validation block so that costs and thresholds mean something.'],
+['5 · Cost & budget','Expected cost across miss:false-alarm ratios, precision@k and recall@k under a review budget, plus warning lead time.'],
+['6 · Explanations','Grouped SHAP, stability across time, seeds and cost settings, deletion-test faithfulness, explanation drift and historical case studies.']];
+$('#steps').innerHTML=S.map((s,i)=>`<button data-i="${i}">${s[0]}</button>`).join('');
+$('#steps').onclick=e=>{const i=e.target.dataset.i;if(i==null)return;[...$('#steps').children].forEach((b,j)=>b.classList.toggle('on',j==i));$('#st').textContent=S[i][0];$('#sd').textContent=S[i][1]};
+$('#steps').children[0].click();
+
+/* Cost explorer */
+const R=rng(7),D=[];
+for(let i=0;i<600;i++){const z=Math.sqrt(-2*Math.log(R()+1e-9))*Math.cos(6.2832*R()),p=1/(1+Math.exp(3.1-1.4*z));D.push({p,y:R()<p?1:0})}
+D.sort((a,b)=>b.p-a.p);const P=sum(D.map(d=>d.y)),TP=[0];D.forEach(d=>TP.push(TP[TP.length-1]+d.y));
+function costs(){
+ const c=Math.round(10**(+$('#c').value/50)),k=+$('#kk').value;$('#cv').textContent=c+':1';$('#kkv').textContent=k;
+ const f=j=>c*(P-TP[j])+(j-TP[j]);let best=0,cur=[];
+ for(let j=0;j<=300;j++){cur.push(f(j));if(cur[j]<cur[best])best=j}
+ const mx=Math.max(...cur),X=j=>30+j*2.2,Y=v=>200-170*v/mx;
+ let s=`<path d="M${cur.map((v,j)=>X(j)+','+Y(v)).join('L')}" fill="none" stroke="var(--a)" stroke-width="2.5"/>`;
+ s+=`<line x1="${X(k)}" x2="${X(k)}" y1="20" y2="200" stroke="var(--d)" stroke-dasharray="4"/><circle cx="${X(k)}" cy="${Y(cur[k])}" r="6" fill="var(--d)"/>`;
+ s+=`<text x="${X(best)}" y="${Y(cur[best])+5}" text-anchor="middle" font-size="20" fill="var(--c)">★</text><text class="txt" x="30" y="222">packages reviewed (k) →</text><text class="txt" x="30" y="14">expected cost ↓</text>`;
+ $('#cg').innerHTML=s;const tp=TP[k];
+ $('#cr').innerHTML=`Flagging <b>${k}</b> of 600 package-months (${P} true surges): precision <b>${k?(100*tp/k).toFixed(0):0}%</b>, recall <b>${(100*tp/P).toFixed(0)}%</b>, misses <b>${P-tp}</b>, false alarms <b>${k-tp}</b>, cost <b>${cur[k]}</b>. Best k = <b>${best}</b> (★). For calibrated scores the ideal cut-off is p &gt; 1/(1+c) = <b>${(1/(1+c)).toFixed(3)}</b>.`;
+}
+['c','kk'].forEach(i=>$('#'+i).oninput=costs);
+
+/* Titles */
+const T=[['A · Predictability & rigor','How Predictable Are Vulnerability Surges? A Leakage-Aware, Cost-Sensitive Study of Open-Source Packages','Recommended default. Stays publishable whether models succeed or fail. Suits empirical software engineering venues.'],
+['B · Budget-aware','Budget-Aware Forecasting of Vulnerability Disclosure Surges in Open-Source Ecosystems','Frames the task as a decision under a review budget. Suits security operations and applied security-ML.'],
+['C · Explanation stability','Do Explanations Survive Time? Explainable, Cost-Sensitive Prediction of Vulnerability Surges in Software Packages','Tests explanation reliability under drift. Suits explainable-AI and trustworthy-ML venues.'],
+['D · Supply-chain warning','Early Warning for the Software Supply Chain: Forecasting Package-Level Vulnerability Surges from History, Activity and Dependency Signals','Asks which signal families matter. Suits supply-chain security venues.']];
+$('#tt').innerHTML=T.map((t,i)=>`<button data-i="${i}">${t[0]}</button>`).join('');
+$('#tt').onclick=e=>{const i=e.target.dataset.i;if(i==null)return;[...$('#tt').children].forEach((b,j)=>b.classList.toggle('on',j==i));$('#tn').textContent=T[i][1];$('#td').textContent=T[i][2]};
+$('#tt').children[0].click();
+
+surge();split();costs();
+</script>
+
+</body></html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Forecasting Vulnerability Surges</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&amp;display=swap">
+<style>
+:root{
+  --bg:#f7f7f4;
+  --card:#ffffff;
+  --soft:#f0f0ec;
+  --ink:#191917;
+  --mut:#73736c;
+  --line:#deded8;
+  --line-strong:#c9c9c1;
+  --accent:#5b57d8;
+  --accent-soft:#efefff;
+  --green:#3c8668;
+  --orange:#c98335;
+  --red:#c85a5a;
+  --purple:#8067b7;
+  --grid:#d7d7d0;
+  /* visualization palette */
+  --a:#5d67d8; /* train / primary */
+  --b:#3f8f72; /* test / positive */
+  --c:#c58a3a; /* purge / warning */
+  --d:#c85d63; /* surge / alert */
+  --p:#8068b5; /* final test */
+  --g:#d5d5ce; /* unused / baseline */
+}
+
+:root[data-theme="dark"]{
+  --bg:#11110f;
+  --card:#191917;
+  --soft:#23231f;
+  --ink:#f2f2ed;
+  --mut:#a3a39a;
+  --line:#30302b;
+  --line-strong:#44443d;
+  --accent:#8f8cf6;
+  --accent-soft:#29284a;
+  --green:#65aa8a;
+  --orange:#d49a5d;
+  --red:#df7b7b;
+  --purple:#aa97dc;
+  --grid:#393933;
+  /* visualization palette */
+  --a:#8e96f1;
+  --b:#62aa8b;
+  --c:#d3a262;
+  --d:#df7b82;
+  --p:#ad98dc;
+  --g:#3a3a34;
+}
+
+*,
+*::before,
+*::after{box-sizing:border-box}
+
+html{
+  scroll-behavior:smooth;
+  scroll-padding-top:74px;
+}
+
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--ink);
+  font:15px/1.65 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+
+a{color:inherit}
+
+nav{
+  position:sticky;
+  top:0;
+  z-index:20;
+  display:flex;
+  align-items:center;
+  gap:2px;
+  min-height:56px;
+  padding:8px max(14px,calc((100vw - 1080px)/2));
+  background:color-mix(in srgb,var(--bg) 90%,transparent);
+  backdrop-filter:blur(16px);
+  border-bottom:1px solid color-mix(in srgb,var(--line) 85%,transparent);
+  overflow-x:auto;
+}
+
+nav a{
+  color:var(--mut);
+  text-decoration:none;
+  font-size:12px;
+  font-weight:600;
+  padding:6px 9px;
+  border-radius:7px;
+  white-space:nowrap;
+  transition:.16s ease;
+}
+
+nav a:hover{
+  color:var(--ink);
+  background:var(--soft);
+}
+
+nav button{
+  margin-left:auto;
+  flex:none;
+}
+
+button{
+  appearance:none;
+  font:inherit;
+  cursor:pointer;
+  color:var(--ink);
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:8px;
+  padding:7px 11px;
+  transition:background .16s ease,border-color .16s ease,color .16s ease,transform .16s ease;
+}
+
+button:hover{
+  background:var(--soft);
+  border-color:var(--line-strong);
+}
+
+button:active{transform:translateY(1px)}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+summary:focus-visible{
+  outline:2px solid var(--accent);
+  outline-offset:2px;
+}
+
+.hero{
+  padding:88px 20px 74px;
+  text-align:center;
+  border-bottom:1px solid var(--line);
+  background:
+    radial-gradient(circle at 50% 0,color-mix(in srgb,var(--accent) 8%,transparent),transparent 34%),
+    var(--bg);
+}
+
+.hero h1{
+  max-width:900px;
+  margin:14px auto 18px;
+  font-size:clamp(38px,6vw,66px);
+  line-height:1.02;
+  letter-spacing:-.055em;
+  font-weight:800;
+  color:var(--ink);
+}
+
+.hero p{
+  max-width:700px;
+  margin:0 auto;
+  color:var(--mut);
+  font-size:17px;
+  line-height:1.7;
+}
+
+.tag{
+  color:var(--accent);
+  font-size:10px;
+  line-height:1.2;
+  font-weight:800;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+}
+
+.chips{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:7px;
+  margin-top:27px;
+}
+
+.chips span{
+  color:var(--mut);
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:999px;
+  padding:5px 10px;
+  font-size:11px;
+}
+
+.chips b{
+  color:var(--ink);
+  font-weight:700;
+}
+
+main{
+  width:min(1040px,100%);
+  margin:auto;
+  padding:0 20px 72px;
+}
+
+section{padding:64px 0 0}
+
+section+section{
+  border-top:1px solid var(--line);
+  margin-top:64px;
+}
+
+h2{
+  margin:7px 0 10px;
+  font-size:clamp(26px,4vw,36px);
+  line-height:1.12;
+  letter-spacing:-.04em;
+  font-weight:750;
+}
+
+.lead{
+  max-width:740px;
+  margin:0;
+  color:var(--mut);
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:10px;
+  margin-top:24px;
+}
+
+.card{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:18px;
+  box-shadow:0 1px 2px rgba(0,0,0,.025);
+}
+
+.card h3{
+  margin:0 0 7px;
+  font-size:15px;
+  line-height:1.35;
+  letter-spacing:-.01em;
+}
+
+.card p{
+  margin:0;
+  color:var(--mut);
+  font-size:14px;
+  line-height:1.65;
+}
+
+.ctl{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:18px;
+  margin:0 0 18px;
+}
+
+.ctl label{
+  color:var(--mut);
+  font-size:12px;
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+}
+
+.ctl b{
+  color:var(--ink);
+  font-size:13px;
+}
+
+input[type=range]{
+  width:100%;
+  margin:1px 0 0;
+  accent-color:var(--accent);
+  cursor:pointer;
+}
+
+svg{
+  width:100%;
+  height:auto;
+  display:block;
+  overflow:visible;
+}
+.card:has(svg){
+  overflow:hidden;
+}
+.card:has(svg) svg{
+  margin-top:4px;
+}
+
+
+.txt{
+  fill:var(--mut);
+  font-size:10px;
+}
+
+.read{
+  margin-top:12px;
+  padding:10px 12px;
+  border-left:2px solid var(--accent);
+  border-radius:0 7px 7px 0;
+  background:var(--accent-soft);
+  color:var(--mut);
+  font-size:12px;
+}
+
+.read b{color:var(--ink)}
+
+.cells{
+  display:grid;
+  grid-template-columns:repeat(36,1fr);
+  gap:3px;
+  margin:17px 0 12px;
+}
+
+.cells i{
+  aspect-ratio:1;
+  border-radius:2px;
+  background:var(--grid);
+}
+
+.leg{
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px 15px;
+  color:var(--mut);
+  font-size:11px;
+}
+
+.leg i{
+  display:inline-block;
+  width:9px;
+  height:9px;
+  border-radius:2px;
+  margin-right:5px;
+  vertical-align:-1px;
+}
+
+.steps{
+  display:flex;
+  flex-wrap:wrap;
+  gap:4px;
+  margin:20px 0 12px;
+}
+
+.steps button{
+  padding:6px 9px;
+  border-color:transparent;
+  color:var(--mut);
+  background:transparent;
+  font-size:12px;
+}
+
+.steps button.on{
+  color:var(--ink);
+  background:var(--soft);
+  border-color:var(--line);
+}
+
+details{
+  border-top:1px solid var(--line);
+  padding:16px 0;
+}
+
+details:last-child{
+  border-bottom:1px solid var(--line);
+}
+
+summary{
+  cursor:pointer;
+  font-size:14px;
+  font-weight:650;
+}
+
+details p{
+  max-width:760px;
+  margin:8px 0 0 20px;
+  color:var(--mut);
+  font-size:14px;
+}
+
+.gantt{
+  display:grid;
+  grid-template-columns:repeat(12,1fr);
+  gap:5px;
+  margin-top:22px;
+}
+
+.gantt div{
+  min-height:68px;
+  border-radius:7px;
+  padding:9px 10px;
+  font-size:11px;
+  color:#fff;
+  font-weight:700;
+}
+
+.gantt small{
+  display:block;
+  margin-top:4px;
+  font-weight:400;
+  line-height:1.4;
+  opacity:.9;
+}
+
+footer{
+  width:min(1040px,100%);
+  margin:auto;
+  border-top:1px solid var(--line);
+  text-align:left;
+  color:var(--mut);
+  font-size:11px;
+  padding:20px 20px 42px;
+}
+
+@media (max-width:760px){
+  nav{padding:8px 10px}
+  nav a{font-size:11px;padding:6px 7px}
+  .hero{padding:68px 18px 58px}
+  .hero h1{letter-spacing:-.045em}
+  .hero p{font-size:15px}
+  main{padding-inline:16px}
+  section{padding-top:52px}
+  section+section{margin-top:52px}
+  .grid{grid-template-columns:1fr}
+  .ctl{grid-template-columns:1fr}
+  .card{padding:16px}
+  .gantt{grid-template-columns:1fr 1fr}
+  .gantt div{grid-column:auto!important}
+  .cells{gap:2px}
+}
+
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{transition:none!important}
+}
+</style>
+</head>
+<body>
+<nav>
+<a href="#why">Overview</a><a href="#surge">Surge label</a><a href="#split">Leakage</a><a href="#method">Method</a><a href="#cost">Cost</a><a href="#rq">Questions</a><a href="#plan">Plan</a><a href="#titles">Titles</a>
+<button id="theme" aria-label="Toggle light and dark theme" title="Toggle theme">◐</button>
+</nav>
+
+<header class="hero">
+<div class="tag">Research proposal · AI/ML × Cybersecurity</div>
+<h1>Forecasting Vulnerability Surges in Open-Source Packages</h1>
+<p>Which packages will see a burst of high or critical advisories in the next 30–180 days, and can we explain why, without fooling ourselves with data leakage?</p>
+<div class="chips"><span><b>4</b> research questions</span><span><b>7</b> baselines</span><span><b>3</b> horizons</span><span><b>12</b> weeks</span></div>
+</header>
+
+<main>
+<section id="why">
+<div class="tag">The idea</div><h2>Why package-level surges matter</h2>
+<p class="lead">Disclosures cluster in time. A burst forces downstream teams into repeated triage, patching and testing. Existing tools score single CVEs or forecast ecosystem totals; package-level burst forecasting under leakage-controlled, cost-aware evaluation looks under-studied (literature check pending).</p>
+<div class="grid">
+<div class="card"><h3>🎯 The task</h3><p>For package <i>i</i> at date <i>t</i>, estimate the probability of a surge in (t, t+h], using only information public at <i>t</i>.</p></div>
+<div class="card"><h3>⚠️ The caveat</h3><p>We forecast <b>disclosure</b> surges, not true vulnerability density. Audits, fuzzing or policy changes can also trigger bursts.</p></div>
+<div class="card"><h3>🧪 The paper type</h3><p>Empirical study plus benchmark: leakage audit, budget-aware cost analysis, and explanation stability.</p></div>
+</div>
+</section>
+
+<section id="surge">
+<div class="tag">Try it · illustrative synthetic data</div><h2>What counts as a surge?</h2>
+<p class="lead">A window is a surge if it holds at least <b>m</b> advisories <i>and</i> at least <b>k×</b> the package's trailing 12-month rate. Move the sliders and watch how fragile the base rate is.</p>
+<div class="card">
+<div class="ctl">
+<label>Horizon h: <b id="hv">3 mo</b><input id="h" type="range" min="1" max="6" value="3"></label>
+<label>Multiplier k: <b id="kv">3×</b><input id="k" type="range" min="1" max="6" value="3" step=".5"></label>
+<label>Minimum count m: <b id="mv">2</b><input id="m" type="range" min="1" max="4" value="2"></label>
+</div>
+<svg id="sg" viewBox="0 0 720 190" role="img" aria-label="Monthly advisory counts with surge windows highlighted"><rect x="20" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="34.4" y="84" width="11.4" height="26" rx="3" fill="var(--g)"></rect><rect x="48.8" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="63.2" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="77.6" y="84" width="11.4" height="26" rx="3" fill="var(--g)"></rect><rect x="92" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="106.4" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="120.8" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="135.2" y="84" width="11.4" height="26" rx="3" fill="var(--g)"></rect><rect x="149.6" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="164" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="178.4" y="84" width="11.4" height="26" rx="3" fill="var(--g)"></rect><rect x="192.8" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="207.20000000000002" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="221.6" y="84" width="11.4" height="26" rx="3" fill="var(--g)"></rect><rect x="236" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="250.4" y="110" width="11.4" height="2" rx="3" fill="var(--c)"></rect><rect x="264.8" y="110" width="11.4" height="2" rx="3" fill="var(--c)"></rect><rect x="279.2" y="32" width="11.4" height="78" rx="3" fill="var(--c)"></rect><rect x="293.6" y="58" width="11.4" height="52" rx="3" fill="var(--c)"></rect><rect x="308" y="110" width="11.4" height="2" rx="3" fill="var(--c)"></rect><rect x="322.40000000000003" y="84" width="11.4" height="26" rx="3" fill="var(--g)"></rect><rect x="336.8" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="351.2" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="365.6" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="380" y="84" width="11.4" height="26" rx="3" fill="var(--g)"></rect><rect x="394.40000000000003" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="408.8" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="423.2" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="437.6" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="452" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="466.40000000000003" y="84" width="11.4" height="26" rx="3" fill="var(--g)"></rect><rect x="480.8" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="495.2" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="509.6" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="524" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="538.4" y="110" width="11.4" height="2" rx="3" fill="var(--c)"></rect><rect x="552.8000000000001" y="110" width="11.4" height="2" rx="3" fill="var(--c)"></rect><rect x="567.2" y="6" width="11.4" height="104" rx="3" fill="var(--c)"></rect><rect x="581.6" y="32" width="11.4" height="78" rx="3" fill="var(--c)"></rect><rect x="596" y="84" width="11.4" height="26" rx="3" fill="var(--c)"></rect><rect x="610.4" y="110" width="11.4" height="2" rx="3" fill="var(--c)"></rect><rect x="624.8000000000001" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="639.2" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="653.6" y="84" width="11.4" height="26" rx="3" fill="var(--g)"></rect><rect x="668" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="682.4" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="696.8000000000001" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="192.8" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="207.20000000000002" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="221.6" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="236" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="250.4" y="128" width="11.4" height="22" rx="3" fill="var(--d)" opacity="1"></rect><rect x="264.8" y="128" width="11.4" height="22" rx="3" fill="var(--d)" opacity="1"></rect><rect x="279.2" y="128" width="11.4" height="22" rx="3" fill="var(--d)" opacity="1"></rect><rect x="293.6" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="308" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="322.40000000000003" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="336.8" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="351.2" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="365.6" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="380" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="394.40000000000003" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="408.8" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="423.2" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="437.6" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="452" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="466.40000000000003" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="480.8" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="495.2" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="509.6" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="524" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="538.4" y="128" width="11.4" height="22" rx="3" fill="var(--d)" opacity="1"></rect><rect x="552.8000000000001" y="128" width="11.4" height="22" rx="3" fill="var(--d)" opacity="1"></rect><rect x="567.2" y="128" width="11.4" height="22" rx="3" fill="var(--d)" opacity="1"></rect><rect x="581.6" y="128" width="11.4" height="22" rx="3" fill="var(--d)" opacity="1"></rect><rect x="596" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="610.4" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="624.8000000000001" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="639.2" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="653.6" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="668" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><text class="txt" x="20" y="172">month 0</text><text class="txt" x="666.8000000000001" y="172">month 47</text><text class="txt" x="20" y="186">row 2: origins t = 12…45 (trailing 12 months required)</text></svg>
+<div class="leg"><span><i style="background:var(--g)"></i>advisories per month</span><span><i style="background:var(--c)"></i>month inside a surge window</span><span><i style="background:var(--d)"></i>forecast origin labelled surge</span></div>
+<div class="read" id="sr"><b>7</b> of 34 forecast origins are surges (<b>21%</b>). A workable prevalence for a rare-event study.</div>
+</div>
+</section>
+
+<section id="split">
+<div class="tag">Try it · leakage</div><h2>Random splits leak; purged splits don't</h2>
+<p class="lead">Neighbouring months share label windows, so a random split lets the model see the answer's neighbours. A purge gap of at least h removes the overlap.</p>
+<div class="card">
+<div class="ctl">
+<label>Horizon h: <b id="shv">3 mo</b><input id="sh" type="range" min="1" max="6" value="3"></label>
+<label>Rolling fold: <b id="sfv">2</b><input id="sf" type="range" min="1" max="5" value="2"></label>
+<label>Protocol<button id="sm" data-m="t">Purged rolling-origin ⇄ Random</button></label>
+</div>
+<div class="cells" id="cells"><i style="background:var(--a)"></i><i style="background:var(--a)"></i><i style="background:var(--a)"></i><i style="background:var(--a)"></i><i style="background:var(--a)"></i><i style="background:var(--a)"></i><i style="background:var(--a)"></i><i style="background:var(--a)"></i><i style="background:var(--a)"></i><i style="background:var(--a)"></i><i style="background:var(--a)"></i><i style="background:var(--a)"></i><i style="background:var(--c)"></i><i style="background:var(--c)"></i><i style="background:var(--b)"></i><i style="background:var(--b)"></i><i style="background:var(--b)"></i><i style="background:var(--g)"></i><i style="background:var(--g)"></i><i style="background:var(--g)"></i><i style="background:var(--g)"></i><i style="background:var(--g)"></i><i style="background:var(--g)"></i><i style="background:var(--g)"></i><i style="background:var(--g)"></i><i style="background:var(--g)"></i><i style="background:var(--g)"></i><i style="background:var(--g)"></i><i style="background:var(--g)"></i><i style="background:var(--g)"></i><i style="background:var(--p)"></i><i style="background:var(--p)"></i><i style="background:var(--p)"></i><i style="background:var(--p)"></i><i style="background:var(--p)"></i><i style="background:var(--p)"></i></div>
+<div class="leg"><span><i style="background:var(--a)"></i>train</span><span><i style="background:var(--c)"></i>purge gap</span><span><i style="background:var(--b)"></i>test</span><span><i style="background:var(--p)"></i>final test (used once)</span><span><i style="background:var(--g)"></i>unused</span></div>
+<div class="read" id="sl"><b>0</b> of 12 training rows (<b>0%</b>) share a label window with a test row. The purge gap removes that overlap by construction.</div>
+</div>
+</section>
+
+<section id="method">
+<div class="tag">Pipeline</div><h2>From raw advisories to explained forecasts</h2>
+<div class="steps" id="steps"><button data-i="0" class="on">1 · As-of data</button><button data-i="1">2 · Features</button><button data-i="2">3 · Models</button><button data-i="3">4 · Calibration</button><button data-i="4">5 · Cost &amp; budget</button><button data-i="5">6 · Explanations</button></div>
+<div class="card"><h3 id="st">1 · As-of data</h3><p id="sd">Advisories from GitHub Advisory DB, OSV and NVD are rebuilt as they were on each forecast date, using publication timestamps and git history, with alias de-duplication.</p></div>
+</section>
+
+<section id="cost">
+<div class="tag">Try it · simulated calibrated scores</div><h2>Missing a surge costs more than a false alarm</h2>
+<p class="lead">Set how much worse a missed surge is (c) and how many packages analysts can review (k). The curve shows expected cost; the star marks the best k.</p>
+<div class="card">
+<div class="ctl">
+<label>Miss : false-alarm cost c = <b id="cv">10:1</b><input id="c" type="range" min="0" max="100" value="50"></label>
+<label>Packages reviewed k = <b id="kkv">60</b><input id="kk" type="range" min="0" max="300" value="60"></label>
+</div>
+<svg id="cg" viewBox="0 0 720 230" role="img" aria-label="Expected cost versus review budget"><path d="M30,30L32.2,33.69565217391303L34.4,37.39130434782609L36.6,37.02173913043478L38.8,36.65217391304347L41,40.34782608695653L43.2,39.97826086956522L45.400000000000006,43.67391304347825L47.6,43.30434782608697L49.8,47L52,46.63043478260869L54.2,50.32608695652175L56.400000000000006,49.95652173913044L58.6,49.586956521739125L60.800000000000004,49.217391304347814L63,48.84782608695653L65.2,48.47826086956522L67.4,48.10869565217391L69.6,51.80434782608697L71.80000000000001,55.5L74,59.19565217391303L76.2,58.82608695652175L78.4,62.52173913043478L80.6,66.21739130434781L82.80000000000001,65.84782608695653L85,65.47826086956522L87.2,65.1086956521739L89.4,68.80434782608697L91.60000000000001,68.43478260869566L93.80000000000001,68.06521739130434L96,67.69565217391303L98.2,67.32608695652175L100.4,66.95652173913044L102.60000000000001,70.65217391304347L104.80000000000001,70.28260869565219L107,73.97826086956522L109.2,73.6086956521739L111.4,77.30434782608695L113.60000000000001,76.93478260869566L115.80000000000001,76.56521739130434L118,76.19565217391305L120.2,75.82608695652173L122.4,79.52173913043478L124.60000000000001,83.21739130434783L126.80000000000001,82.84782608695652L129,82.47826086956522L131.2,82.1086956521739L133.4,85.80434782608695L135.60000000000002,85.43478260869566L137.8,85.06521739130434L140,84.69565217391305L142.2,84.32608695652173L144.4,83.95652173913044L146.60000000000002,83.58695652173913L148.8,83.21739130434783L151,82.84782608695652L153.20000000000002,82.47826086956522L155.4,82.1086956521739L157.60000000000002,81.73913043478261L159.8,81.3695652173913L162,81L164.20000000000002,80.6304347826087L166.4,80.26086956521739L168.60000000000002,79.8913043478261L170.8,79.52173913043478L173,79.15217391304348L175.20000000000002,78.78260869565217L177.4,78.41304347826087L179.60000000000002,78.04347826086956L181.8,81.73913043478261L184,81.3695652173913L186.20000000000002,81L188.4,84.69565217391305L190.60000000000002,84.32608695652173L192.8,88.02173913043478L195,91.71739130434783L197.20000000000002,91.34782608695652L199.4,90.97826086956522L201.60000000000002,94.67391304347827L203.8,94.30434782608695L206,93.93478260869566L208.20000000000002,93.56521739130434L210.4,93.19565217391305L212.60000000000002,92.82608695652173L214.8,92.45652173913044L217.00000000000003,92.08695652173913L219.20000000000002,91.71739130434783L221.4,91.34782608695652L223.60000000000002,90.97826086956522L225.8,90.6086956521739L228.00000000000003,90.23913043478261L230.20000000000002,89.8695652173913L232.4,89.5L234.60000000000002,89.1304347826087L236.8,88.76086956521739L239.00000000000003,88.3913043478261L241.20000000000002,92.08695652173913L243.4,91.71739130434783L245.60000000000002,91.34782608695652L247.8,95.04347826086956L250.00000000000003,94.67391304347827L252.20000000000002,94.30434782608695L254.4,93.93478260869566L256.6,93.56521739130434L258.8,93.19565217391305L261,92.82608695652173L263.20000000000005,92.45652173913044L265.4,92.08695652173913L267.6,91.71739130434783L269.8,91.34782608695652L272,90.97826086956522L274.20000000000005,90.6086956521739L276.40000000000003,90.23913043478261L278.6,89.8695652173913L280.8,89.5L283,89.1304347826087L285.20000000000005,88.76086956521739L287.40000000000003,88.3913043478261L289.6,88.02173913043478L291.8,87.65217391304348L294,87.28260869565217L296.20000000000005,86.91304347826087L298.40000000000003,86.54347826086956L300.6,86.17391304347827L302.8,85.80434782608695L305,89.5L307.20000000000005,89.1304347826087L309.40000000000003,88.76086956521739L311.6,88.3913043478261L313.8,88.02173913043478L316,87.65217391304348L318.20000000000005,87.28260869565217L320.40000000000003,86.91304347826087L322.6,86.54347826086956L324.8,86.17391304347827L327,85.80434782608695L329.20000000000005,85.43478260869566L331.40000000000003,85.06521739130434L333.6,84.69565217391305L335.8,84.32608695652173L338,83.95652173913044L340.20000000000005,83.58695652173913L342.40000000000003,83.21739130434783L344.6,86.91304347826087L346.8,86.54347826086956L349,86.17391304347827L351.20000000000005,85.80434782608695L353.40000000000003,85.43478260869566L355.6,89.1304347826087L357.8,88.76086956521739L360,88.3913043478261L362.20000000000005,92.08695652173913L364.40000000000003,91.71739130434783L366.6,91.34782608695652L368.8,90.97826086956522L371,90.6086956521739L373.20000000000005,90.23913043478261L375.40000000000003,89.8695652173913L377.6,93.56521739130434L379.8,97.26086956521739L382,96.8913043478261L384.20000000000005,96.52173913043478L386.40000000000003,96.15217391304348L388.6,95.78260869565217L390.8,99.47826086956522L393.00000000000006,99.1086956521739L395.20000000000005,98.73913043478261L397.40000000000003,98.3695652173913L399.6,98L401.8,97.6304347826087L404.00000000000006,97.26086956521739L406.20000000000005,96.8913043478261L408.40000000000003,96.52173913043478L410.6,96.15217391304348L412.8,95.78260869565217L415.00000000000006,95.41304347826087L417.20000000000005,99.1086956521739L419.40000000000003,98.73913043478261L421.6,98.3695652173913L423.8,98L426.00000000000006,101.69565217391305L428.20000000000005,105.3913043478261L430.40000000000003,105.02173913043478L432.6,104.65217391304348L434.8,104.28260869565217L437.00000000000006,103.91304347826087L439.20000000000005,103.54347826086956L441.40000000000003,103.17391304347827L443.6,102.80434782608695L445.8,102.43478260869566L448.00000000000006,102.06521739130434L450.20000000000005,101.69565217391305L452.40000000000003,105.3913043478261L454.6,105.02173913043478L456.8,108.71739130434783L459.00000000000006,108.34782608695652L461.20000000000005,107.97826086956522L463.40000000000003,107.6086956521739L465.6,107.23913043478261L467.8,106.8695652173913L470.00000000000006,106.5L472.20000000000005,106.1304347826087L474.40000000000003,105.76086956521739L476.6,105.3913043478261L478.8,105.02173913043478L481.00000000000006,104.65217391304348L483.20000000000005,104.28260869565217L485.40000000000003,103.91304347826087L487.6,103.54347826086956L489.8,103.17391304347827L492.00000000000006,102.80434782608695L494.20000000000005,102.43478260869566L496.40000000000003,102.06521739130434L498.6,101.69565217391305L500.8,101.32608695652173L503.00000000000006,100.95652173913044L505.20000000000005,100.58695652173913L507.40000000000003,100.21739130434783L509.6,99.84782608695652L511.8,99.47826086956522L514,99.1086956521739L516.2,98.73913043478261L518.4000000000001,98.3695652173913L520.6,98L522.8000000000001,97.6304347826087L525,97.26086956521739L527.2,96.8913043478261L529.4000000000001,96.52173913043478L531.6,96.15217391304348L533.8000000000001,95.78260869565217L536,95.41304347826087L538.2,95.04347826086956L540.4000000000001,94.67391304347827L542.6,94.30434782608695L544.8000000000001,93.93478260869566L547,93.56521739130434L549.2,93.19565217391305L551.4000000000001,92.82608695652173L553.6,92.45652173913044L555.8000000000001,92.08695652173913L558,91.71739130434783L560.2,91.34782608695652L562.4000000000001,90.97826086956522L564.6,90.6086956521739L566.8000000000001,90.23913043478261L569,89.8695652173913L571.2,89.5L573.4000000000001,89.1304347826087L575.6,88.76086956521739L577.8000000000001,88.3913043478261L580,88.02173913043478L582.2,87.65217391304348L584.4000000000001,87.28260869565217L586.6,86.91304347826087L588.8000000000001,86.54347826086956L591,86.17391304347827L593.2,89.8695652173913L595.4000000000001,89.5L597.6,89.1304347826087L599.8000000000001,88.76086956521739L602,88.3913043478261L604.2,88.02173913043478L606.4000000000001,87.65217391304348L608.6,87.28260869565217L610.8000000000001,86.91304347826087L613,86.54347826086956L615.2,86.17391304347827L617.4000000000001,85.80434782608695L619.6,89.5L621.8000000000001,89.1304347826087L624,88.76086956521739L626.2,88.3913043478261L628.4000000000001,92.08695652173913L630.6,91.71739130434783L632.8000000000001,91.34782608695652L635,90.97826086956522L637.2,90.6086956521739L639.4000000000001,90.23913043478261L641.6,89.8695652173913L643.8000000000001,89.5L646,89.1304347826087L648.2,88.76086956521739L650.4000000000001,88.3913043478261L652.6,88.02173913043478L654.8000000000001,87.65217391304348L657,87.28260869565217L659.2,86.91304347826087L661.4000000000001,86.54347826086956L663.6,86.17391304347827L665.8000000000001,85.80434782608695L668,85.43478260869566L670.2,89.1304347826087L672.4000000000001,88.76086956521739L674.6,88.3913043478261L676.8000000000001,88.02173913043478L679,87.65217391304348L681.2,87.28260869565217L683.4000000000001,86.91304347826087L685.6,86.54347826086956L687.8000000000001,86.17391304347827L690,85.80434782608695" fill="none" stroke="var(--a)" stroke-width="2.5"></path><line x1="162" x2="162" y1="20" y2="200" stroke="var(--d)" stroke-dasharray="4"></line><circle cx="162" cy="81" r="6" fill="var(--d)"></circle><text x="456.8" y="113.71739130434783" text-anchor="middle" font-size="20" fill="var(--c)">★</text><text class="txt" x="30" y="222">packages reviewed (k) →</text><text class="txt" x="30" y="14">expected cost ↓</text></svg>
+<div class="read" id="cr">Flagging <b>60</b> of 600 package-months (46 true surges): precision <b>30%</b>, recall <b>39%</b>, misses <b>28</b>, false alarms <b>42</b>, cost <b>322</b>. Best k = <b>194</b> (★). For calibrated scores the ideal cut-off is p &gt; 1/(1+c) = <b>0.091</b>.</div>
+</div>
+</section>
+
+<section id="rq">
+<div class="tag">Hypotheses</div><h2>Four research questions</h2>
+<details open=""><summary>RQ1 · How much do naive evaluations overstate performance?</summary><p><b>Hypothesis:</b> random splits and today's metadata inflate results. <b>Falsified if</b> there is no meaningful gap. <b>Analysis:</b> same models under each protocol, PR-AUC gap with confidence intervals.</p></details>
+<details><summary>RQ2 · What signal actually predicts surges?</summary><p><b>Hypothesis:</b> history dominates, but activity and dependency features add value at longer horizons. <b>Falsified if</b> nothing beats a history-only model. <b>Analysis:</b> feature-family ablations, paired block bootstrap.</p></details>
+<details><summary>RQ3 · Does cost-sensitive decision-making help?</summary><p><b>Hypothesis:</b> thresholding calibrated probabilities matches or beats class weights, focal loss and resampling at a fixed review budget. <b>Analysis:</b> expected cost across ratios, precision@k and recall@k.</p></details>
+<details><summary>RQ4 · Are explanations stable?</summary><p><b>Hypothesis:</b> rankings shift across time and cost settings, most around ecosystem-wide events. <b>Analysis:</b> rank correlation, top-k overlap, deletion-test faithfulness, explanation drift, case studies.</p></details>
+</section>
+
+<section id="plan">
+<div class="tag">Roadmap</div><h2>Twelve weeks, four gates</h2>
+<div class="gantt">
+<div style="grid-column:1/3;background:var(--a)">Wk 1–2<small>Literature · data audit · base rate · go/no-go</small></div>
+<div style="grid-column:3/6;background:var(--p)">Wk 3–5<small>As-of dataset · leakage tests</small></div>
+<div style="grid-column:6/9;background:var(--b)">Wk 6–8<small>Baselines · models · cost analysis</small></div>
+<div style="grid-column:9/11;background:var(--c)">Wk 9–10<small>Final test · explainability · cases</small></div>
+<div style="grid-column:11/13;background:var(--d)">Wk 11–12<small>Writing · code release</small></div>
+</div>
+<p class="lead" style="margin-top:14px">Main risks: too few positives (fallback: recurrence population or longer horizons), missing historical dependency data (drop that family), or an unbeatable history-only baseline (reframe as a predictability study).</p>
+</section>
+
+<section id="titles">
+<div class="tag">Four framings</div><h2>Title options</h2>
+<div class="steps" id="tt"><button data-i="0" class="on">A · Predictability &amp; rigor</button><button data-i="1">B · Budget-aware</button><button data-i="2">C · Explanation stability</button><button data-i="3">D · Supply-chain warning</button></div>
+<div class="card"><h3 id="tn">How Predictable Are Vulnerability Surges? A Leakage-Aware, Cost-Sensitive Study of Open-Source Packages</h3><p id="td">Recommended default. Stays publishable whether models succeed or fail. Suits empirical software engineering venues.</p></div>
+</section>
+</main>
+<footer>Draft proposal · all charts use synthetic illustrative data, not results · full plan in the Word document</footer>
+
+<script>
+const $=s=>document.querySelector(s),sum=a=>a.reduce((x,y)=>x+y,0);
+function rng(s){return()=>{s|=0;s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const root=document.documentElement;
+$('#theme').onclick=()=>{const d=root.dataset.theme==='dark'||(!root.dataset.theme&&matchMedia('(prefers-color-scheme:dark)').matches);root.dataset.theme=d?'light':'dark'};
+
+/* Surge explorer */
+const C=[0,1,0,0,1,0,0,0,1,0,0,1,0,0,1,0,0,0,3,2,0,1,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,4,3,1,0,0,0,1,0,0,0];
+function surge(){
+ const h=+$('#h').value,k=+$('#k').value,m=+$('#m').value;
+ $('#hv').textContent=h+' mo';$('#kv').textContent=k+'×';$('#mv').textContent=m;
+ let n=0,N=0,win=new Set(),ys=[];
+ for(let t=12;t+h<=48;t++){const r=sum(C.slice(t-12,t))*h/12,A=sum(C.slice(t,t+h)),y=A>=m&&A>=k*r;N++;ys.push([t,y]);if(y){n++;for(let i=t;i<t+h;i++)win.add(i)}}
+ let s='';const w=14.4;
+ C.forEach((c,i)=>{const H=c*26;s+=`<rect x="${20+i*w}" y="${110-H}" width="${w-3}" height="${Math.max(H,2)}" rx="3" fill="${win.has(i)?'var(--c)':'var(--g)'}"/>`});
+ ys.forEach(([t,y])=>s+=`<rect x="${20+t*w}" y="128" width="${w-3}" height="22" rx="3" fill="${y?'var(--d)':'var(--g)'}" opacity="${y?1:.45}"/>`);
+ s+=`<text class="txt" x="20" y="172">month 0</text><text class="txt" x="${20+47*w-30}" y="172">month 47</text><text class="txt" x="20" y="186">row 2: origins t = 12…${48-h} (trailing 12 months required)</text>`;
+ $('#sg').innerHTML=s;const p=N?100*n/N:0;
+ $('#sr').innerHTML=`<b>${n}</b> of ${N} forecast origins are surges (<b>${p.toFixed(0)}%</b>). `+(p<3?'Very sparse: stable evaluation would need pooling many packages, or a longer horizon.':p>35?'Very common: this may be too loose to count as a "surge".':'A workable prevalence for a rare-event study.');
+}
+['h','k','m'].forEach(i=>$('#'+i).oninput=surge);
+
+/* Split visualiser */
+function split(){
+ const h=+$('#sh').value,f=+$('#sf').value,t=$('#sm').dataset.m==='t';
+ $('#shv').textContent=h+' mo';$('#sfv').textContent=f;
+ const cl=Array(36).fill('var(--g)');let tr=[],te=[];
+ for(let i=30;i<36;i++)cl[i]='var(--p)';
+ if(t){const ts=10+(f-1)*4;for(let i=0;i<30;i++){if(i<ts&&i+h<=ts){cl[i]='var(--a)';tr.push(i)}else if(i<ts)cl[i]='var(--c)';else if(i<ts+3){cl[i]='var(--b)';te.push(i)}}}
+ else{const R=rng(f*11+3);for(let i=0;i<30;i++){if(R()<.3){cl[i]='var(--b)';te.push(i)}else{cl[i]='var(--a)';tr.push(i)}}}
+ $('#cells').innerHTML=cl.map(c=>`<i style="background:${c}"></i>`).join('');
+ const leak=tr.filter(i=>te.some(j=>Math.abs(i-j)<h)).length,pc=tr.length?100*leak/tr.length:0;
+ $('#sl').innerHTML=`<b>${leak}</b> of ${tr.length} training rows (<b>${pc.toFixed(0)}%</b>) share a label window with a test row. `+(t?'The purge gap removes that overlap by construction.':'Their labels overlap in time, so scores look better than they are.');
+}
+['sh','sf'].forEach(i=>$('#'+i).oninput=split);
+$('#sm').onclick=e=>{const b=e.currentTarget;b.dataset.m=b.dataset.m==='t'?'r':'t';b.textContent=b.dataset.m==='t'?'Purged rolling-origin ⇄ Random':'Random ⇄ Purged rolling-origin';split()};
+
+/* Pipeline */
+const S=[['1 · As-of data','Advisories from GitHub Advisory DB, OSV and NVD are rebuilt as they were on each forecast date, using publication timestamps and git history, with alias de-duplication.'],
+['2 · Features','Four families: vulnerability history, development activity, dependency context and ecosystem context, all dated on or before t.'],
+['3 · Models','Baselines B0–B6 (persistence, trailing rate, logistic, negative binomial, Hawkes-style, ecosystem rate, CVSS/EPSS heuristic) against gradient boosting M1–M4 and an optional sequence model.'],
+['4 · Calibration','Probabilities are calibrated (isotonic or Platt) on a later validation block so that costs and thresholds mean something.'],
+['5 · Cost & budget','Expected cost across miss:false-alarm ratios, precision@k and recall@k under a review budget, plus warning lead time.'],
+['6 · Explanations','Grouped SHAP, stability across time, seeds and cost settings, deletion-test faithfulness, explanation drift and historical case studies.']];
+$('#steps').innerHTML=S.map((s,i)=>`<button data-i="${i}">${s[0]}</button>`).join('');
+$('#steps').onclick=e=>{const i=e.target.dataset.i;if(i==null)return;[...$('#steps').children].forEach((b,j)=>b.classList.toggle('on',j==i));$('#st').textContent=S[i][0];$('#sd').textContent=S[i][1]};
+$('#steps').children[0].click();
+
+/* Cost explorer */
+const R=rng(7),D=[];
+for(let i=0;i<600;i++){const z=Math.sqrt(-2*Math.log(R()+1e-9))*Math.cos(6.2832*R()),p=1/(1+Math.exp(3.1-1.4*z));D.push({p,y:R()<p?1:0})}
+D.sort((a,b)=>b.p-a.p);const P=sum(D.map(d=>d.y)),TP=[0];D.forEach(d=>TP.push(TP[TP.length-1]+d.y));
+function costs(){
+ const c=Math.round(10**(+$('#c').value/50)),k=+$('#kk').value;$('#cv').textContent=c+':1';$('#kkv').textContent=k;
+ const f=j=>c*(P-TP[j])+(j-TP[j]);let best=0,cur=[];
+ for(let j=0;j<=300;j++){cur.push(f(j));if(cur[j]<cur[best])best=j}
+ const mx=Math.max(...cur),X=j=>30+j*2.2,Y=v=>200-170*v/mx;
+ let s=`<path d="M${cur.map((v,j)=>X(j)+','+Y(v)).join('L')}" fill="none" stroke="var(--a)" stroke-width="2.5"/>`;
+ s+=`<line x1="${X(k)}" x2="${X(k)}" y1="20" y2="200" stroke="var(--d)" stroke-dasharray="4"/><circle cx="${X(k)}" cy="${Y(cur[k])}" r="6" fill="var(--d)"/>`;
+ s+=`<text x="${X(best)}" y="${Y(cur[best])+5}" text-anchor="middle" font-size="20" fill="var(--c)">★</text><text class="txt" x="30" y="222">packages reviewed (k) →</text><text class="txt" x="30" y="14">expected cost ↓</text>`;
+ $('#cg').innerHTML=s;const tp=TP[k];
+ $('#cr').innerHTML=`Flagging <b>${k}</b> of 600 package-months (${P} true surges): precision <b>${k?(100*tp/k).toFixed(0):0}%</b>, recall <b>${(100*tp/P).toFixed(0)}%</b>, misses <b>${P-tp}</b>, false alarms <b>${k-tp}</b>, cost <b>${cur[k]}</b>. Best k = <b>${best}</b> (★). For calibrated scores the ideal cut-off is p &gt; 1/(1+c) = <b>${(1/(1+c)).toFixed(3)}</b>.`;
+}
+['c','kk'].forEach(i=>$('#'+i).oninput=costs);
+
+/* Titles */
+const T=[['A · Predictability & rigor','How Predictable Are Vulnerability Surges? A Leakage-Aware, Cost-Sensitive Study of Open-Source Packages','Recommended default. Stays publishable whether models succeed or fail. Suits empirical software engineering venues.'],
+['B · Budget-aware','Budget-Aware Forecasting of Vulnerability Disclosure Surges in Open-Source Ecosystems','Frames the task as a decision under a review budget. Suits security operations and applied security-ML.'],
+['C · Explanation stability','Do Explanations Survive Time? Explainable, Cost-Sensitive Prediction of Vulnerability Surges in Software Packages','Tests explanation reliability under drift. Suits explainable-AI and trustworthy-ML venues.'],
+['D · Supply-chain warning','Early Warning for the Software Supply Chain: Forecasting Package-Level Vulnerability Surges from History, Activity and Dependency Signals','Asks which signal families matter. Suits supply-chain security venues.']];
+$('#tt').innerHTML=T.map((t,i)=>`<button data-i="${i}">${t[0]}</button>`).join('');
+$('#tt').onclick=e=>{const i=e.target.dataset.i;if(i==null)return;[...$('#tt').children].forEach((b,j)=>b.classList.toggle('on',j==i));$('#tn').textContent=T[i][1];$('#td').textContent=T[i][2]};
+$('#tt').children[0].click();
+
+surge();split();costs();
+</script>
+
+</body>
+<nav>
+<a href="#why">Overview</a><a href="#surge">Surge label</a><a href="#split">Leakage</a><a href="#method">Method</a><a href="#cost">Cost</a><a href="#rq">Questions</a><a href="#plan">Plan</a><a href="#titles">Titles</a>
+<button id="theme" aria-label="Toggle light and dark theme" title="Toggle theme">◐</button>
+</nav>
+<header class="hero">
+<div class="tag">Research proposal · AI/ML × Cybersecurity</div>
+<h1>Forecasting Vulnerability Surges in Open-Source Packages</h1>
+<p>Which packages will see a burst of high or critical advisories in the next 30–180 days, and can we explain why, without fooling ourselves with data leakage?</p>
+<div class="chips"><span><b>4</b> research questions</span><span><b>7</b> baselines</span><span><b>3</b> horizons</span><span><b>12</b> weeks</span></div>
+</header>
+<main>
+<section id="why">
+<div class="tag">The idea</div><h2>Why package-level surges matter</h2>
+<p class="lead">Disclosures cluster in time. A burst forces downstream teams into repeated triage, patching and testing. Existing tools score single CVEs or forecast ecosystem totals; package-level burst forecasting under leakage-controlled, cost-aware evaluation looks under-studied (literature check pending).</p>
+<div class="grid">
+<div class="card"><h3>🎯 The task</h3><p>For package <i>i</i> at date <i>t</i>, estimate the probability of a surge in (t, t+h], using only information public at <i>t</i>.</p></div>
+<div class="card"><h3>⚠️ The caveat</h3><p>We forecast <b>disclosure</b> surges, not true vulnerability density. Audits, fuzzing or policy changes can also trigger bursts.</p></div>
+<div class="card"><h3>🧪 The paper type</h3><p>Empirical study plus benchmark: leakage audit, budget-aware cost analysis, and explanation stability.</p></div>
+</div>
+</section>
+
+<section id="surge">
+<div class="tag">Try it · illustrative synthetic data</div><h2>What counts as a surge?</h2>
+<p class="lead">A window is a surge if it holds at least <b>m</b> advisories <i>and</i> at least <b>k×</b> the package's trailing 12-month rate. Move the sliders and watch how fragile the base rate is.</p>
+<div class="card">
+<div class="ctl">
+<label>Horizon h: <b id="hv">3 mo</b><input id="h" type="range" min="1" max="6" value="3"></label>
+<label>Multiplier k: <b id="kv">3×</b><input id="k" type="range" min="1" max="6" value="3" step=".5"></label>
+<label>Minimum count m: <b id="mv">2</b><input id="m" type="range" min="1" max="4" value="2"></label>
+</div>
+<svg id="sg" viewBox="0 0 720 190" role="img" aria-label="Monthly advisory counts with surge windows highlighted"><rect x="20" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="34.4" y="84" width="11.4" height="26" rx="3" fill="var(--g)"></rect><rect x="48.8" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="63.2" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="77.6" y="84" width="11.4" height="26" rx="3" fill="var(--g)"></rect><rect x="92" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="106.4" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="120.8" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="135.2" y="84" width="11.4" height="26" rx="3" fill="var(--g)"></rect><rect x="149.6" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="164" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="178.4" y="84" width="11.4" height="26" rx="3" fill="var(--g)"></rect><rect x="192.8" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="207.20000000000002" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="221.6" y="84" width="11.4" height="26" rx="3" fill="var(--g)"></rect><rect x="236" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="250.4" y="110" width="11.4" height="2" rx="3" fill="var(--c)"></rect><rect x="264.8" y="110" width="11.4" height="2" rx="3" fill="var(--c)"></rect><rect x="279.2" y="32" width="11.4" height="78" rx="3" fill="var(--c)"></rect><rect x="293.6" y="58" width="11.4" height="52" rx="3" fill="var(--c)"></rect><rect x="308" y="110" width="11.4" height="2" rx="3" fill="var(--c)"></rect><rect x="322.40000000000003" y="84" width="11.4" height="26" rx="3" fill="var(--g)"></rect><rect x="336.8" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="351.2" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="365.6" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="380" y="84" width="11.4" height="26" rx="3" fill="var(--g)"></rect><rect x="394.40000000000003" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="408.8" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="423.2" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="437.6" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="452" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="466.40000000000003" y="84" width="11.4" height="26" rx="3" fill="var(--g)"></rect><rect x="480.8" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="495.2" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="509.6" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="524" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="538.4" y="110" width="11.4" height="2" rx="3" fill="var(--c)"></rect><rect x="552.8000000000001" y="110" width="11.4" height="2" rx="3" fill="var(--c)"></rect><rect x="567.2" y="6" width="11.4" height="104" rx="3" fill="var(--c)"></rect><rect x="581.6" y="32" width="11.4" height="78" rx="3" fill="var(--c)"></rect><rect x="596" y="84" width="11.4" height="26" rx="3" fill="var(--c)"></rect><rect x="610.4" y="110" width="11.4" height="2" rx="3" fill="var(--c)"></rect><rect x="624.8000000000001" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="639.2" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="653.6" y="84" width="11.4" height="26" rx="3" fill="var(--g)"></rect><rect x="668" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="682.4" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="696.8000000000001" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="192.8" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="207.20000000000002" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="221.6" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="236" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="250.4" y="128" width="11.4" height="22" rx="3" fill="var(--d)" opacity="1"></rect><rect x="264.8" y="128" width="11.4" height="22" rx="3" fill="var(--d)" opacity="1"></rect><rect x="279.2" y="128" width="11.4" height="22" rx="3" fill="var(--d)" opacity="1"></rect><rect x="293.6" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="308" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="322.40000000000003" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="336.8" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="351.2" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="365.6" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="380" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="394.40000000000003" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="408.8" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="423.2" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="437.6" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="452" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="466.40000000000003" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="480.8" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="495.2" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="509.6" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="524" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="538.4" y="128" width="11.4" height="22" rx="3" fill="var(--d)" opacity="1"></rect><rect x="552.8000000000001" y="128" width="11.4" height="22" rx="3" fill="var(--d)" opacity="1"></rect><rect x="567.2" y="128" width="11.4" height="22" rx="3" fill="var(--d)" opacity="1"></rect><rect x="581.6" y="128" width="11.4" height="22" rx="3" fill="var(--d)" opacity="1"></rect><rect x="596" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="610.4" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="624.8000000000001" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="639.2" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="653.6" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="668" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><text class="txt" x="20" y="172">month 0</text><text class="txt" x="666.8000000000001" y="172">month 47</text><text class="txt" x="20" y="186">row 2: origins t = 12…45 (trailing 12 months required)</text></svg>
+<div class="leg"><span><i style="background:var(--g)"></i>advisories per month</span><span><i style="background:var(--c)"></i>month inside a surge window</span><span><i style="background:var(--d)"></i>forecast origin labelled surge</span></div>
+<div class="read" id="sr"><b>7</b> of 34 forecast origins are surges (<b>21%</b>). A workable prevalence for a rare-event study.</div>
+</div>
+</section>
+
+<section id="split">
+<div class="tag">Try it · leakage</div><h2>Random splits leak; purged splits don't</h2>
+<p class="lead">Neighbouring months share label windows, so a random split lets the model see the answer's neighbours. A purge gap of at least h removes the overlap.</p>
+<div class="card">
+<div class="ctl">
+<label>Horizon h: <b id="shv">3 mo</b><input id="sh" type="range" min="1" max="6" value="3"></label>
+<label>Rolling fold: <b id="sfv">2</b><input id="sf" type="range" min="1" max="5" value="2"></label>
+<label>Protocol<button id="sm" data-m="t">Purged rolling-origin ⇄ Random</button></label>
+</div>
+<div class="cells" id="cells"><i style="background:var(--a)"></i><i style="background:var(--a)"></i><i style="background:var(--a)"></i><i style="background:var(--a)"></i><i style="background:var(--a)"></i><i style="background:var(--a)"></i><i style="background:var(--a)"></i><i style="background:var(--a)"></i><i style="background:var(--a)"></i><i style="background:var(--a)"></i><i style="background:var(--a)"></i><i style="background:var(--a)"></i><i style="background:var(--c)"></i><i style="background:var(--c)"></i><i style="background:var(--b)"></i><i style="background:var(--b)"></i><i style="background:var(--b)"></i><i style="background:var(--g)"></i><i style="background:var(--g)"></i><i style="background:var(--g)"></i><i style="background:var(--g)"></i><i style="background:var(--g)"></i><i style="background:var(--g)"></i><i style="background:var(--g)"></i><i style="background:var(--g)"></i><i style="background:var(--g)"></i><i style="background:var(--g)"></i><i style="background:var(--g)"></i><i style="background:var(--g)"></i><i style="background:var(--g)"></i><i style="background:var(--p)"></i><i style="background:var(--p)"></i><i style="background:var(--p)"></i><i style="background:var(--p)"></i><i style="background:var(--p)"></i><i style="background:var(--p)"></i></div>
+<div class="leg"><span><i style="background:var(--a)"></i>train</span><span><i style="background:var(--c)"></i>purge gap</span><span><i style="background:var(--b)"></i>test</span><span><i style="background:var(--p)"></i>final test (used once)</span><span><i style="background:var(--g)"></i>unused</span></div>
+<div class="read" id="sl"><b>0</b> of 12 training rows (<b>0%</b>) share a label window with a test row. The purge gap removes that overlap by construction.</div>
+</div>
+</section>
+
+<section id="method">
+<div class="tag">Pipeline</div><h2>From raw advisories to explained forecasts</h2>
+<div class="steps" id="steps"><button data-i="0" class="on">1 · As-of data</button><button data-i="1">2 · Features</button><button data-i="2">3 · Models</button><button data-i="3">4 · Calibration</button><button data-i="4">5 · Cost &amp; budget</button><button data-i="5">6 · Explanations</button></div>
+<div class="card"><h3 id="st">1 · As-of data</h3><p id="sd">Advisories from GitHub Advisory DB, OSV and NVD are rebuilt as they were on each forecast date, using publication timestamps and git history, with alias de-duplication.</p></div>
+</section>
+
+<section id="cost">
+<div class="tag">Try it · simulated calibrated scores</div><h2>Missing a surge costs more than a false alarm</h2>
+<p class="lead">Set how much worse a missed surge is (c) and how many packages analysts can review (k). The curve shows expected cost; the star marks the best k.</p>
+<div class="card">
+<div class="ctl">
+<label>Miss : false-alarm cost c = <b id="cv">10:1</b><input id="c" type="range" min="0" max="100" value="50"></label>
+<label>Packages reviewed k = <b id="kkv">60</b><input id="kk" type="range" min="0" max="300" value="60"></label>
+</div>
+<svg id="cg" viewBox="0 0 720 230" role="img" aria-label="Expected cost versus review budget"><path d="M30,30L32.2,33.69565217391303L34.4,37.39130434782609L36.6,37.02173913043478L38.8,36.65217391304347L41,40.34782608695653L43.2,39.97826086956522L45.400000000000006,43.67391304347825L47.6,43.30434782608697L49.8,47L52,46.63043478260869L54.2,50.32608695652175L56.400000000000006,49.95652173913044L58.6,49.586956521739125L60.800000000000004,49.217391304347814L63,48.84782608695653L65.2,48.47826086956522L67.4,48.10869565217391L69.6,51.80434782608697L71.80000000000001,55.5L74,59.19565217391303L76.2,58.82608695652175L78.4,62.52173913043478L80.6,66.21739130434781L82.80000000000001,65.84782608695653L85,65.47826086956522L87.2,65.1086956521739L89.4,68.80434782608697L91.60000000000001,68.43478260869566L93.80000000000001,68.06521739130434L96,67.69565217391303L98.2,67.32608695652175L100.4,66.95652173913044L102.60000000000001,70.65217391304347L104.80000000000001,70.28260869565219L107,73.97826086956522L109.2,73.6086956521739L111.4,77.30434782608695L113.60000000000001,76.93478260869566L115.80000000000001,76.56521739130434L118,76.19565217391305L120.2,75.82608695652173L122.4,79.52173913043478L124.60000000000001,83.21739130434783L126.80000000000001,82.84782608695652L129,82.47826086956522L131.2,82.1086956521739L133.4,85.80434782608695L135.60000000000002,85.43478260869566L137.8,85.06521739130434L140,84.69565217391305L142.2,84.32608695652173L144.4,83.95652173913044L146.60000000000002,83.58695652173913L148.8,83.21739130434783L151,82.84782608695652L153.20000000000002,82.47826086956522L155.4,82.1086956521739L157.60000000000002,81.73913043478261L159.8,81.3695652173913L162,81L164.20000000000002,80.6304347826087L166.4,80.26086956521739L168.60000000000002,79.8913043478261L170.8,79.52173913043478L173,79.15217391304348L175.20000000000002,78.78260869565217L177.4,78.41304347826087L179.60000000000002,78.04347826086956L181.8,81.73913043478261L184,81.3695652173913L186.20000000000002,81L188.4,84.69565217391305L190.60000000000002,84.32608695652173L192.8,88.02173913043478L195,91.71739130434783L197.20000000000002,91.34782608695652L199.4,90.97826086956522L201.60000000000002,94.67391304347827L203.8,94.30434782608695L206,93.93478260869566L208.20000000000002,93.56521739130434L210.4,93.19565217391305L212.60000000000002,92.82608695652173L214.8,92.45652173913044L217.00000000000003,92.08695652173913L219.20000000000002,91.71739130434783L221.4,91.34782608695652L223.60000000000002,90.97826086956522L225.8,90.6086956521739L228.00000000000003,90.23913043478261L230.20000000000002,89.8695652173913L232.4,89.5L234.60000000000002,89.1304347826087L236.8,88.76086956521739L239.00000000000003,88.3913043478261L241.20000000000002,92.08695652173913L243.4,91.71739130434783L245.60000000000002,91.34782608695652L247.8,95.04347826086956L250.00000000000003,94.67391304347827L252.20000000000002,94.30434782608695L254.4,93.93478260869566L256.6,93.56521739130434L258.8,93.19565217391305L261,92.82608695652173L263.20000000000005,92.45652173913044L265.4,92.08695652173913L267.6,91.71739130434783L269.8,91.34782608695652L272,90.97826086956522L274.20000000000005,90.6086956521739L276.40000000000003,90.23913043478261L278.6,89.8695652173913L280.8,89.5L283,89.1304347826087L285.20000000000005,88.76086956521739L287.40000000000003,88.3913043478261L289.6,88.02173913043478L291.8,87.65217391304348L294,87.28260869565217L296.20000000000005,86.91304347826087L298.40000000000003,86.54347826086956L300.6,86.17391304347827L302.8,85.80434782608695L305,89.5L307.20000000000005,89.1304347826087L309.40000000000003,88.76086956521739L311.6,88.3913043478261L313.8,88.02173913043478L316,87.65217391304348L318.20000000000005,87.28260869565217L320.40000000000003,86.91304347826087L322.6,86.54347826086956L324.8,86.17391304347827L327,85.80434782608695L329.20000000000005,85.43478260869566L331.40000000000003,85.06521739130434L333.6,84.69565217391305L335.8,84.32608695652173L338,83.95652173913044L340.20000000000005,83.58695652173913L342.40000000000003,83.21739130434783L344.6,86.91304347826087L346.8,86.54347826086956L349,86.17391304347827L351.20000000000005,85.80434782608695L353.40000000000003,85.43478260869566L355.6,89.1304347826087L357.8,88.76086956521739L360,88.3913043478261L362.20000000000005,92.08695652173913L364.40000000000003,91.71739130434783L366.6,91.34782608695652L368.8,90.97826086956522L371,90.6086956521739L373.20000000000005,90.23913043478261L375.40000000000003,89.8695652173913L377.6,93.56521739130434L379.8,97.26086956521739L382,96.8913043478261L384.20000000000005,96.52173913043478L386.40000000000003,96.15217391304348L388.6,95.78260869565217L390.8,99.47826086956522L393.00000000000006,99.1086956521739L395.20000000000005,98.73913043478261L397.40000000000003,98.3695652173913L399.6,98L401.8,97.6304347826087L404.00000000000006,97.26086956521739L406.20000000000005,96.8913043478261L408.40000000000003,96.52173913043478L410.6,96.15217391304348L412.8,95.78260869565217L415.00000000000006,95.41304347826087L417.20000000000005,99.1086956521739L419.40000000000003,98.73913043478261L421.6,98.3695652173913L423.8,98L426.00000000000006,101.69565217391305L428.20000000000005,105.3913043478261L430.40000000000003,105.02173913043478L432.6,104.65217391304348L434.8,104.28260869565217L437.00000000000006,103.91304347826087L439.20000000000005,103.54347826086956L441.40000000000003,103.17391304347827L443.6,102.80434782608695L445.8,102.43478260869566L448.00000000000006,102.06521739130434L450.20000000000005,101.69565217391305L452.40000000000003,105.3913043478261L454.6,105.02173913043478L456.8,108.71739130434783L459.00000000000006,108.34782608695652L461.20000000000005,107.97826086956522L463.40000000000003,107.6086956521739L465.6,107.23913043478261L467.8,106.8695652173913L470.00000000000006,106.5L472.20000000000005,106.1304347826087L474.40000000000003,105.76086956521739L476.6,105.3913043478261L478.8,105.02173913043478L481.00000000000006,104.65217391304348L483.20000000000005,104.28260869565217L485.40000000000003,103.91304347826087L487.6,103.54347826086956L489.8,103.17391304347827L492.00000000000006,102.80434782608695L494.20000000000005,102.43478260869566L496.40000000000003,102.06521739130434L498.6,101.69565217391305L500.8,101.32608695652173L503.00000000000006,100.95652173913044L505.20000000000005,100.58695652173913L507.40000000000003,100.21739130434783L509.6,99.84782608695652L511.8,99.47826086956522L514,99.1086956521739L516.2,98.73913043478261L518.4000000000001,98.3695652173913L520.6,98L522.8000000000001,97.6304347826087L525,97.26086956521739L527.2,96.8913043478261L529.4000000000001,96.52173913043478L531.6,96.15217391304348L533.8000000000001,95.78260869565217L536,95.41304347826087L538.2,95.04347826086956L540.4000000000001,94.67391304347827L542.6,94.30434782608695L544.8000000000001,93.93478260869566L547,93.56521739130434L549.2,93.19565217391305L551.4000000000001,92.82608695652173L553.6,92.45652173913044L555.8000000000001,92.08695652173913L558,91.71739130434783L560.2,91.34782608695652L562.4000000000001,90.97826086956522L564.6,90.6086956521739L566.8000000000001,90.23913043478261L569,89.8695652173913L571.2,89.5L573.4000000000001,89.1304347826087L575.6,88.76086956521739L577.8000000000001,88.3913043478261L580,88.02173913043478L582.2,87.65217391304348L584.4000000000001,87.28260869565217L586.6,86.91304347826087L588.8000000000001,86.54347826086956L591,86.17391304347827L593.2,89.8695652173913L595.4000000000001,89.5L597.6,89.1304347826087L599.8000000000001,88.76086956521739L602,88.3913043478261L604.2,88.02173913043478L606.4000000000001,87.65217391304348L608.6,87.28260869565217L610.8000000000001,86.91304347826087L613,86.54347826086956L615.2,86.17391304347827L617.4000000000001,85.80434782608695L619.6,89.5L621.8000000000001,89.1304347826087L624,88.76086956521739L626.2,88.3913043478261L628.4000000000001,92.08695652173913L630.6,91.71739130434783L632.8000000000001,91.34782608695652L635,90.97826086956522L637.2,90.6086956521739L639.4000000000001,90.23913043478261L641.6,89.8695652173913L643.8000000000001,89.5L646,89.1304347826087L648.2,88.76086956521739L650.4000000000001,88.3913043478261L652.6,88.02173913043478L654.8000000000001,87.65217391304348L657,87.28260869565217L659.2,86.91304347826087L661.4000000000001,86.54347826086956L663.6,86.17391304347827L665.8000000000001,85.80434782608695L668,85.43478260869566L670.2,89.1304347826087L672.4000000000001,88.76086956521739L674.6,88.3913043478261L676.8000000000001,88.02173913043478L679,87.65217391304348L681.2,87.28260869565217L683.4000000000001,86.91304347826087L685.6,86.54347826086956L687.8000000000001,86.17391304347827L690,85.80434782608695" fill="none" stroke="var(--a)" stroke-width="2.5"></path><line x1="162" x2="162" y1="20" y2="200" stroke="var(--d)" stroke-dasharray="4"></line><circle cx="162" cy="81" r="6" fill="var(--d)"></circle><text x="456.8" y="113.71739130434783" text-anchor="middle" font-size="20" fill="var(--c)">★</text><text class="txt" x="30" y="222">packages reviewed (k) →</text><text class="txt" x="30" y="14">expected cost ↓</text></svg>
+<div class="read" id="cr">Flagging <b>60</b> of 600 package-months (46 true surges): precision <b>30%</b>, recall <b>39%</b>, misses <b>28</b>, false alarms <b>42</b>, cost <b>322</b>. Best k = <b>194</b> (★). For calibrated scores the ideal cut-off is p &gt; 1/(1+c) = <b>0.091</b>.</div>
+</div>
+</section>
+
+<section id="rq">
+<div class="tag">Hypotheses</div><h2>Four research questions</h2>
+<details open=""><summary>RQ1 · How much do naive evaluations overstate performance?</summary><p><b>Hypothesis:</b> random splits and today's metadata inflate results. <b>Falsified if</b> there is no meaningful gap. <b>Analysis:</b> same models under each protocol, PR-AUC gap with confidence intervals.</p></details>
+<details><summary>RQ2 · What signal actually predicts surges?</summary><p><b>Hypothesis:</b> history dominates, but activity and dependency features add value at longer horizons. <b>Falsified if</b> nothing beats a history-only model. <b>Analysis:</b> feature-family ablations, paired block bootstrap.</p></details>
+<details><summary>RQ3 · Does cost-sensitive decision-making help?</summary><p><b>Hypothesis:</b> thresholding calibrated probabilities matches or beats class weights, focal loss and resampling at a fixed review budget. <b>Analysis:</b> expected cost across ratios, precision@k and recall@k.</p></details>
+<details><summary>RQ4 · Are explanations stable?</summary><p><b>Hypothesis:</b> rankings shift across time and cost settings, most around ecosystem-wide events. <b>Analysis:</b> rank correlation, top-k overlap, deletion-test faithfulness, explanation drift, case studies.</p></details>
+</section>
+
+<section id="plan">
+<div class="tag">Roadmap</div><h2>Twelve weeks, four gates</h2>
+<div class="gantt">
+<div style="grid-column:1/3;background:var(--a)">Wk 1–2<small>Literature · data audit · base rate · go/no-go</small></div>
+<div style="grid-column:3/6;background:var(--p)">Wk 3–5<small>As-of dataset · leakage tests</small></div>
+<div style="grid-column:6/9;background:var(--b)">Wk 6–8<small>Baselines · models · cost analysis</small></div>
+<div style="grid-column:9/11;background:var(--c)">Wk 9–10<small>Final test · explainability · cases</small></div>
+<div style="grid-column:11/13;background:var(--d)">Wk 11–12<small>Writing · code release</small></div>
+</div>
+<p class="lead" style="margin-top:14px">Main risks: too few positives (fallback: recurrence population or longer horizons), missing historical dependency data (drop that family), or an unbeatable history-only baseline (reframe as a predictability study).</p>
+</section>
+
+<section id="titles">
+<div class="tag">Four framings</div><h2>Title options</h2>
+<div class="steps" id="tt"><button data-i="0" class="on">A · Predictability &amp; rigor</button><button data-i="1">B · Budget-aware</button><button data-i="2">C · Explanation stability</button><button data-i="3">D · Supply-chain warning</button></div>
+<div class="card"><h3 id="tn">How Predictable Are Vulnerability Surges? A Leakage-Aware, Cost-Sensitive Study of Open-Source Packages</h3><p id="td">Recommended default. Stays publishable whether models succeed or fail. Suits empirical software engineering venues.</p></div>
+</section>
+</main>
+<footer>Draft proposal · all charts use synthetic illustrative data, not results · full plan in the Word document</footer>
+<script>
+const $=s=>document.querySelector(s),sum=a=>a.reduce((x,y)=>x+y,0);
+function rng(s){return()=>{s|=0;s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const root=document.documentElement;
+$('#theme').onclick=()=>{const d=root.dataset.theme==='dark'||(!root.dataset.theme&&matchMedia('(prefers-color-scheme:dark)').matches);root.dataset.theme=d?'light':'dark'};
+
+/* Surge explorer */
+const C=[0,1,0,0,1,0,0,0,1,0,0,1,0,0,1,0,0,0,3,2,0,1,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,4,3,1,0,0,0,1,0,0,0];
+function surge(){
+ const h=+$('#h').value,k=+$('#k').value,m=+$('#m').value;
+ $('#hv').textContent=h+' mo';$('#kv').textContent=k+'×';$('#mv').textContent=m;
+ let n=0,N=0,win=new Set(),ys=[];
+ for(let t=12;t+h<=48;t++){const r=sum(C.slice(t-12,t))*h/12,A=sum(C.slice(t,t+h)),y=A>=m&&A>=k*r;N++;ys.push([t,y]);if(y){n++;for(let i=t;i<t+h;i++)win.add(i)}}
+ let s='';const w=14.4;
+ C.forEach((c,i)=>{const H=c*26;s+=`<rect x="${20+i*w}" y="${110-H}" width="${w-3}" height="${Math.max(H,2)}" rx="3" fill="${win.has(i)?'var(--c)':'var(--g)'}"/>`});
+ ys.forEach(([t,y])=>s+=`<rect x="${20+t*w}" y="128" width="${w-3}" height="22" rx="3" fill="${y?'var(--d)':'var(--g)'}" opacity="${y?1:.45}"/>`);
+ s+=`<text class="txt" x="20" y="172">month 0</text><text class="txt" x="${20+47*w-30}" y="172">month 47</text><text class="txt" x="20" y="186">row 2: origins t = 12…${48-h} (trailing 12 months required)</text>`;
+ $('#sg').innerHTML=s;const p=N?100*n/N:0;
+ $('#sr').innerHTML=`<b>${n}</b> of ${N} forecast origins are surges (<b>${p.toFixed(0)}%</b>). `+(p<3?'Very sparse: stable evaluation would need pooling many packages, or a longer horizon.':p>35?'Very common: this may be too loose to count as a "surge".':'A workable prevalence for a rare-event study.');
+}
+['h','k','m'].forEach(i=>$('#'+i).oninput=surge);
+
+/* Split visualiser */
+function split(){
+ const h=+$('#sh').value,f=+$('#sf').value,t=$('#sm').dataset.m==='t';
+ $('#shv').textContent=h+' mo';$('#sfv').textContent=f;
+ const cl=Array(36).fill('var(--g)');let tr=[],te=[];
+ for(let i=30;i<36;i++)cl[i]='var(--p)';
+ if(t){const ts=10+(f-1)*4;for(let i=0;i<30;i++){if(i<ts&&i+h<=ts){cl[i]='var(--a)';tr.push(i)}else if(i<ts)cl[i]='var(--c)';else if(i<ts+3){cl[i]='var(--b)';te.push(i)}}}
+ else{const R=rng(f*11+3);for(let i=0;i<30;i++){if(R()<.3){cl[i]='var(--b)';te.push(i)}else{cl[i]='var(--a)';tr.push(i)}}}
+ $('#cells').innerHTML=cl.map(c=>`<i style="background:${c}"></i>`).join('');
+ const leak=tr.filter(i=>te.some(j=>Math.abs(i-j)<h)).length,pc=tr.length?100*leak/tr.length:0;
+ $('#sl').innerHTML=`<b>${leak}</b> of ${tr.length} training rows (<b>${pc.toFixed(0)}%</b>) share a label window with a test row. `+(t?'The purge gap removes that overlap by construction.':'Their labels overlap in time, so scores look better than they are.');
+}
+['sh','sf'].forEach(i=>$('#'+i).oninput=split);
+$('#sm').onclick=e=>{const b=e.currentTarget;b.dataset.m=b.dataset.m==='t'?'r':'t';b.textContent=b.dataset.m==='t'?'Purged rolling-origin ⇄ Random':'Random ⇄ Purged rolling-origin';split()};
+
+/* Pipeline */
+const S=[['1 · As-of data','Advisories from GitHub Advisory DB, OSV and NVD are rebuilt as they were on each forecast date, using publication timestamps and git history, with alias de-duplication.'],
+['2 · Features','Four families: vulnerability history, development activity, dependency context and ecosystem context, all dated on or before t.'],
+['3 · Models','Baselines B0–B6 (persistence, trailing rate, logistic, negative binomial, Hawkes-style, ecosystem rate, CVSS/EPSS heuristic) against gradient boosting M1–M4 and an optional sequence model.'],
+['4 · Calibration','Probabilities are calibrated (isotonic or Platt) on a later validation block so that costs and thresholds mean something.'],
+['5 · Cost & budget','Expected cost across miss:false-alarm ratios, precision@k and recall@k under a review budget, plus warning lead time.'],
+['6 · Explanations','Grouped SHAP, stability across time, seeds and cost settings, deletion-test faithfulness, explanation drift and historical case studies.']];
+$('#steps').innerHTML=S.map((s,i)=>`<button data-i="${i}">${s[0]}</button>`).join('');
+$('#steps').onclick=e=>{const i=e.target.dataset.i;if(i==null)return;[...$('#steps').children].forEach((b,j)=>b.classList.toggle('on',j==i));$('#st').textContent=S[i][0];$('#sd').textContent=S[i][1]};
+$('#steps').children[0].click();
+
+/* Cost explorer */
+const R=rng(7),D=[];
+for(let i=0;i<600;i++){const z=Math.sqrt(-2*Math.log(R()+1e-9))*Math.cos(6.2832*R()),p=1/(1+Math.exp(3.1-1.4*z));D.push({p,y:R()<p?1:0})}
+D.sort((a,b)=>b.p-a.p);const P=sum(D.map(d=>d.y)),TP=[0];D.forEach(d=>TP.push(TP[TP.length-1]+d.y));
+function costs(){
+ const c=Math.round(10**(+$('#c').value/50)),k=+$('#kk').value;$('#cv').textContent=c+':1';$('#kkv').textContent=k;
+ const f=j=>c*(P-TP[j])+(j-TP[j]);let best=0,cur=[];
+ for(let j=0;j<=300;j++){cur.push(f(j));if(cur[j]<cur[best])best=j}
+ const mx=Math.max(...cur),X=j=>30+j*2.2,Y=v=>200-170*v/mx;
+ let s=`<path d="M${cur.map((v,j)=>X(j)+','+Y(v)).join('L')}" fill="none" stroke="var(--a)" stroke-width="2.5"/>`;
+ s+=`<line x1="${X(k)}" x2="${X(k)}" y1="20" y2="200" stroke="var(--d)" stroke-dasharray="4"/><circle cx="${X(k)}" cy="${Y(cur[k])}" r="6" fill="var(--d)"/>`;
+ s+=`<text x="${X(best)}" y="${Y(cur[best])+5}" text-anchor="middle" font-size="20" fill="var(--c)">★</text><text class="txt" x="30" y="222">packages reviewed (k) →</text><text class="txt" x="30" y="14">expected cost ↓</text>`;
+ $('#cg').innerHTML=s;const tp=TP[k];
+ $('#cr').innerHTML=`Flagging <b>${k}</b> of 600 package-months (${P} true surges): precision <b>${k?(100*tp/k).toFixed(0):0}%</b>, recall <b>${(100*tp/P).toFixed(0)}%</b>, misses <b>${P-tp}</b>, false alarms <b>${k-tp}</b>, cost <b>${cur[k]}</b>. Best k = <b>${best}</b> (★). For calibrated scores the ideal cut-off is p &gt; 1/(1+c) = <b>${(1/(1+c)).toFixed(3)}</b>.`;
+}
+['c','kk'].forEach(i=>$('#'+i).oninput=costs);
+
+/* Titles */
+const T=[['A · Predictability & rigor','How Predictable Are Vulnerability Surges? A Leakage-Aware, Cost-Sensitive Study of Open-Source Packages','Recommended default. Stays publishable whether models succeed or fail. Suits empirical software engineering venues.'],
+['B · Budget-aware','Budget-Aware Forecasting of Vulnerability Disclosure Surges in Open-Source Ecosystems','Frames the task as a decision under a review budget. Suits security operations and applied security-ML.'],
+['C · Explanation stability','Do Explanations Survive Time? Explainable, Cost-Sensitive Prediction of Vulnerability Surges in Software Packages','Tests explanation reliability under drift. Suits explainable-AI and trustworthy-ML venues.'],
+['D · Supply-chain warning','Early Warning for the Software Supply Chain: Forecasting Package-Level Vulnerability Surges from History, Activity and Dependency Signals','Asks which signal families matter. Suits supply-chain security venues.']];
+$('#tt').innerHTML=T.map((t,i)=>`<button data-i="${i}">${t[0]}</button>`).join('');
+$('#tt').onclick=e=>{const i=e.target.dataset.i;if(i==null)return;[...$('#tt').children].forEach((b,j)=>b.classList.toggle('on',j==i));$('#tn').textContent=T[i][1];$('#td').textContent=T[i][2]};
+$('#tt').children[0].click();
+
+surge();split();costs();
+</script>
+<body>
+<nav>
+<a href="#why">Overview</a><a href="#surge">Surge label</a><a href="#split">Leakage</a><a href="#method">Method</a><a href="#cost">Cost</a><a href="#rq">Questions</a><a href="#plan">Plan</a><a href="#titles">Titles</a>
+<button id="theme" aria-label="Toggle light and dark theme" title="Toggle theme">◐</button>
+</nav>
+
+<header class="hero">
+<div class="tag">Research proposal · AI/ML × Cybersecurity</div>
+<h1>Forecasting Vulnerability Surges in Open-Source Packages</h1>
+<p>Which packages will see a burst of high or critical advisories in the next 30–180 days, and can we explain why, without fooling ourselves with data leakage?</p>
+<div class="chips"><span><b>4</b> research questions</span><span><b>7</b> baselines</span><span><b>3</b> horizons</span><span><b>12</b> weeks</span></div>
+</header>
+
+<main>
+<section id="why">
+<div class="tag">The idea</div><h2>Why package-level surges matter</h2>
+<p class="lead">Disclosures cluster in time. A burst forces downstream teams into repeated triage, patching and testing. Existing tools score single CVEs or forecast ecosystem totals; package-level burst forecasting under leakage-controlled, cost-aware evaluation looks under-studied (literature check pending).</p>
+<div class="grid">
+<div class="card"><h3>🎯 The task</h3><p>For package <i>i</i> at date <i>t</i>, estimate the probability of a surge in (t, t+h], using only information public at <i>t</i>.</p></div>
+<div class="card"><h3>⚠️ The caveat</h3><p>We forecast <b>disclosure</b> surges, not true vulnerability density. Audits, fuzzing or policy changes can also trigger bursts.</p></div>
+<div class="card"><h3>🧪 The paper type</h3><p>Empirical study plus benchmark: leakage audit, budget-aware cost analysis, and explanation stability.</p></div>
+</div>
+</section>
+
+<section id="surge">
+<div class="tag">Try it · illustrative synthetic data</div><h2>What counts as a surge?</h2>
+<p class="lead">A window is a surge if it holds at least <b>m</b> advisories <i>and</i> at least <b>k×</b> the package's trailing 12-month rate. Move the sliders and watch how fragile the base rate is.</p>
+<div class="card">
+<div class="ctl">
+<label>Horizon h: <b id="hv">3 mo</b><input id="h" type="range" min="1" max="6" value="3"></label>
+<label>Multiplier k: <b id="kv">3×</b><input id="k" type="range" min="1" max="6" value="3" step=".5"></label>
+<label>Minimum count m: <b id="mv">2</b><input id="m" type="range" min="1" max="4" value="2"></label>
+</div>
+<svg id="sg" viewBox="0 0 720 190" role="img" aria-label="Monthly advisory counts with surge windows highlighted"><rect x="20" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="34.4" y="84" width="11.4" height="26" rx="3" fill="var(--g)"></rect><rect x="48.8" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="63.2" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="77.6" y="84" width="11.4" height="26" rx="3" fill="var(--g)"></rect><rect x="92" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="106.4" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="120.8" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="135.2" y="84" width="11.4" height="26" rx="3" fill="var(--g)"></rect><rect x="149.6" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="164" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="178.4" y="84" width="11.4" height="26" rx="3" fill="var(--g)"></rect><rect x="192.8" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="207.20000000000002" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="221.6" y="84" width="11.4" height="26" rx="3" fill="var(--g)"></rect><rect x="236" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="250.4" y="110" width="11.4" height="2" rx="3" fill="var(--c)"></rect><rect x="264.8" y="110" width="11.4" height="2" rx="3" fill="var(--c)"></rect><rect x="279.2" y="32" width="11.4" height="78" rx="3" fill="var(--c)"></rect><rect x="293.6" y="58" width="11.4" height="52" rx="3" fill="var(--c)"></rect><rect x="308" y="110" width="11.4" height="2" rx="3" fill="var(--c)"></rect><rect x="322.40000000000003" y="84" width="11.4" height="26" rx="3" fill="var(--g)"></rect><rect x="336.8" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="351.2" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="365.6" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="380" y="84" width="11.4" height="26" rx="3" fill="var(--g)"></rect><rect x="394.40000000000003" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="408.8" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="423.2" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="437.6" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="452" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="466.40000000000003" y="84" width="11.4" height="26" rx="3" fill="var(--g)"></rect><rect x="480.8" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="495.2" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="509.6" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="524" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="538.4" y="110" width="11.4" height="2" rx="3" fill="var(--c)"></rect><rect x="552.8000000000001" y="110" width="11.4" height="2" rx="3" fill="var(--c)"></rect><rect x="567.2" y="6" width="11.4" height="104" rx="3" fill="var(--c)"></rect><rect x="581.6" y="32" width="11.4" height="78" rx="3" fill="var(--c)"></rect><rect x="596" y="84" width="11.4" height="26" rx="3" fill="var(--c)"></rect><rect x="610.4" y="110" width="11.4" height="2" rx="3" fill="var(--c)"></rect><rect x="624.8000000000001" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="639.2" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="653.6" y="84" width="11.4" height="26" rx="3" fill="var(--g)"></rect><rect x="668" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="682.4" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="696.8000000000001" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="192.8" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="207.20000000000002" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="221.6" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="236" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="250.4" y="128" width="11.4" height="22" rx="3" fill="var(--d)" opacity="1"></rect><rect x="264.8" y="128" width="11.4" height="22" rx="3" fill="var(--d)" opacity="1"></rect><rect x="279.2" y="128" width="11.4" height="22" rx="3" fill="var(--d)" opacity="1"></rect><rect x="293.6" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="308" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="322.40000000000003" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="336.8" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="351.2" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="365.6" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="380" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="394.40000000000003" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="408.8" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="423.2" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="437.6" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="452" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="466.40000000000003" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="480.8" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="495.2" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="509.6" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="524" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="538.4" y="128" width="11.4" height="22" rx="3" fill="var(--d)" opacity="1"></rect><rect x="552.8000000000001" y="128" width="11.4" height="22" rx="3" fill="var(--d)" opacity="1"></rect><rect x="567.2" y="128" width="11.4" height="22" rx="3" fill="var(--d)" opacity="1"></rect><rect x="581.6" y="128" width="11.4" height="22" rx="3" fill="var(--d)" opacity="1"></rect><rect x="596" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="610.4" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="624.8000000000001" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="639.2" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="653.6" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="668" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><text class="txt" x="20" y="172">month 0</text><text class="txt" x="666.8000000000001" y="172">month 47</text><text class="txt" x="20" y="186">row 2: origins t = 12…45 (trailing 12 months required)</text></svg>
+<div class="leg"><span><i style="background:var(--g)"></i>advisories per month</span><span><i style="background:var(--c)"></i>month inside a surge window</span><span><i style="background:var(--d)"></i>forecast origin labelled surge</span></div>
+<div class="read" id="sr"><b>7</b> of 34 forecast origins are surges (<b>21%</b>). A workable prevalence for a rare-event study.</div>
+</div>
+</section>
+
+<section id="split">
+<div class="tag">Try it · leakage</div><h2>Random splits leak; purged splits don't</h2>
+<p class="lead">Neighbouring months share label windows, so a random split lets the model see the answer's neighbours. A purge gap of at least h removes the overlap.</p>
+<div class="card">
+<div class="ctl">
+<label>Horizon h: <b id="shv">3 mo</b><input id="sh" type="range" min="1" max="6" value="3"></label>
+<label>Rolling fold: <b id="sfv">2</b><input id="sf" type="range" min="1" max="5" value="2"></label>
+<label>Protocol<button id="sm" data-m="t">Purged rolling-origin ⇄ Random</button></label>
+</div>
+<div class="cells" id="cells"><i style="background:var(--a)"></i><i style="background:var(--a)"></i><i style="background:var(--a)"></i><i style="background:var(--a)"></i><i style="background:var(--a)"></i><i style="background:var(--a)"></i><i style="background:var(--a)"></i><i style="background:var(--a)"></i><i style="background:var(--a)"></i><i style="background:var(--a)"></i><i style="background:var(--a)"></i><i style="background:var(--a)"></i><i style="background:var(--c)"></i><i style="background:var(--c)"></i><i style="background:var(--b)"></i><i style="background:var(--b)"></i><i style="background:var(--b)"></i><i style="background:var(--g)"></i><i style="background:var(--g)"></i><i style="background:var(--g)"></i><i style="background:var(--g)"></i><i style="background:var(--g)"></i><i style="background:var(--g)"></i><i style="background:var(--g)"></i><i style="background:var(--g)"></i><i style="background:var(--g)"></i><i style="background:var(--g)"></i><i style="background:var(--g)"></i><i style="background:var(--g)"></i><i style="background:var(--g)"></i><i style="background:var(--p)"></i><i style="background:var(--p)"></i><i style="background:var(--p)"></i><i style="background:var(--p)"></i><i style="background:var(--p)"></i><i style="background:var(--p)"></i></div>
+<div class="leg"><span><i style="background:var(--a)"></i>train</span><span><i style="background:var(--c)"></i>purge gap</span><span><i style="background:var(--b)"></i>test</span><span><i style="background:var(--p)"></i>final test (used once)</span><span><i style="background:var(--g)"></i>unused</span></div>
+<div class="read" id="sl"><b>0</b> of 12 training rows (<b>0%</b>) share a label window with a test row. The purge gap removes that overlap by construction.</div>
+</div>
+</section>
+
+<section id="method">
+<div class="tag">Pipeline</div><h2>From raw advisories to explained forecasts</h2>
+<div class="steps" id="steps"><button data-i="0" class="on">1 · As-of data</button><button data-i="1">2 · Features</button><button data-i="2">3 · Models</button><button data-i="3">4 · Calibration</button><button data-i="4">5 · Cost &amp; budget</button><button data-i="5">6 · Explanations</button></div>
+<div class="card"><h3 id="st">1 · As-of data</h3><p id="sd">Advisories from GitHub Advisory DB, OSV and NVD are rebuilt as they were on each forecast date, using publication timestamps and git history, with alias de-duplication.</p></div>
+</section>
+
+<section id="cost">
+<div class="tag">Try it · simulated calibrated scores</div><h2>Missing a surge costs more than a false alarm</h2>
+<p class="lead">Set how much worse a missed surge is (c) and how many packages analysts can review (k). The curve shows expected cost; the star marks the best k.</p>
+<div class="card">
+<div class="ctl">
+<label>Miss : false-alarm cost c = <b id="cv">10:1</b><input id="c" type="range" min="0" max="100" value="50"></label>
+<label>Packages reviewed k = <b id="kkv">60</b><input id="kk" type="range" min="0" max="300" value="60"></label>
+</div>
+<svg id="cg" viewBox="0 0 720 230" role="img" aria-label="Expected cost versus review budget"><path d="M30,30L32.2,33.69565217391303L34.4,37.39130434782609L36.6,37.02173913043478L38.8,36.65217391304347L41,40.34782608695653L43.2,39.97826086956522L45.400000000000006,43.67391304347825L47.6,43.30434782608697L49.8,47L52,46.63043478260869L54.2,50.32608695652175L56.400000000000006,49.95652173913044L58.6,49.586956521739125L60.800000000000004,49.217391304347814L63,48.84782608695653L65.2,48.47826086956522L67.4,48.10869565217391L69.6,51.80434782608697L71.80000000000001,55.5L74,59.19565217391303L76.2,58.82608695652175L78.4,62.52173913043478L80.6,66.21739130434781L82.80000000000001,65.84782608695653L85,65.47826086956522L87.2,65.1086956521739L89.4,68.80434782608697L91.60000000000001,68.43478260869566L93.80000000000001,68.06521739130434L96,67.69565217391303L98.2,67.32608695652175L100.4,66.95652173913044L102.60000000000001,70.65217391304347L104.80000000000001,70.28260869565219L107,73.97826086956522L109.2,73.6086956521739L111.4,77.30434782608695L113.60000000000001,76.93478260869566L115.80000000000001,76.56521739130434L118,76.19565217391305L120.2,75.82608695652173L122.4,79.52173913043478L124.60000000000001,83.21739130434783L126.80000000000001,82.84782608695652L129,82.47826086956522L131.2,82.1086956521739L133.4,85.80434782608695L135.60000000000002,85.43478260869566L137.8,85.06521739130434L140,84.69565217391305L142.2,84.32608695652173L144.4,83.95652173913044L146.60000000000002,83.58695652173913L148.8,83.21739130434783L151,82.84782608695652L153.20000000000002,82.47826086956522L155.4,82.1086956521739L157.60000000000002,81.73913043478261L159.8,81.3695652173913L162,81L164.20000000000002,80.6304347826087L166.4,80.26086956521739L168.60000000000002,79.8913043478261L170.8,79.52173913043478L173,79.15217391304348L175.20000000000002,78.78260869565217L177.4,78.41304347826087L179.60000000000002,78.04347826086956L181.8,81.73913043478261L184,81.3695652173913L186.20000000000002,81L188.4,84.69565217391305L190.60000000000002,84.32608695652173L192.8,88.02173913043478L195,91.71739130434783L197.20000000000002,91.34782608695652L199.4,90.97826086956522L201.60000000000002,94.67391304347827L203.8,94.30434782608695L206,93.93478260869566L208.20000000000002,93.56521739130434L210.4,93.19565217391305L212.60000000000002,92.82608695652173L214.8,92.45652173913044L217.00000000000003,92.08695652173913L219.20000000000002,91.71739130434783L221.4,91.34782608695652L223.60000000000002,90.97826086956522L225.8,90.6086956521739L228.00000000000003,90.23913043478261L230.20000000000002,89.8695652173913L232.4,89.5L234.60000000000002,89.1304347826087L236.8,88.76086956521739L239.00000000000003,88.3913043478261L241.20000000000002,92.08695652173913L243.4,91.71739130434783L245.60000000000002,91.34782608695652L247.8,95.04347826086956L250.00000000000003,94.67391304347827L252.20000000000002,94.30434782608695L254.4,93.93478260869566L256.6,93.56521739130434L258.8,93.19565217391305L261,92.82608695652173L263.20000000000005,92.45652173913044L265.4,92.08695652173913L267.6,91.71739130434783L269.8,91.34782608695652L272,90.97826086956522L274.20000000000005,90.6086956521739L276.40000000000003,90.23913043478261L278.6,89.8695652173913L280.8,89.5L283,89.1304347826087L285.20000000000005,88.76086956521739L287.40000000000003,88.3913043478261L289.6,88.02173913043478L291.8,87.65217391304348L294,87.28260869565217L296.20000000000005,86.91304347826087L298.40000000000003,86.54347826086956L300.6,86.17391304347827L302.8,85.80434782608695L305,89.5L307.20000000000005,89.1304347826087L309.40000000000003,88.76086956521739L311.6,88.3913043478261L313.8,88.02173913043478L316,87.65217391304348L318.20000000000005,87.28260869565217L320.40000000000003,86.91304347826087L322.6,86.54347826086956L324.8,86.17391304347827L327,85.80434782608695L329.20000000000005,85.43478260869566L331.40000000000003,85.06521739130434L333.6,84.69565217391305L335.8,84.32608695652173L338,83.95652173913044L340.20000000000005,83.58695652173913L342.40000000000003,83.21739130434783L344.6,86.91304347826087L346.8,86.54347826086956L349,86.17391304347827L351.20000000000005,85.80434782608695L353.40000000000003,85.43478260869566L355.6,89.1304347826087L357.8,88.76086956521739L360,88.3913043478261L362.20000000000005,92.08695652173913L364.40000000000003,91.71739130434783L366.6,91.34782608695652L368.8,90.97826086956522L371,90.6086956521739L373.20000000000005,90.23913043478261L375.40000000000003,89.8695652173913L377.6,93.56521739130434L379.8,97.26086956521739L382,96.8913043478261L384.20000000000005,96.52173913043478L386.40000000000003,96.15217391304348L388.6,95.78260869565217L390.8,99.47826086956522L393.00000000000006,99.1086956521739L395.20000000000005,98.73913043478261L397.40000000000003,98.3695652173913L399.6,98L401.8,97.6304347826087L404.00000000000006,97.26086956521739L406.20000000000005,96.8913043478261L408.40000000000003,96.52173913043478L410.6,96.15217391304348L412.8,95.78260869565217L415.00000000000006,95.41304347826087L417.20000000000005,99.1086956521739L419.40000000000003,98.73913043478261L421.6,98.3695652173913L423.8,98L426.00000000000006,101.69565217391305L428.20000000000005,105.3913043478261L430.40000000000003,105.02173913043478L432.6,104.65217391304348L434.8,104.28260869565217L437.00000000000006,103.91304347826087L439.20000000000005,103.54347826086956L441.40000000000003,103.17391304347827L443.6,102.80434782608695L445.8,102.43478260869566L448.00000000000006,102.06521739130434L450.20000000000005,101.69565217391305L452.40000000000003,105.3913043478261L454.6,105.02173913043478L456.8,108.71739130434783L459.00000000000006,108.34782608695652L461.20000000000005,107.97826086956522L463.40000000000003,107.6086956521739L465.6,107.23913043478261L467.8,106.8695652173913L470.00000000000006,106.5L472.20000000000005,106.1304347826087L474.40000000000003,105.76086956521739L476.6,105.3913043478261L478.8,105.02173913043478L481.00000000000006,104.65217391304348L483.20000000000005,104.28260869565217L485.40000000000003,103.91304347826087L487.6,103.54347826086956L489.8,103.17391304347827L492.00000000000006,102.80434782608695L494.20000000000005,102.43478260869566L496.40000000000003,102.06521739130434L498.6,101.69565217391305L500.8,101.32608695652173L503.00000000000006,100.95652173913044L505.20000000000005,100.58695652173913L507.40000000000003,100.21739130434783L509.6,99.84782608695652L511.8,99.47826086956522L514,99.1086956521739L516.2,98.73913043478261L518.4000000000001,98.3695652173913L520.6,98L522.8000000000001,97.6304347826087L525,97.26086956521739L527.2,96.8913043478261L529.4000000000001,96.52173913043478L531.6,96.15217391304348L533.8000000000001,95.78260869565217L536,95.41304347826087L538.2,95.04347826086956L540.4000000000001,94.67391304347827L542.6,94.30434782608695L544.8000000000001,93.93478260869566L547,93.56521739130434L549.2,93.19565217391305L551.4000000000001,92.82608695652173L553.6,92.45652173913044L555.8000000000001,92.08695652173913L558,91.71739130434783L560.2,91.34782608695652L562.4000000000001,90.97826086956522L564.6,90.6086956521739L566.8000000000001,90.23913043478261L569,89.8695652173913L571.2,89.5L573.4000000000001,89.1304347826087L575.6,88.76086956521739L577.8000000000001,88.3913043478261L580,88.02173913043478L582.2,87.65217391304348L584.4000000000001,87.28260869565217L586.6,86.91304347826087L588.8000000000001,86.54347826086956L591,86.17391304347827L593.2,89.8695652173913L595.4000000000001,89.5L597.6,89.1304347826087L599.8000000000001,88.76086956521739L602,88.3913043478261L604.2,88.02173913043478L606.4000000000001,87.65217391304348L608.6,87.28260869565217L610.8000000000001,86.91304347826087L613,86.54347826086956L615.2,86.17391304347827L617.4000000000001,85.80434782608695L619.6,89.5L621.8000000000001,89.1304347826087L624,88.76086956521739L626.2,88.3913043478261L628.4000000000001,92.08695652173913L630.6,91.71739130434783L632.8000000000001,91.34782608695652L635,90.97826086956522L637.2,90.6086956521739L639.4000000000001,90.23913043478261L641.6,89.8695652173913L643.8000000000001,89.5L646,89.1304347826087L648.2,88.76086956521739L650.4000000000001,88.3913043478261L652.6,88.02173913043478L654.8000000000001,87.65217391304348L657,87.28260869565217L659.2,86.91304347826087L661.4000000000001,86.54347826086956L663.6,86.17391304347827L665.8000000000001,85.80434782608695L668,85.43478260869566L670.2,89.1304347826087L672.4000000000001,88.76086956521739L674.6,88.3913043478261L676.8000000000001,88.02173913043478L679,87.65217391304348L681.2,87.28260869565217L683.4000000000001,86.91304347826087L685.6,86.54347826086956L687.8000000000001,86.17391304347827L690,85.80434782608695" fill="none" stroke="var(--a)" stroke-width="2.5"></path><line x1="162" x2="162" y1="20" y2="200" stroke="var(--d)" stroke-dasharray="4"></line><circle cx="162" cy="81" r="6" fill="var(--d)"></circle><text x="456.8" y="113.71739130434783" text-anchor="middle" font-size="20" fill="var(--c)">★</text><text class="txt" x="30" y="222">packages reviewed (k) →</text><text class="txt" x="30" y="14">expected cost ↓</text></svg>
+<div class="read" id="cr">Flagging <b>60</b> of 600 package-months (46 true surges): precision <b>30%</b>, recall <b>39%</b>, misses <b>28</b>, false alarms <b>42</b>, cost <b>322</b>. Best k = <b>194</b> (★). For calibrated scores the ideal cut-off is p &gt; 1/(1+c) = <b>0.091</b>.</div>
+</div>
+</section>
+
+<section id="rq">
+<div class="tag">Hypotheses</div><h2>Four research questions</h2>
+<details open=""><summary>RQ1 · How much do naive evaluations overstate performance?</summary><p><b>Hypothesis:</b> random splits and today's metadata inflate results. <b>Falsified if</b> there is no meaningful gap. <b>Analysis:</b> same models under each protocol, PR-AUC gap with confidence intervals.</p></details>
+<details><summary>RQ2 · What signal actually predicts surges?</summary><p><b>Hypothesis:</b> history dominates, but activity and dependency features add value at longer horizons. <b>Falsified if</b> nothing beats a history-only model. <b>Analysis:</b> feature-family ablations, paired block bootstrap.</p></details>
+<details><summary>RQ3 · Does cost-sensitive decision-making help?</summary><p><b>Hypothesis:</b> thresholding calibrated probabilities matches or beats class weights, focal loss and resampling at a fixed review budget. <b>Analysis:</b> expected cost across ratios, precision@k and recall@k.</p></details>
+<details><summary>RQ4 · Are explanations stable?</summary><p><b>Hypothesis:</b> rankings shift across time and cost settings, most around ecosystem-wide events. <b>Analysis:</b> rank correlation, top-k overlap, deletion-test faithfulness, explanation drift, case studies.</p></details>
+</section>
+
+<section id="plan">
+<div class="tag">Roadmap</div><h2>Twelve weeks, four gates</h2>
+<div class="gantt">
+<div style="grid-column:1/3;background:var(--a)">Wk 1–2<small>Literature · data audit · base rate · go/no-go</small></div>
+<div style="grid-column:3/6;background:var(--p)">Wk 3–5<small>As-of dataset · leakage tests</small></div>
+<div style="grid-column:6/9;background:var(--b)">Wk 6–8<small>Baselines · models · cost analysis</small></div>
+<div style="grid-column:9/11;background:var(--c)">Wk 9–10<small>Final test · explainability · cases</small></div>
+<div style="grid-column:11/13;background:var(--d)">Wk 11–12<small>Writing · code release</small></div>
+</div>
+<p class="lead" style="margin-top:14px">Main risks: too few positives (fallback: recurrence population or longer horizons), missing historical dependency data (drop that family), or an unbeatable history-only baseline (reframe as a predictability study).</p>
+</section>
+
+<section id="titles">
+<div class="tag">Four framings</div><h2>Title options</h2>
+<div class="steps" id="tt"><button data-i="0" class="on">A · Predictability &amp; rigor</button><button data-i="1">B · Budget-aware</button><button data-i="2">C · Explanation stability</button><button data-i="3">D · Supply-chain warning</button></div>
+<div class="card"><h3 id="tn">How Predictable Are Vulnerability Surges? A Leakage-Aware, Cost-Sensitive Study of Open-Source Packages</h3><p id="td">Recommended default. Stays publishable whether models succeed or fail. Suits empirical software engineering venues.</p></div>
+</section>
+</main>
+<footer>Draft proposal · all charts use synthetic illustrative data, not results · full plan in the Word document</footer>
+
+<script>
+const $=s=>document.querySelector(s),sum=a=>a.reduce((x,y)=>x+y,0);
+function rng(s){return()=>{s|=0;s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const root=document.documentElement;
+$('#theme').onclick=()=>{const d=root.dataset.theme==='dark'||(!root.dataset.theme&&matchMedia('(prefers-color-scheme:dark)').matches);root.dataset.theme=d?'light':'dark'};
+
+/* Surge explorer */
+const C=[0,1,0,0,1,0,0,0,1,0,0,1,0,0,1,0,0,0,3,2,0,1,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,4,3,1,0,0,0,1,0,0,0];
+function surge(){
+ const h=+$('#h').value,k=+$('#k').value,m=+$('#m').value;
+ $('#hv').textContent=h+' mo';$('#kv').textContent=k+'×';$('#mv').textContent=m;
+ let n=0,N=0,win=new Set(),ys=[];
+ for(let t=12;t+h<=48;t++){const r=sum(C.slice(t-12,t))*h/12,A=sum(C.slice(t,t+h)),y=A>=m&&A>=k*r;N++;ys.push([t,y]);if(y){n++;for(let i=t;i<t+h;i++)win.add(i)}}
+ let s='';const w=14.4;
+ C.forEach((c,i)=>{const H=c*26;s+=`<rect x="${20+i*w}" y="${110-H}" width="${w-3}" height="${Math.max(H,2)}" rx="3" fill="${win.has(i)?'var(--c)':'var(--g)'}"/>`});
+ ys.forEach(([t,y])=>s+=`<rect x="${20+t*w}" y="128" width="${w-3}" height="22" rx="3" fill="${y?'var(--d)':'var(--g)'}" opacity="${y?1:.45}"/>`);
+ s+=`<text class="txt" x="20" y="172">month 0</text><text class="txt" x="${20+47*w-30}" y="172">month 47</text><text class="txt" x="20" y="186">row 2: origins t = 12…${48-h} (trailing 12 months required)</text>`;
+ $('#sg').innerHTML=s;const p=N?100*n/N:0;
+ $('#sr').innerHTML=`<b>${n}</b> of ${N} forecast origins are surges (<b>${p.toFixed(0)}%</b>). `+(p<3?'Very sparse: stable evaluation would need pooling many packages, or a longer horizon.':p>35?'Very common: this may be too loose to count as a "surge".':'A workable prevalence for a rare-event study.');
+}
+['h','k','m'].forEach(i=>$('#'+i).oninput=surge);
+
+/* Split visualiser */
+function split(){
+ const h=+$('#sh').value,f=+$('#sf').value,t=$('#sm').dataset.m==='t';
+ $('#shv').textContent=h+' mo';$('#sfv').textContent=f;
+ const cl=Array(36).fill('var(--g)');let tr=[],te=[];
+ for(let i=30;i<36;i++)cl[i]='var(--p)';
+ if(t){const ts=10+(f-1)*4;for(let i=0;i<30;i++){if(i<ts&&i+h<=ts){cl[i]='var(--a)';tr.push(i)}else if(i<ts)cl[i]='var(--c)';else if(i<ts+3){cl[i]='var(--b)';te.push(i)}}}
+ else{const R=rng(f*11+3);for(let i=0;i<30;i++){if(R()<.3){cl[i]='var(--b)';te.push(i)}else{cl[i]='var(--a)';tr.push(i)}}}
+ $('#cells').innerHTML=cl.map(c=>`<i style="background:${c}"></i>`).join('');
+ const leak=tr.filter(i=>te.some(j=>Math.abs(i-j)<h)).length,pc=tr.length?100*leak/tr.length:0;
+ $('#sl').innerHTML=`<b>${leak}</b> of ${tr.length} training rows (<b>${pc.toFixed(0)}%</b>) share a label window with a test row. `+(t?'The purge gap removes that overlap by construction.':'Their labels overlap in time, so scores look better than they are.');
+}
+['sh','sf'].forEach(i=>$('#'+i).oninput=split);
+$('#sm').onclick=e=>{const b=e.currentTarget;b.dataset.m=b.dataset.m==='t'?'r':'t';b.textContent=b.dataset.m==='t'?'Purged rolling-origin ⇄ Random':'Random ⇄ Purged rolling-origin';split()};
+
+/* Pipeline */
+const S=[['1 · As-of data','Advisories from GitHub Advisory DB, OSV and NVD are rebuilt as they were on each forecast date, using publication timestamps and git history, with alias de-duplication.'],
+['2 · Features','Four families: vulnerability history, development activity, dependency context and ecosystem context, all dated on or before t.'],
+['3 · Models','Baselines B0–B6 (persistence, trailing rate, logistic, negative binomial, Hawkes-style, ecosystem rate, CVSS/EPSS heuristic) against gradient boosting M1–M4 and an optional sequence model.'],
+['4 · Calibration','Probabilities are calibrated (isotonic or Platt) on a later validation block so that costs and thresholds mean something.'],
+['5 · Cost & budget','Expected cost across miss:false-alarm ratios, precision@k and recall@k under a review budget, plus warning lead time.'],
+['6 · Explanations','Grouped SHAP, stability across time, seeds and cost settings, deletion-test faithfulness, explanation drift and historical case studies.']];
+$('#steps').innerHTML=S.map((s,i)=>`<button data-i="${i}">${s[0]}</button>`).join('');
+$('#steps').onclick=e=>{const i=e.target.dataset.i;if(i==null)return;[...$('#steps').children].forEach((b,j)=>b.classList.toggle('on',j==i));$('#st').textContent=S[i][0];$('#sd').textContent=S[i][1]};
+$('#steps').children[0].click();
+
+/* Cost explorer */
+const R=rng(7),D=[];
+for(let i=0;i<600;i++){const z=Math.sqrt(-2*Math.log(R()+1e-9))*Math.cos(6.2832*R()),p=1/(1+Math.exp(3.1-1.4*z));D.push({p,y:R()<p?1:0})}
+D.sort((a,b)=>b.p-a.p);const P=sum(D.map(d=>d.y)),TP=[0];D.forEach(d=>TP.push(TP[TP.length-1]+d.y));
+function costs(){
+ const c=Math.round(10**(+$('#c').value/50)),k=+$('#kk').value;$('#cv').textContent=c+':1';$('#kkv').textContent=k;
+ const f=j=>c*(P-TP[j])+(j-TP[j]);let best=0,cur=[];
+ for(let j=0;j<=300;j++){cur.push(f(j));if(cur[j]<cur[best])best=j}
+ const mx=Math.max(...cur),X=j=>30+j*2.2,Y=v=>200-170*v/mx;
+ let s=`<path d="M${cur.map((v,j)=>X(j)+','+Y(v)).join('L')}" fill="none" stroke="var(--a)" stroke-width="2.5"/>`;
+ s+=`<line x1="${X(k)}" x2="${X(k)}" y1="20" y2="200" stroke="var(--d)" stroke-dasharray="4"/><circle cx="${X(k)}" cy="${Y(cur[k])}" r="6" fill="var(--d)"/>`;
+ s+=`<text x="${X(best)}" y="${Y(cur[best])+5}" text-anchor="middle" font-size="20" fill="var(--c)">★</text><text class="txt" x="30" y="222">packages reviewed (k) →</text><text class="txt" x="30" y="14">expected cost ↓</text>`;
+ $('#cg').innerHTML=s;const tp=TP[k];
+ $('#cr').innerHTML=`Flagging <b>${k}</b> of 600 package-months (${P} true surges): precision <b>${k?(100*tp/k).toFixed(0):0}%</b>, recall <b>${(100*tp/P).toFixed(0)}%</b>, misses <b>${P-tp}</b>, false alarms <b>${k-tp}</b>, cost <b>${cur[k]}</b>. Best k = <b>${best}</b> (★). For calibrated scores the ideal cut-off is p &gt; 1/(1+c) = <b>${(1/(1+c)).toFixed(3)}</b>.`;
+}
+['c','kk'].forEach(i=>$('#'+i).oninput=costs);
+
+/* Titles */
+const T=[['A · Predictability & rigor','How Predictable Are Vulnerability Surges? A Leakage-Aware, Cost-Sensitive Study of Open-Source Packages','Recommended default. Stays publishable whether models succeed or fail. Suits empirical software engineering venues.'],
+['B · Budget-aware','Budget-Aware Forecasting of Vulnerability Disclosure Surges in Open-Source Ecosystems','Frames the task as a decision under a review budget. Suits security operations and applied security-ML.'],
+['C · Explanation stability','Do Explanations Survive Time? Explainable, Cost-Sensitive Prediction of Vulnerability Surges in Software Packages','Tests explanation reliability under drift. Suits explainable-AI and trustworthy-ML venues.'],
+['D · Supply-chain warning','Early Warning for the Software Supply Chain: Forecasting Package-Level Vulnerability Surges from History, Activity and Dependency Signals','Asks which signal families matter. Suits supply-chain security venues.']];
+$('#tt').innerHTML=T.map((t,i)=>`<button data-i="${i}">${t[0]}</button>`).join('');
+$('#tt').onclick=e=>{const i=e.target.dataset.i;if(i==null)return;[...$('#tt').children].forEach((b,j)=>b.classList.toggle('on',j==i));$('#tn').textContent=T[i][1];$('#td').textContent=T[i][2]};
+$('#tt').children[0].click();
+
+surge();split();costs();
+</script>
+
+</body>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Forecasting Vulnerability Surges</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&amp;display=swap">
+<style>
+:root{
+  --bg:#f7f7f4;
+  --card:#ffffff;
+  --soft:#f0f0ec;
+  --ink:#191917;
+  --mut:#73736c;
+  --line:#deded8;
+  --line-strong:#c9c9c1;
+  --accent:#5b57d8;
+  --accent-soft:#efefff;
+  --green:#3c8668;
+  --orange:#c98335;
+  --red:#c85a5a;
+  --purple:#8067b7;
+  --grid:#d7d7d0;
+  /* visualization palette */
+  --a:#5d67d8; /* train / primary */
+  --b:#3f8f72; /* test / positive */
+  --c:#c58a3a; /* purge / warning */
+  --d:#c85d63; /* surge / alert */
+  --p:#8068b5; /* final test */
+  --g:#d5d5ce; /* unused / baseline */
+}
+
+:root[data-theme="dark"]{
+  --bg:#11110f;
+  --card:#191917;
+  --soft:#23231f;
+  --ink:#f2f2ed;
+  --mut:#a3a39a;
+  --line:#30302b;
+  --line-strong:#44443d;
+  --accent:#8f8cf6;
+  --accent-soft:#29284a;
+  --green:#65aa8a;
+  --orange:#d49a5d;
+  --red:#df7b7b;
+  --purple:#aa97dc;
+  --grid:#393933;
+  /* visualization palette */
+  --a:#8e96f1;
+  --b:#62aa8b;
+  --c:#d3a262;
+  --d:#df7b82;
+  --p:#ad98dc;
+  --g:#3a3a34;
+}
+
+*,
+*::before,
+*::after{box-sizing:border-box}
+
+html{
+  scroll-behavior:smooth;
+  scroll-padding-top:74px;
+}
+
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--ink);
+  font:15px/1.65 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+
+a{color:inherit}
+
+nav{
+  position:sticky;
+  top:0;
+  z-index:20;
+  display:flex;
+  align-items:center;
+  gap:2px;
+  min-height:56px;
+  padding:8px max(14px,calc((100vw - 1080px)/2));
+  background:color-mix(in srgb,var(--bg) 90%,transparent);
+  backdrop-filter:blur(16px);
+  border-bottom:1px solid color-mix(in srgb,var(--line) 85%,transparent);
+  overflow-x:auto;
+}
+
+nav a{
+  color:var(--mut);
+  text-decoration:none;
+  font-size:12px;
+  font-weight:600;
+  padding:6px 9px;
+  border-radius:7px;
+  white-space:nowrap;
+  transition:.16s ease;
+}
+
+nav a:hover{
+  color:var(--ink);
+  background:var(--soft);
+}
+
+nav button{
+  margin-left:auto;
+  flex:none;
+}
+
+button{
+  appearance:none;
+  font:inherit;
+  cursor:pointer;
+  color:var(--ink);
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:8px;
+  padding:7px 11px;
+  transition:background .16s ease,border-color .16s ease,color .16s ease,transform .16s ease;
+}
+
+button:hover{
+  background:var(--soft);
+  border-color:var(--line-strong);
+}
+
+button:active{transform:translateY(1px)}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+summary:focus-visible{
+  outline:2px solid var(--accent);
+  outline-offset:2px;
+}
+
+.hero{
+  padding:88px 20px 74px;
+  text-align:center;
+  border-bottom:1px solid var(--line);
+  background:
+    radial-gradient(circle at 50% 0,color-mix(in srgb,var(--accent) 8%,transparent),transparent 34%),
+    var(--bg);
+}
+
+.hero h1{
+  max-width:900px;
+  margin:14px auto 18px;
+  font-size:clamp(38px,6vw,66px);
+  line-height:1.02;
+  letter-spacing:-.055em;
+  font-weight:800;
+  color:var(--ink);
+}
+
+.hero p{
+  max-width:700px;
+  margin:0 auto;
+  color:var(--mut);
+  font-size:17px;
+  line-height:1.7;
+}
+
+.tag{
+  color:var(--accent);
+  font-size:10px;
+  line-height:1.2;
+  font-weight:800;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+}
+
+.chips{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:7px;
+  margin-top:27px;
+}
+
+.chips span{
+  color:var(--mut);
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:999px;
+  padding:5px 10px;
+  font-size:11px;
+}
+
+.chips b{
+  color:var(--ink);
+  font-weight:700;
+}
+
+main{
+  width:min(1040px,100%);
+  margin:auto;
+  padding:0 20px 72px;
+}
+
+section{padding:64px 0 0}
+
+section+section{
+  border-top:1px solid var(--line);
+  margin-top:64px;
+}
+
+h2{
+  margin:7px 0 10px;
+  font-size:clamp(26px,4vw,36px);
+  line-height:1.12;
+  letter-spacing:-.04em;
+  font-weight:750;
+}
+
+.lead{
+  max-width:740px;
+  margin:0;
+  color:var(--mut);
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:10px;
+  margin-top:24px;
+}
+
+.card{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:18px;
+  box-shadow:0 1px 2px rgba(0,0,0,.025);
+}
+
+.card h3{
+  margin:0 0 7px;
+  font-size:15px;
+  line-height:1.35;
+  letter-spacing:-.01em;
+}
+
+.card p{
+  margin:0;
+  color:var(--mut);
+  font-size:14px;
+  line-height:1.65;
+}
+
+.ctl{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:18px;
+  margin:0 0 18px;
+}
+
+.ctl label{
+  color:var(--mut);
+  font-size:12px;
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+}
+
+.ctl b{
+  color:var(--ink);
+  font-size:13px;
+}
+
+input[type=range]{
+  width:100%;
+  margin:1px 0 0;
+  accent-color:var(--accent);
+  cursor:pointer;
+}
+
+svg{
+  width:100%;
+  height:auto;
+  display:block;
+  overflow:visible;
+}
+.card:has(svg){
+  overflow:hidden;
+}
+.card:has(svg) svg{
+  margin-top:4px;
+}
+
+
+.txt{
+  fill:var(--mut);
+  font-size:10px;
+}
+
+.read{
+  margin-top:12px;
+  padding:10px 12px;
+  border-left:2px solid var(--accent);
+  border-radius:0 7px 7px 0;
+  background:var(--accent-soft);
+  color:var(--mut);
+  font-size:12px;
+}
+
+.read b{color:var(--ink)}
+
+.cells{
+  display:grid;
+  grid-template-columns:repeat(36,1fr);
+  gap:3px;
+  margin:17px 0 12px;
+}
+
+.cells i{
+  aspect-ratio:1;
+  border-radius:2px;
+  background:var(--grid);
+}
+
+.leg{
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px 15px;
+  color:var(--mut);
+  font-size:11px;
+}
+
+.leg i{
+  display:inline-block;
+  width:9px;
+  height:9px;
+  border-radius:2px;
+  margin-right:5px;
+  vertical-align:-1px;
+}
+
+.steps{
+  display:flex;
+  flex-wrap:wrap;
+  gap:4px;
+  margin:20px 0 12px;
+}
+
+.steps button{
+  padding:6px 9px;
+  border-color:transparent;
+  color:var(--mut);
+  background:transparent;
+  font-size:12px;
+}
+
+.steps button.on{
+  color:var(--ink);
+  background:var(--soft);
+  border-color:var(--line);
+}
+
+details{
+  border-top:1px solid var(--line);
+  padding:16px 0;
+}
+
+details:last-child{
+  border-bottom:1px solid var(--line);
+}
+
+summary{
+  cursor:pointer;
+  font-size:14px;
+  font-weight:650;
+}
+
+details p{
+  max-width:760px;
+  margin:8px 0 0 20px;
+  color:var(--mut);
+  font-size:14px;
+}
+
+.gantt{
+  display:grid;
+  grid-template-columns:repeat(12,1fr);
+  gap:5px;
+  margin-top:22px;
+}
+
+.gantt div{
+  min-height:68px;
+  border-radius:7px;
+  padding:9px 10px;
+  font-size:11px;
+  color:#fff;
+  font-weight:700;
+}
+
+.gantt small{
+  display:block;
+  margin-top:4px;
+  font-weight:400;
+  line-height:1.4;
+  opacity:.9;
+}
+
+footer{
+  width:min(1040px,100%);
+  margin:auto;
+  border-top:1px solid var(--line);
+  text-align:left;
+  color:var(--mut);
+  font-size:11px;
+  padding:20px 20px 42px;
+}
+
+@media (max-width:760px){
+  nav{padding:8px 10px}
+  nav a{font-size:11px;padding:6px 7px}
+  .hero{padding:68px 18px 58px}
+  .hero h1{letter-spacing:-.045em}
+  .hero p{font-size:15px}
+  main{padding-inline:16px}
+  section{padding-top:52px}
+  section+section{margin-top:52px}
+  .grid{grid-template-columns:1fr}
+  .ctl{grid-template-columns:1fr}
+  .card{padding:16px}
+  .gantt{grid-template-columns:1fr 1fr}
+  .gantt div{grid-column:auto!important}
+  .cells{gap:2px}
+}
+
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{transition:none!important}
+}
+</style>
+</head>
+<body>
+<nav>
+<a href="#why">Overview</a><a href="#surge">Surge label</a><a href="#split">Leakage</a><a href="#method">Method</a><a href="#cost">Cost</a><a href="#rq">Questions</a><a href="#plan">Plan</a><a href="#titles">Titles</a>
+<button id="theme" aria-label="Toggle light and dark theme" title="Toggle theme">◐</button>
+</nav>
+
+<header class="hero">
+<div class="tag">Research proposal · AI/ML × Cybersecurity</div>
+<h1>Forecasting Vulnerability Surges in Open-Source Packages</h1>
+<p>Which packages will see a burst of high or critical advisories in the next 30–180 days, and can we explain why, without fooling ourselves with data leakage?</p>
+<div class="chips"><span><b>4</b> research questions</span><span><b>7</b> baselines</span><span><b>3</b> horizons</span><span><b>12</b> weeks</span></div>
+</header>
+
+<main>
+<section id="why">
+<div class="tag">The idea</div><h2>Why package-level surges matter</h2>
+<p class="lead">Disclosures cluster in time. A burst forces downstream teams into repeated triage, patching and testing. Existing tools score single CVEs or forecast ecosystem totals; package-level burst forecasting under leakage-controlled, cost-aware evaluation looks under-studied (literature check pending).</p>
+<div class="grid">
+<div class="card"><h3>🎯 The task</h3><p>For package <i>i</i> at date <i>t</i>, estimate the probability of a surge in (t, t+h], using only information public at <i>t</i>.</p></div>
+<div class="card"><h3>⚠️ The caveat</h3><p>We forecast <b>disclosure</b> surges, not true vulnerability density. Audits, fuzzing or policy changes can also trigger bursts.</p></div>
+<div class="card"><h3>🧪 The paper type</h3><p>Empirical study plus benchmark: leakage audit, budget-aware cost analysis, and explanation stability.</p></div>
+</div>
+</section>
+
+<section id="surge">
+<div class="tag">Try it · illustrative synthetic data</div><h2>What counts as a surge?</h2>
+<p class="lead">A window is a surge if it holds at least <b>m</b> advisories <i>and</i> at least <b>k×</b> the package's trailing 12-month rate. Move the sliders and watch how fragile the base rate is.</p>
+<div class="card">
+<div class="ctl">
+<label>Horizon h: <b id="hv">3 mo</b><input id="h" type="range" min="1" max="6" value="3"></label>
+<label>Multiplier k: <b id="kv">3×</b><input id="k" type="range" min="1" max="6" value="3" step=".5"></label>
+<label>Minimum count m: <b id="mv">2</b><input id="m" type="range" min="1" max="4" value="2"></label>
+</div>
+<svg id="sg" viewBox="0 0 720 190" role="img" aria-label="Monthly advisory counts with surge windows highlighted"><rect x="20" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="34.4" y="84" width="11.4" height="26" rx="3" fill="var(--g)"></rect><rect x="48.8" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="63.2" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="77.6" y="84" width="11.4" height="26" rx="3" fill="var(--g)"></rect><rect x="92" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="106.4" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="120.8" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="135.2" y="84" width="11.4" height="26" rx="3" fill="var(--g)"></rect><rect x="149.6" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="164" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="178.4" y="84" width="11.4" height="26" rx="3" fill="var(--g)"></rect><rect x="192.8" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="207.20000000000002" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="221.6" y="84" width="11.4" height="26" rx="3" fill="var(--g)"></rect><rect x="236" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="250.4" y="110" width="11.4" height="2" rx="3" fill="var(--c)"></rect><rect x="264.8" y="110" width="11.4" height="2" rx="3" fill="var(--c)"></rect><rect x="279.2" y="32" width="11.4" height="78" rx="3" fill="var(--c)"></rect><rect x="293.6" y="58" width="11.4" height="52" rx="3" fill="var(--c)"></rect><rect x="308" y="110" width="11.4" height="2" rx="3" fill="var(--c)"></rect><rect x="322.40000000000003" y="84" width="11.4" height="26" rx="3" fill="var(--g)"></rect><rect x="336.8" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="351.2" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="365.6" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="380" y="84" width="11.4" height="26" rx="3" fill="var(--g)"></rect><rect x="394.40000000000003" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="408.8" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="423.2" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="437.6" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="452" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="466.40000000000003" y="84" width="11.4" height="26" rx="3" fill="var(--g)"></rect><rect x="480.8" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="495.2" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="509.6" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="524" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="538.4" y="110" width="11.4" height="2" rx="3" fill="var(--c)"></rect><rect x="552.8000000000001" y="110" width="11.4" height="2" rx="3" fill="var(--c)"></rect><rect x="567.2" y="6" width="11.4" height="104" rx="3" fill="var(--c)"></rect><rect x="581.6" y="32" width="11.4" height="78" rx="3" fill="var(--c)"></rect><rect x="596" y="84" width="11.4" height="26" rx="3" fill="var(--c)"></rect><rect x="610.4" y="110" width="11.4" height="2" rx="3" fill="var(--c)"></rect><rect x="624.8000000000001" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="639.2" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="653.6" y="84" width="11.4" height="26" rx="3" fill="var(--g)"></rect><rect x="668" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="682.4" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="696.8000000000001" y="110" width="11.4" height="2" rx="3" fill="var(--g)"></rect><rect x="192.8" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="207.20000000000002" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="221.6" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="236" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="250.4" y="128" width="11.4" height="22" rx="3" fill="var(--d)" opacity="1"></rect><rect x="264.8" y="128" width="11.4" height="22" rx="3" fill="var(--d)" opacity="1"></rect><rect x="279.2" y="128" width="11.4" height="22" rx="3" fill="var(--d)" opacity="1"></rect><rect x="293.6" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="308" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="322.40000000000003" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="336.8" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="351.2" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="365.6" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="380" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="394.40000000000003" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="408.8" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="423.2" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="437.6" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="452" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="466.40000000000003" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="480.8" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="495.2" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="509.6" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="524" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="538.4" y="128" width="11.4" height="22" rx="3" fill="var(--d)" opacity="1"></rect><rect x="552.8000000000001" y="128" width="11.4" height="22" rx="3" fill="var(--d)" opacity="1"></rect><rect x="567.2" y="128" width="11.4" height="22" rx="3" fill="var(--d)" opacity="1"></rect><rect x="581.6" y="128" width="11.4" height="22" rx="3" fill="var(--d)" opacity="1"></rect><rect x="596" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="610.4" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="624.8000000000001" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="639.2" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="653.6" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><rect x="668" y="128" width="11.4" height="22" rx="3" fill="var(--g)" opacity="0.45"></rect><text class="txt" x="20" y="172">month 0</text><text class="txt" x="666.8000000000001" y="172">month 47</text><text class="txt" x="20" y="186">row 2: origins t = 12…45 (trailing 12 months required)</text></svg>
+<div class="leg"><span><i style="background:var(--g)"></i>advisories per month</span><span><i style="background:var(--c)"></i>month inside a surge window</span><span><i style="background:var(--d)"></i>forecast origin labelled surge</span></div>
+<div class="read" id="sr"><b>7</b> of 34 forecast origins are surges (<b>21%</b>). A workable prevalence for a rare-event study.</div>
+</div>
+</section>
+
+<section id="split">
+<div class="tag">Try it · leakage</div><h2>Random splits leak; purged splits don't</h2>
+<p class="lead">Neighbouring months share label windows, so a random split lets the model see the answer's neighbours. A purge gap of at least h removes the overlap.</p>
+<div class="card">
+<div class="ctl">
+<label>Horizon h: <b id="shv">3 mo</b><input id="sh" type="range" min="1" max="6" value="3"></label>
+<label>Rolling fold: <b id="sfv">2</b><input id="sf" type="range" min="1" max="5" value="2"></label>
+<label>Protocol<button id="sm" data-m="t">Purged rolling-origin ⇄ Random</button></label>
+</div>
+<div class="cells" id="cells"><i style="background:var(--a)"></i><i style="background:var(--a)"></i><i style="background:var(--a)"></i><i style="background:var(--a)"></i><i style="background:var(--a)"></i><i style="background:var(--a)"></i><i style="background:var(--a)"></i><i style="background:var(--a)"></i><i style="background:var(--a)"></i><i style="background:var(--a)"></i><i style="background:var(--a)"></i><i style="background:var(--a)"></i><i style="background:var(--c)"></i><i style="background:var(--c)"></i><i style="background:var(--b)"></i><i style="background:var(--b)"></i><i style="background:var(--b)"></i><i style="background:var(--g)"></i><i style="background:var(--g)"></i><i style="background:var(--g)"></i><i style="background:var(--g)"></i><i style="background:var(--g)"></i><i style="background:var(--g)"></i><i style="background:var(--g)"></i><i style="background:var(--g)"></i><i style="background:var(--g)"></i><i style="background:var(--g)"></i><i style="background:var(--g)"></i><i style="background:var(--g)"></i><i style="background:var(--g)"></i><i style="background:var(--p)"></i><i style="background:var(--p)"></i><i style="background:var(--p)"></i><i style="background:var(--p)"></i><i style="background:var(--p)"></i><i style="background:var(--p)"></i></div>
+<div class="leg"><span><i style="background:var(--a)"></i>train</span><span><i style="background:var(--c)"></i>purge gap</span><span><i style="background:var(--b)"></i>test</span><span><i style="background:var(--p)"></i>final test (used once)</span><span><i style="background:var(--g)"></i>unused</span></div>
+<div class="read" id="sl"><b>0</b> of 12 training rows (<b>0%</b>) share a label window with a test row. The purge gap removes that overlap by construction.</div>
+</div>
+</section>
+
+<section id="method">
+<div class="tag">Pipeline</div><h2>From raw advisories to explained forecasts</h2>
+<div class="steps" id="steps"><button data-i="0" class="on">1 · As-of data</button><button data-i="1">2 · Features</button><button data-i="2">3 · Models</button><button data-i="3">4 · Calibration</button><button data-i="4">5 · Cost &amp; budget</button><button data-i="5">6 · Explanations</button></div>
+<div class="card"><h3 id="st">1 · As-of data</h3><p id="sd">Advisories from GitHub Advisory DB, OSV and NVD are rebuilt as they were on each forecast date, using publication timestamps and git history, with alias de-duplication.</p></div>
+</section>
+
+<section id="cost">
+<div class="tag">Try it · simulated calibrated scores</div><h2>Missing a surge costs more than a false alarm</h2>
+<p class="lead">Set how much worse a missed surge is (c) and how many packages analysts can review (k). The curve shows expected cost; the star marks the best k.</p>
+<div class="card">
+<div class="ctl">
+<label>Miss : false-alarm cost c = <b id="cv">10:1</b><input id="c" type="range" min="0" max="100" value="50"></label>
+<label>Packages reviewed k = <b id="kkv">60</b><input id="kk" type="range" min="0" max="300" value="60"></label>
+</div>
+<svg id="cg" viewBox="0 0 720 230" role="img" aria-label="Expected cost versus review budget"><path d="M30,30L32.2,33.69565217391303L34.4,37.39130434782609L36.6,37.02173913043478L38.8,36.65217391304347L41,40.34782608695653L43.2,39.97826086956522L45.400000000000006,43.67391304347825L47.6,43.30434782608697L49.8,47L52,46.63043478260869L54.2,50.32608695652175L56.400000000000006,49.95652173913044L58.6,49.586956521739125L60.800000000000004,49.217391304347814L63,48.84782608695653L65.2,48.47826086956522L67.4,48.10869565217391L69.6,51.80434782608697L71.80000000000001,55.5L74,59.19565217391303L76.2,58.82608695652175L78.4,62.52173913043478L80.6,66.21739130434781L82.80000000000001,65.84782608695653L85,65.47826086956522L87.2,65.1086956521739L89.4,68.80434782608697L91.60000000000001,68.43478260869566L93.80000000000001,68.06521739130434L96,67.69565217391303L98.2,67.32608695652175L100.4,66.95652173913044L102.60000000000001,70.65217391304347L104.80000000000001,70.28260869565219L107,73.97826086956522L109.2,73.6086956521739L111.4,77.30434782608695L113.60000000000001,76.93478260869566L115.80000000000001,76.56521739130434L118,76.19565217391305L120.2,75.82608695652173L122.4,79.52173913043478L124.60000000000001,83.21739130434783L126.80000000000001,82.84782608695652L129,82.47826086956522L131.2,82.1086956521739L133.4,85.80434782608695L135.60000000000002,85.43478260869566L137.8,85.06521739130434L140,84.69565217391305L142.2,84.32608695652173L144.4,83.95652173913044L146.60000000000002,83.58695652173913L148.8,83.21739130434783L151,82.84782608695652L153.20000000000002,82.47826086956522L155.4,82.1086956521739L157.60000000000002,81.73913043478261L159.8,81.3695652173913L162,81L164.20000000000002,80.6304347826087L166.4,80.26086956521739L168.60000000000002,79.8913043478261L170.8,79.52173913043478L173,79.15217391304348L175.20000000000002,78.78260869565217L177.4,78.41304347826087L179.60000000000002,78.04347826086956L181.8,81.73913043478261L184,81.3695652173913L186.20000000000002,81L188.4,84.69565217391305L190.60000000000002,84.32608695652173L192.8,88.02173913043478L195,91.71739130434783L197.20000000000002,91.34782608695652L199.4,90.97826086956522L201.60000000000002,94.67391304347827L203.8,94.30434782608695L206,93.93478260869566L208.20000000000002,93.56521739130434L210.4,93.19565217391305L212.60000000000002,92.82608695652173L214.8,92.45652173913044L217.00000000000003,92.08695652173913L219.20000000000002,91.71739130434783L221.4,91.34782608695652L223.60000000000002,90.97826086956522L225.8,90.6086956521739L228.00000000000003,90.23913043478261L230.20000000000002,89.8695652173913L232.4,89.5L234.60000000000002,89.1304347826087L236.8,88.76086956521739L239.00000000000003,88.3913043478261L241.20000000000002,92.08695652173913L243.4,91.71739130434783L245.60000000000002,91.34782608695652L247.8,95.04347826086956L250.00000000000003,94.67391304347827L252.20000000000002,94.30434782608695L254.4,93.93478260869566L256.6,93.56521739130434L258.8,93.19565217391305L261,92.82608695652173L263.20000000000005,92.45652173913044L265.4,92.08695652173913L267.6,91.71739130434783L269.8,91.34782608695652L272,90.97826086956522L274.20000000000005,90.6086956521739L276.40000000000003,90.23913043478261L278.6,89.8695652173913L280.8,89.5L283,89.1304347826087L285.20000000000005,88.76086956521739L287.40000000000003,88.3913043478261L289.6,88.02173913043478L291.8,87.65217391304348L294,87.28260869565217L296.20000000000005,86.91304347826087L298.40000000000003,86.54347826086956L300.6,86.17391304347827L302.8,85.80434782608695L305,89.5L307.20000000000005,89.1304347826087L309.40000000000003,88.76086956521739L311.6,88.3913043478261L313.8,88.02173913043478L316,87.65217391304348L318.20000000000005,87.28260869565217L320.40000000000003,86.91304347826087L322.6,86.54347826086956L324.8,86.17391304347827L327,85.80434782608695L329.20000000000005,85.43478260869566L331.40000000000003,85.06521739130434L333.6,84.69565217391305L335.8,84.32608695652173L338,83.95652173913044L340.20000000000005,83.58695652173913L342.40000000000003,83.21739130434783L344.6,86.91304347826087L346.8,86.54347826086956L349,86.17391304347827L351.20000000000005,85.80434782608695L353.40000000000003,85.43478260869566L355.6,89.1304347826087L357.8,88.76086956521739L360,88.3913043478261L362.20000000000005,92.08695652173913L364.40000000000003,91.71739130434783L366.6,91.34782608695652L368.8,90.97826086956522L371,90.6086956521739L373.20000000000005,90.23913043478261L375.40000000000003,89.8695652173913L377.6,93.56521739130434L379.8,97.26086956521739L382,96.8913043478261L384.20000000000005,96.52173913043478L386.40000000000003,96.15217391304348L388.6,95.78260869565217L390.8,99.47826086956522L393.00000000000006,99.1086956521739L395.20000000000005,98.73913043478261L397.40000000000003,98.3695652173913L399.6,98L401.8,97.6304347826087L404.00000000000006,97.26086956521739L406.20000000000005,96.8913043478261L408.40000000000003,96.52173913043478L410.6,96.15217391304348L412.8,95.78260869565217L415.00000000000006,95.41304347826087L417.20000000000005,99.1086956521739L419.40000000000003,98.73913043478261L421.6,98.3695652173913L423.8,98L426.00000000000006,101.69565217391305L428.20000000000005,105.3913043478261L430.40000000000003,105.02173913043478L432.6,104.65217391304348L434.8,104.28260869565217L437.00000000000006,103.91304347826087L439.20000000000005,103.54347826086956L441.40000000000003,103.17391304347827L443.6,102.80434782608695L445.8,102.43478260869566L448.00000000000006,102.06521739130434L450.20000000000005,101.69565217391305L452.40000000000003,105.3913043478261L454.6,105.02173913043478L456.8,108.71739130434783L459.00000000000006,108.34782608695652L461.20000000000005,107.97826086956522L463.40000000000003,107.6086956521739L465.6,107.23913043478261L467.8,106.8695652173913L470.00000000000006,106.5L472.20000000000005,106.1304347826087L474.40000000000003,105.76086956521739L476.6,105.3913043478261L478.8,105.02173913043478L481.00000000000006,104.65217391304348L483.20000000000005,104.28260869565217L485.40000000000003,103.91304347826087L487.6,103.54347826086956L489.8,103.17391304347827L492.00000000000006,102.80434782608695L494.20000000000005,102.43478260869566L496.40000000000003,102.06521739130434L498.6,101.69565217391305L500.8,101.32608695652173L503.00000000000006,100.95652173913044L505.20000000000005,100.58695652173913L507.40000000000003,100.21739130434783L509.6,99.84782608695652L511.8,99.47826086956522L514,99.1086956521739L516.2,98.73913043478261L518.4000000000001,98.3695652173913L520.6,98L522.8000000000001,97.6304347826087L525,97.26086956521739L527.2,96.8913043478261L529.4000000000001,96.52173913043478L531.6,96.15217391304348L533.8000000000001,95.78260869565217L536,95.41304347826087L538.2,95.04347826086956L540.4000000000001,94.67391304347827L542.6,94.30434782608695L544.8000000000001,93.93478260869566L547,93.56521739130434L549.2,93.19565217391305L551.4000000000001,92.82608695652173L553.6,92.45652173913044L555.8000000000001,92.08695652173913L558,91.71739130434783L560.2,91.34782608695652L562.4000000000001,90.97826086956522L564.6,90.6086956521739L566.8000000000001,90.23913043478261L569,89.8695652173913L571.2,89.5L573.4000000000001,89.1304347826087L575.6,88.76086956521739L577.8000000000001,88.3913043478261L580,88.02173913043478L582.2,87.65217391304348L584.4000000000001,87.28260869565217L586.6,86.91304347826087L588.8000000000001,86.54347826086956L591,86.17391304347827L593.2,89.8695652173913L595.4000000000001,89.5L597.6,89.1304347826087L599.8000000000001,88.76086956521739L602,88.3913043478261L604.2,88.02173913043478L606.4000000000001,87.65217391304348L608.6,87.28260869565217L610.8000000000001,86.91304347826087L613,86.54347826086956L615.2,86.17391304347827L617.4000000000001,85.80434782608695L619.6,89.5L621.8000000000001,89.1304347826087L624,88.76086956521739L626.2,88.3913043478261L628.4000000000001,92.08695652173913L630.6,91.71739130434783L632.8000000000001,91.34782608695652L635,90.97826086956522L637.2,90.6086956521739L639.4000000000001,90.23913043478261L641.6,89.8695652173913L643.8000000000001,89.5L646,89.1304347826087L648.2,88.76086956521739L650.4000000000001,88.3913043478261L652.6,88.02173913043478L654.8000000000001,87.65217391304348L657,87.28260869565217L659.2,86.91304347826087L661.4000000000001,86.54347826086956L663.6,86.17391304347827L665.8000000000001,85.80434782608695L668,85.43478260869566L670.2,89.1304347826087L672.4000000000001,88.76086956521739L674.6,88.3913043478261L676.8000000000001,88.02173913043478L679,87.65217391304348L681.2,87.28260869565217L683.4000000000001,86.91304347826087L685.6,86.54347826086956L687.8000000000001,86.17391304347827L690,85.80434782608695" fill="none" stroke="var(--a)" stroke-width="2.5"></path><line x1="162" x2="162" y1="20" y2="200" stroke="var(--d)" stroke-dasharray="4"></line><circle cx="162" cy="81" r="6" fill="var(--d)"></circle><text x="456.8" y="113.71739130434783" text-anchor="middle" font-size="20" fill="var(--c)">★</text><text class="txt" x="30" y="222">packages reviewed (k) →</text><text class="txt" x="30" y="14">expected cost ↓</text></svg>
+<div class="read" id="cr">Flagging <b>60</b> of 600 package-months (46 true surges): precision <b>30%</b>, recall <b>39%</b>, misses <b>28</b>, false alarms <b>42</b>, cost <b>322</b>. Best k = <b>194</b> (★). For calibrated scores the ideal cut-off is p &gt; 1/(1+c) = <b>0.091</b>.</div>
+</div>
+</section>
+
+<section id="rq">
+<div class="tag">Hypotheses</div><h2>Four research questions</h2>
+<details open=""><summary>RQ1 · How much do naive evaluations overstate performance?</summary><p><b>Hypothesis:</b> random splits and today's metadata inflate results. <b>Falsified if</b> there is no meaningful gap. <b>Analysis:</b> same models under each protocol, PR-AUC gap with confidence intervals.</p></details>
+<details><summary>RQ2 · What signal actually predicts surges?</summary><p><b>Hypothesis:</b> history dominates, but activity and dependency features add value at longer horizons. <b>Falsified if</b> nothing beats a history-only model. <b>Analysis:</b> feature-family ablations, paired block bootstrap.</p></details>
+<details><summary>RQ3 · Does cost-sensitive decision-making help?</summary><p><b>Hypothesis:</b> thresholding calibrated probabilities matches or beats class weights, focal loss and resampling at a fixed review budget. <b>Analysis:</b> expected cost across ratios, precision@k and recall@k.</p></details>
+<details><summary>RQ4 · Are explanations stable?</summary><p><b>Hypothesis:</b> rankings shift across time and cost settings, most around ecosystem-wide events. <b>Analysis:</b> rank correlation, top-k overlap, deletion-test faithfulness, explanation drift, case studies.</p></details>
+</section>
+
+<section id="plan">
+<div class="tag">Roadmap</div><h2>Twelve weeks, four gates</h2>
+<div class="gantt">
+<div style="grid-column:1/3;background:var(--a)">Wk 1–2<small>Literature · data audit · base rate · go/no-go</small></div>
+<div style="grid-column:3/6;background:var(--p)">Wk 3–5<small>As-of dataset · leakage tests</small></div>
+<div style="grid-column:6/9;background:var(--b)">Wk 6–8<small>Baselines · models · cost analysis</small></div>
+<div style="grid-column:9/11;background:var(--c)">Wk 9–10<small>Final test · explainability · cases</small></div>
+<div style="grid-column:11/13;background:var(--d)">Wk 11–12<small>Writing · code release</small></div>
+</div>
+<p class="lead" style="margin-top:14px">Main risks: too few positives (fallback: recurrence population or longer horizons), missing historical dependency data (drop that family), or an unbeatable history-only baseline (reframe as a predictability study).</p>
+</section>
+
+<section id="titles">
+<div class="tag">Four framings</div><h2>Title options</h2>
+<div class="steps" id="tt"><button data-i="0" class="on">A · Predictability &amp; rigor</button><button data-i="1">B · Budget-aware</button><button data-i="2">C · Explanation stability</button><button data-i="3">D · Supply-chain warning</button></div>
+<div class="card"><h3 id="tn">How Predictable Are Vulnerability Surges? A Leakage-Aware, Cost-Sensitive Study of Open-Source Packages</h3><p id="td">Recommended default. Stays publishable whether models succeed or fail. Suits empirical software engineering venues.</p></div>
+</section>
+</main>
+<footer>Draft proposal · all charts use synthetic illustrative data, not results · full plan in the Word document</footer>
+
+<script>
+const $=s=>document.querySelector(s),sum=a=>a.reduce((x,y)=>x+y,0);
+function rng(s){return()=>{s|=0;s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const root=document.documentElement;
+$('#theme').onclick=()=>{const d=root.dataset.theme==='dark'||(!root.dataset.theme&&matchMedia('(prefers-color-scheme:dark)').matches);root.dataset.theme=d?'light':'dark'};
+
+/* Surge explorer */
+const C=[0,1,0,0,1,0,0,0,1,0,0,1,0,0,1,0,0,0,3,2,0,1,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,4,3,1,0,0,0,1,0,0,0];
+function surge(){
+ const h=+$('#h').value,k=+$('#k').value,m=+$('#m').value;
+ $('#hv').textContent=h+' mo';$('#kv').textContent=k+'×';$('#mv').textContent=m;
+ let n=0,N=0,win=new Set(),ys=[];
+ for(let t=12;t+h<=48;t++){const r=sum(C.slice(t-12,t))*h/12,A=sum(C.slice(t,t+h)),y=A>=m&&A>=k*r;N++;ys.push([t,y]);if(y){n++;for(let i=t;i<t+h;i++)win.add(i)}}
+ let s='';const w=14.4;
+ C.forEach((c,i)=>{const H=c*26;s+=`<rect x="${20+i*w}" y="${110-H}" width="${w-3}" height="${Math.max(H,2)}" rx="3" fill="${win.has(i)?'var(--c)':'var(--g)'}"/>`});
+ ys.forEach(([t,y])=>s+=`<rect x="${20+t*w}" y="128" width="${w-3}" height="22" rx="3" fill="${y?'var(--d)':'var(--g)'}" opacity="${y?1:.45}"/>`);
+ s+=`<text class="txt" x="20" y="172">month 0</text><text class="txt" x="${20+47*w-30}" y="172">month 47</text><text class="txt" x="20" y="186">row 2: origins t = 12…${48-h} (trailing 12 months required)</text>`;
+ $('#sg').innerHTML=s;const p=N?100*n/N:0;
+ $('#sr').innerHTML=`<b>${n}</b> of ${N} forecast origins are surges (<b>${p.toFixed(0)}%</b>). `+(p<3?'Very sparse: stable evaluation would need pooling many packages, or a longer horizon.':p>35?'Very common: this may be too loose to count as a "surge".':'A workable prevalence for a rare-event study.');
+}
+['h','k','m'].forEach(i=>$('#'+i).oninput=surge);
+
+/* Split visualiser */
+function split(){
+ const h=+$('#sh').value,f=+$('#sf').value,t=$('#sm').dataset.m==='t';
+ $('#shv').textContent=h+' mo';$('#sfv').textContent=f;
+ const cl=Array(36).fill('var(--g)');let tr=[],te=[];
+ for(let i=30;i<36;i++)cl[i]='var(--p)';
+ if(t){const ts=10+(f-1)*4;for(let i=0;i<30;i++){if(i<ts&&i+h<=ts){cl[i]='var(--a)';tr.push(i)}else if(i<ts)cl[i]='var(--c)';else if(i<ts+3){cl[i]='var(--b)';te.push(i)}}}
+ else{const R=rng(f*11+3);for(let i=0;i<30;i++){if(R()<.3){cl[i]='var(--b)';te.push(i)}else{cl[i]='var(--a)';tr.push(i)}}}
+ $('#cells').innerHTML=cl.map(c=>`<i style="background:${c}"></i>`).join('');
+ const leak=tr.filter(i=>te.some(j=>Math.abs(i-j)<h)).length,pc=tr.length?100*leak/tr.length:0;
+ $('#sl').innerHTML=`<b>${leak}</b> of ${tr.length} training rows (<b>${pc.toFixed(0)}%</b>) share a label window with a test row. `+(t?'The purge gap removes that overlap by construction.':'Their labels overlap in time, so scores look better than they are.');
+}
+['sh','sf'].forEach(i=>$('#'+i).oninput=split);
+$('#sm').onclick=e=>{const b=e.currentTarget;b.dataset.m=b.dataset.m==='t'?'r':'t';b.textContent=b.dataset.m==='t'?'Purged rolling-origin ⇄ Random':'Random ⇄ Purged rolling-origin';split()};
+
+/* Pipeline */
+const S=[['1 · As-of data','Advisories from GitHub Advisory DB, OSV and NVD are rebuilt as they were on each forecast date, using publication timestamps and git history, with alias de-duplication.'],
+['2 · Features','Four families: vulnerability history, development activity, dependency context and ecosystem context, all dated on or before t.'],
+['3 · Models','Baselines B0–B6 (persistence, trailing rate, logistic, negative binomial, Hawkes-style, ecosystem rate, CVSS/EPSS heuristic) against gradient boosting M1–M4 and an optional sequence model.'],
+['4 · Calibration','Probabilities are calibrated (isotonic or Platt) on a later validation block so that costs and thresholds mean something.'],
+['5 · Cost & budget','Expected cost across miss:false-alarm ratios, precision@k and recall@k under a review budget, plus warning lead time.'],
+['6 · Explanations','Grouped SHAP, stability across time, seeds and cost settings, deletion-test faithfulness, explanation drift and historical case studies.']];
+$('#steps').innerHTML=S.map((s,i)=>`<button data-i="${i}">${s[0]}</button>`).join('');
+$('#steps').onclick=e=>{const i=e.target.dataset.i;if(i==null)return;[...$('#steps').children].forEach((b,j)=>b.classList.toggle('on',j==i));$('#st').textContent=S[i][0];$('#sd').textContent=S[i][1]};
+$('#steps').children[0].click();
+
+/* Cost explorer */
+const R=rng(7),D=[];
+for(let i=0;i<600;i++){const z=Math.sqrt(-2*Math.log(R()+1e-9))*Math.cos(6.2832*R()),p=1/(1+Math.exp(3.1-1.4*z));D.push({p,y:R()<p?1:0})}
+D.sort((a,b)=>b.p-a.p);const P=sum(D.map(d=>d.y)),TP=[0];D.forEach(d=>TP.push(TP[TP.length-1]+d.y));
+function costs(){
+ const c=Math.round(10**(+$('#c').value/50)),k=+$('#kk').value;$('#cv').textContent=c+':1';$('#kkv').textContent=k;
+ const f=j=>c*(P-TP[j])+(j-TP[j]);let best=0,cur=[];
+ for(let j=0;j<=300;j++){cur.push(f(j));if(cur[j]<cur[best])best=j}
+ const mx=Math.max(...cur),X=j=>30+j*2.2,Y=v=>200-170*v/mx;
+ let s=`<path d="M${cur.map((v,j)=>X(j)+','+Y(v)).join('L')}" fill="none" stroke="var(--a)" stroke-width="2.5"/>`;
+ s+=`<line x1="${X(k)}" x2="${X(k)}" y1="20" y2="200" stroke="var(--d)" stroke-dasharray="4"/><circle cx="${X(k)}" cy="${Y(cur[k])}" r="6" fill="var(--d)"/>`;
+ s+=`<text x="${X(best)}" y="${Y(cur[best])+5}" text-anchor="middle" font-size="20" fill="var(--c)">★</text><text class="txt" x="30" y="222">packages reviewed (k) →</text><text class="txt" x="30" y="14">expected cost ↓</text>`;
+ $('#cg').innerHTML=s;const tp=TP[k];
+ $('#cr').innerHTML=`Flagging <b>${k}</b> of 600 package-months (${P} true surges): precision <b>${k?(100*tp/k).toFixed(0):0}%</b>, recall <b>${(100*tp/P).toFixed(0)}%</b>, misses <b>${P-tp}</b>, false alarms <b>${k-tp}</b>, cost <b>${cur[k]}</b>. Best k = <b>${best}</b> (★). For calibrated scores the ideal cut-off is p &gt; 1/(1+c) = <b>${(1/(1+c)).toFixed(3)}</b>.`;
+}
+['c','kk'].forEach(i=>$('#'+i).oninput=costs);
+
+/* Titles */
+const T=[['A · Predictability & rigor','How Predictable Are Vulnerability Surges? A Leakage-Aware, Cost-Sensitive Study of Open-Source Packages','Recommended default. Stays publishable whether models succeed or fail. Suits empirical software engineering venues.'],
+['B · Budget-aware','Budget-Aware Forecasting of Vulnerability Disclosure Surges in Open-Source Ecosystems','Frames the task as a decision under a review budget. Suits security operations and applied security-ML.'],
+['C · Explanation stability','Do Explanations Survive Time? Explainable, Cost-Sensitive Prediction of Vulnerability Surges in Software Packages','Tests explanation reliability under drift. Suits explainable-AI and trustworthy-ML venues.'],
+['D · Supply-chain warning','Early Warning for the Software Supply Chain: Forecasting Package-Level Vulnerability Surges from History, Activity and Dependency Signals','Asks which signal families matter. Suits supply-chain security venues.']];
+$('#tt').innerHTML=T.map((t,i)=>`<button data-i="${i}">${t[0]}</button>`).join('');
+$('#tt').onclick=e=>{const i=e.target.dataset.i;if(i==null)return;[...$('#tt').children].forEach((b,j)=>b.classList.toggle('on',j==i));$('#tn').textContent=T[i][1];$('#td').textContent=T[i][2]};
+$('#tt').children[0].click();
+
+surge();split();costs();
+</script>
+
+</body></html>
